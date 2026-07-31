@@ -1,0 +1,713 @@
+{
+  "_meta": {
+    "lang": "en",
+    "note": "Flat, single-language project data. The paired file for the other language has the same ids and neutral fields (media, year, stack). Add a language by copying this file, translating the text fields, and registering the code in projects.js / i18n."
+  },
+  "categories": [
+    {
+      "id": "interactive",
+      "label": "Interactive Web & 3D"
+    },
+    {
+      "id": "uiux",
+      "label": "UI/UX & Product"
+    },
+    {
+      "id": "branding",
+      "label": "Brand & Identity"
+    },
+    {
+      "id": "motion",
+      "label": "Motion & Audiovisual"
+    }
+  ],
+  "projects": [
+    {
+      "id": "treasure-within",
+      "title": "The Treasure Within",
+      "category": "interactive",
+      "year": "2026",
+      "role": "Developer: Programming, UI/UX & 3D",
+      "partners": "Daniel Costa (3D Assets)",
+      "contextText": "This project was developed for the Multimedia Communication course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/the-treasure-within.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/treasure-within.webp",
+      "description": "An immersive 3D web experience inspired by Disney's Treasure Planet. You pilot a voxel galleon through space toward planets that embody human emotions: Happiness, Courage, Love and Hope. The real treasure is internal, not gold.",
+      "body": [
+        "Developed in the 3rd year, for the Multimedia Communication course, with Daniel Costa, the project reinterprets the Disney film around personal growth. Daniel produced the base 3D assets while I led the development: Three.js programming, sensor integration, performance optimisation, rigging and sound engineering.",
+        "To hold a fluid 60 FPS in the browser I followed a strict technical pipeline. Models started as voxels in MagicaVoxel, passed through Blender for geometry cleanup and polygon reduction, and characters were rigged in Mixamo before everything was exported as .GLB. A global LoadingManager pre-loads every 3D and audio file into memory before the experience starts. I replaced heavy opacity maths with native Additive Blending for the planets' holographic glow, and simulated the universe with a skydome whose dynamic colour filters shift the lighting according to the visitor's real local hour.",
+        "The core of the code dropped menus and read the real world instead. I wired the Web Audio API to the microphone so the player must raise their voice on the Planet of Courage, used MediaPipe to read the camera and confirm a smile on the Planet of Happiness, built a rhythm mini-game with anti-cheat cooldowns on the Planet of Love, and a glitch simulation on Hope that tests the visitor's patience. The journey closes on a PHP/JSON backend where travellers leave reflections for others. An exhausting project, and one awarded top marks."
+      ],
+      "techStack": [
+        "Three.js",
+        "JavaScript",
+        "Blender",
+        "Mixamo",
+        "Web Audio API",
+        "MediaPipe",
+        "JSON"
+      ],
+      "links": [
+        {
+          "label": "Go check it out",
+          "url": "https://student.dei.uc.pt/~recgrc/Projeto/The_Treasure_Within/"
+        }
+      ],
+      "mockups": [
+        {
+          "src": "assets/mockups/treasure-within/barco-portfolio.webp",
+          "alt": "The voxel Etherium galleon, the ship the player commands",
+          "span": "full",
+          "caption": "Voxel model in MagicaVoxel"
+        }
+      ],
+      "videoHasAudio": true
+    },
+    {
+      "id": "the-veldt",
+      "title": "The Veldt",
+      "category": "interactive",
+      "year": "2026",
+      "role": "Developer & 3D Web Integrator",
+      "partners": "Afonso Almeida · Tiago Gomes",
+      "contextText": "This project was developed for the Multimedia Communication course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/the-veldt.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/the-veldt.webp",
+      "description": "An immersive 3D website based on Ray Bradbury's short story The Veldt. You enter a virtual African savanna as a silent observer, embedded inside the characters' psychological drama.",
+      "body": [
+        "Developed in the Project 3 course (3rd year) with Afonso Almeida and Tiago Gomes, the experience grew directly out of a printed editorial object: the goal was to give that physical piece a third dimension by placing the visitor inside the scene. On the team I led the Three.js implementation, modelled most of the environments in Blender, tuned the animations through rigging, and handled performance.",
+        "The art direction blends the retro aesthetic of 1950s computers (the era the story was written) with the savanna simulation. To reinforce the idea that the room is a 'fake' technological illusion, I used a visual trick: only nearby elements are modelled in low-poly 3D, while the horizon and distant elements are flat 2D images. Combined with Three.js instancing, this kept the project extremely light, running well on both desktop and mobile.",
+        "I modelled the environments with shade-smooth lighting and animated everything from scratch with skeletons: the lions, the vultures, the intro sequence. Collisions use invisible cylindrical and spherical hitboxes at the bases of trees and rocks, with boolean debug flags to visualise and fine-tune each blocking zone. For sound I did dense work in ElevenLabs to design the characters' voices; audio and text are triggered by the camera's (X, Y, Z) position relative to trigger zones, computing distance and volume to build a spatial, immersive soundscape."
+      ],
+      "techStack": [
+        "Three.js",
+        "Blender",
+        "WebGL",
+        "AI Voice",
+        "JavaScript"
+      ],
+      "links": [
+        {
+          "label": "Go check it out",
+          "url": "https://student.dei.uc.pt/~recgrc/Projeto/The_Veldt/"
+        }
+      ],
+      "mockups": [],
+      "videoHasAudio": true
+    },
+    {
+      "id": "soft-capture",
+      "title": "Soft Capture",
+      "category": "interactive",
+      "year": "2026",
+      "role": "Developer · 3D Modeler · WebGL Animator",
+      "partners": "Carolina Seixas · Maria Alice Neves",
+      "contextText": "This project was developed for the Interactive Multimedia IV course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/soft-capture.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/soft-capture.webp",
+      "description": "An interactive installation for DEI's FeedNplay, a 9-screen wall at 7000×1080px. A camera reads the visitor and an AI builds a permanent digital profile from their traits, a live experiment on surveillance and data ownership.",
+      "body": [
+        "Developed in the Interactive Multimedia IV course (Project 4, 3rd year) with Carolina Seixas and Maria Alice Neves, the project starts from how easily we hand over our data. I covered the whole technical and interface side: the Three.js and JavaScript architecture, 3D modelling, UI/UX design in Figma, WebGL animation and ecosystem integration.",
+        "Moving a 3D application onto a 9-screen wall (7000×1080px) took a lot of on-site testing. The orthographic camera in Three.js, the viewing angles and the projection ratios all had to be calibrated so the avatars and interface would not distort across the monitor seams. In Blender we modelled the avatars' modular parts (hair, glasses, body types) and built a code pipeline that assembles the character in real time via GLTFLoader and SkeletonUtils, from the JSON returned by the Gemini 2.5-Flash API.",
+        "Navigation is fully contactless. I used the camera and MediaPipe Holistic to map the visitor's hand as a cursor on a canvas, triggering capture when the hand rises above the head, plus microphone clap-detection to re-sort the avatars by inferred category. Body animation reacts to the AI-assigned psychological traits, and to hold a stable 60 FPS I capped the canvas at 30 simultaneous avatars, archiving older profiles through a PHP/JSON server."
+      ],
+      "techStack": [
+        "Three.js",
+        "WebGL",
+        "Blender",
+        "Mixamo",
+        "MediaPipe",
+        "Gemini 2.5-Flash",
+        "PHP",
+        "JSON"
+      ],
+      "links": [
+        {
+          "label": "Go check it out",
+          "url": "https://student.dei.uc.pt/~recgrc/Projeto/Soft_Capture/"
+        }
+      ],
+      "mockups": [
+        {
+          "src": "assets/mockups/soft-capture/img1.webp",
+          "alt": "Two 3D characters created for Soft Capture",
+          "span": "half",
+          "caption": "3D models"
+        }
+      ],
+      "videoHasAudio": false
+    },
+    {
+      "id": "modular-city",
+      "title": "Modular City",
+      "category": "interactive",
+      "year": "2025",
+      "role": "Creative Developer & 3D Designer",
+      "partners": "",
+      "contextText": "This project was developed for the Computer Graphics course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/3dcity.mp4",
+      "heroEmbed": "https://modular-city.onrender.com/",
+      "poster": "assets/banners/modular-city.webp",
+      "description": "A modular 3D city built entirely with code in Processing, inspired by New York. The city regenerates differently on every run, made to live on my website as a controllable 3D scene.",
+      "body": [
+        "Built solo in the Computer Graphics course (2nd year), the work focused on generation algorithms, spatial maths and real-time rendering optimisation. The scene was conceived from scratch to be robust and interactive, meant to be embedded on the web as a portfolio centrepiece.",
+        "The core is a 20×20 grid read from numeric files, where each value sets the ground type (road, building, park or water). Generative maths decides building heights under a rule-tuned probability distribution, deliberately fighting the natural tendency toward repetitive average values to force visually dynamic skylines. Conditional rules assign UV textures (hand-made in Photoshop) and distinct roof shapes according to height.",
+        "For the lake I split the water cells in two to densify the mesh and joined the intermediate vertices with an oscillating equation combined with Perlin Noise for realistic ripples. I worked around Processing's native limit on active lights by using emission materials to fake light points, and modelled street lamps on the grid to which the algorithm randomly assigns real lights on each generation. The scene is completed by a plane flying over, with vector translation maths, bank turns and collision avoidance."
+      ],
+      "techStack": [
+        "Processing",
+        "3D Code",
+        "Photoshop"
+      ],
+      "links": [
+        {
+          "label": "Open fullscreen",
+          "url": "https://modular-city.onrender.com/"
+        }
+      ],
+      "mockups": [],
+      "videoHasAudio": true
+    },
+    {
+      "id": "audacia",
+      "title": "Audácia",
+      "category": "interactive",
+      "year": "2024",
+      "role": "Creative Developer & Designer",
+      "partners": "",
+      "contextText": "This project was developed for the Typography in Digital Media course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/audacia.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/audacia.webp",
+      "description": "An interactive poster built in Processing around the word “Audácia” (audacity). The word reacts to you: as you get closer it lights up and catches fire, as if you were facing your fears head-on.",
+      "body": [
+        "Built solo in the Typography in Digital Media course (2nd year, 1st semester), the project crossed digital animation, computer vision and real-time interaction. The aim was a clean, striking piece where the technical complexity served the expression of the single word 'Audácia' (audacity).",
+        "The fire sequence was designed and animated from scratch in After Effects, then exported frame by frame as an image sequence to be driven by code. The interaction is powered by the OpenCV library in Processing through a camera: the algorithm finds the visitor's face, draws a bounding box around it, and uses that rectangle's area as a distance metric.",
+        "The detected rectangle's scale is mapped to the exact frame index to render. Because the human body never holds perfectly still, the bounding box size fluctuates slightly at every instant, and I used that variation to keep the frames in constant micro-motion back and forth, giving the fire and type a fluid transition with no freezing and no sense of a static glitch."
+      ],
+      "techStack": [
+        "Processing",
+        "OpenCV",
+        "Typography"
+      ],
+      "links": [],
+      "mockups": [],
+      "videoHasAudio": false
+    },
+    {
+      "id": "quebra-jazz-identity",
+      "title": "Quebra Jazz Identity",
+      "category": "branding",
+      "year": "2024",
+      "role": "Brand & Visual Designer",
+      "partners": "Afonso Almeida · Laura Freire · Tiago Gomes",
+      "contextText": "This project was developed for the Web Identity course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "",
+      "heroEmbed": "",
+      "description": "A rebrand concept for Quebra Jazz, a festival on Coimbra's Quebra-Costas staircase. It started from a satellite image of the stairs, whose silhouette looked like a saxophone. An academic project, never deployed.",
+      "body": [
+        "Developed in the Web Identity course (2nd year, 1st semester) with Afonso Almeida, Laura Freire and Tiago Gomes, the project began from a geographic and photographic study of the venue. In a satellite image of the Quebra-Costas steps we spotted an organic silhouette that read directly as the shape of a saxophone.",
+        "Turning that discovery into a mark produced a central icon built from misaligned geometric blocks that stand at once for the stone steps and for the rhythmic deconstruction of jazz. For the wordmark we drew a custom typeface with cuts and negative spaces echoing the icon, tying word and symbol together. In institutional use the identity is supported by Gotham Black and Montserrat.",
+        "The palette rests on black and white, punctuated by orange (#E98002), purple (#3B2051) and yellow (#FFD402). The system extends to a simplified small-scale icon and a full brand manual, applied across artist posters (Luís Figueiredo, Mário Laginha, Marta Pereira), signage, tote bags, clothing and social media."
+      ],
+      "techStack": [
+        "Brand Identity",
+        "Logotype",
+        "Type Design"
+      ],
+      "links": [],
+      "mockups": [
+        {
+          "src": "assets/mockups/quebra-jazz-identity/quebra-jazz.webp",
+          "alt": "QUEBRA JAZZ set in a fractured typeface, its letters broken into fragments",
+          "span": "half",
+          "caption": "Wordmark"
+        }
+      ],
+      "slideshow": [
+        "assets/banners/quebra-jazz-identity/livro.webp",
+        "assets/banners/quebra-jazz-identity/parede.webp",
+        "assets/banners/quebra-jazz-identity/quebrajazz.webp",
+        "assets/banners/quebra-jazz-identity/saco.webp"
+      ]
+    },
+    {
+      "id": "noytrall-mascot",
+      "title": "NOY, the Noytrall Mascot",
+      "category": "branding",
+      "year": "2025",
+      "role": "Multimedia Designer (Character Design)",
+      "partners": "",
+      "contextText": "A project developed at jeKnowledge, the UC Junior Enterprise, for a real client brief.",
+      "heroVideo": "videos/noytrall-social.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/noytrall.webp",
+      "description": "Noytrall's product felt cold and corporate, so I designed NOY, an original mascot based on the company's existing geometric logo icon. NOY gives the brand a face and an empathetic personality.",
+      "body": [
+        "The creative process grew out of Noytrall's existing logo: the brand's silhouette immediately suggested the character's shape, which I first sketched on paper. After the sketch I vectorised it and defined the mascot's personality and traits in brainstorming sessions, arriving at a vibrant character with a bright, eye-catching palette.",
+        "Rather than a traditional 3D approach, the character was built entirely in 2D. The base illustration was rigged and animated in After Effects, with frame-by-frame animation in Photoshop to add expressiveness. NOY's visual ecosystem was designed to strengthen the company's digital presence through dynamic content, including custom-made Reel videos for social media."
+      ],
+      "techStack": [
+        "Character Design",
+        "Vector Illustration",
+        "Art Direction"
+      ],
+      "links": [],
+      "mockups": [],
+      "reels": {
+        "heading": "Social & Reels",
+        "text": "As an extension of the identity, NOY came to life across a series of motion-design reels for Noytrall's social media: more mindful consumption, one stay at a time. Starting with the first one I made.",
+        "linkLabel": "Watch on Instagram",
+        "items": [
+          {
+            "video": "videos/noytrall_reels/video4.webm",
+            "link": "https://www.instagram.com/p/DQ4Vuy3iuNR/",
+            "concept": "The first reel in the series: NOY's introduction, where the character comes to life for Noytrall's audience.",
+            "note": "The first reel",
+            "hasAudio": true
+          },
+          {
+            "video": "videos/noytrall_reels/video2.webm",
+            "link": "https://www.instagram.com/p/DSpW1LuDOLz/",
+            "concept": "A Christmas reel: NOY waves and wishes happy holidays. The brand showing up for the season without stepping outside the character's light register.",
+            "hasAudio": true
+          },
+          {
+            "video": "videos/noytrall_reels/video1.webm",
+            "link": "https://www.instagram.com/reel/DTtB7D1DDoB/",
+            "concept": "On awareness and better choices. A simple animation where the app stays in the background. Rather than putting it front and centre it is only glimpsed, so the message lands first.",
+            "hasAudio": true
+          },
+          {
+            "video": "videos/noytrall_reels/video5.webm",
+            "link": "https://www.instagram.com/reel/DT-sv0ECrv8/",
+            "concept": "NOY switches on the air conditioning. Another simple animation, built around a hotel-room gesture, the kind of small choice where sustainability is actually decided.",
+            "hasAudio": true
+          },
+          {
+            "video": "videos/noytrall_reels/video3.webm",
+            "link": "https://www.instagram.com/reel/DWCaE-UDFeS/",
+            "concept": "A walk through the Noytrall app: NOY moves across a few screens, showing the product in motion instead of describing it.",
+            "hasAudio": true
+          }
+        ]
+      },
+      "videoHasAudio": false
+    },
+    {
+      "id": "kapout-identity",
+      "title": "Kapout Identity",
+      "category": "branding",
+      "year": "2025",
+      "role": "Brand Designer",
+      "partners": "",
+      "contextText": "A project developed at jeKnowledge, the UC Junior Enterprise, for a real client brief.",
+      "heroVideo": "videos/kapout-identity.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/kapout-identity.webp",
+      "description": "The visual identity for Kapout, a fun nightlife app for friends. I came up with the name myself: it plays on a knock-out “tap out”, a fake “cap”, and the idea of falling over. The logo is inspired by the Pac-Man shape, in vibrant neon.",
+      "body": [
+        "Developed within jeKnowledge, the project required leading the entire design side. Beyond all the art direction and visual identity, I owned the structure, behaviour and design of the mobile app (UI/UX).",
+        "The naming and logo came out of young nightlife culture and slang: the word fuses a pun on 'cap' (from 'no cap'), 'tap out', and the idea of 'falling over' at a party. Visually, the symbol is a geometric synthesis combining the iconic Pac-Man silhouette with the shape of a bottle. The palette and graphic system were tuned for phone screens, for a fluid, intuitive experience built exclusively for digital."
+      ],
+      "techStack": [
+        "Logotype",
+        "Visual Identity",
+        "Art Direction"
+      ],
+      "links": [],
+      "mockups": [
+        {
+          "src": "assets/mockups/kapout-identity/kapout.webp",
+          "alt": "A disc in a pink-to-blue gradient cut through by the silhouette of a bottle, above the Kapout wordmark",
+          "span": "half",
+          "caption": "Symbol and wordmark"
+        }
+      ],
+      "videoHasAudio": true
+    },
+    {
+      "id": "tabuadela",
+      "title": "Tabuadela Terraplanagens",
+      "category": "branding",
+      "year": "2025",
+      "role": "Brand Designer",
+      "partners": "",
+      "contextText": "A freelance project produced for an external client.",
+      "heroVideo": "",
+      "heroEmbed": "",
+      "description": "A new identity for Tabuadela Terraplanagens, an earthworks company from Montalegre. The goal was to break away from the dated, cliché look of the sector and build something modern, strong and instantly recognizable.",
+      "body": [
+        "Developed in a real context for an external client, the process began by defining the company's keywords: heavy machinery, Montalegre, robustness, versatility and strength. After discarding an initial exploration based on the sector's stereotypes as too cliché, I looked for a stronger, more contemporary conceptual synthesis.",
+        "The logo fuses the initials 'T' (Tabuadela and Terraplanagens) with the motion of an excavator's arm. The negative space in the lower section of the mark draws the silhouette of a pine tree, tying the brand to Montalegre's mountain landscape and forestry work. Sharp shapes and pronounced diagonals convey impact and industrial stability.",
+        "The palette pairs black (durability, earth, the weight of the machinery) with an industrial yellow/orange (#F9B233), common on heavy machinery and worksite signage. The system extended to geometric patterns, institutional type, stationery, business cards and mockups for the company's vehicle fleet."
+      ],
+      "techStack": [
+        "Logotype",
+        "Visual Identity",
+        "Art Direction"
+      ],
+      "links": [],
+      "mockups": [
+        {
+          "src": "assets/mockups/tabuadela/tabuadela.webp",
+          "alt": "A white T monogram, its stem broken into a serrated diagonal, with a half-circle set against its left",
+          "span": "half",
+          "caption": "Monogram"
+        }
+      ],
+      "slideshow": [
+        "assets/banners/tabuadela/container.webp",
+        "assets/banners/tabuadela/impressao-em-papel.webp",
+        "assets/banners/tabuadela/mailer_box.webp",
+        "assets/banners/tabuadela/tabuadela.webp"
+      ]
+    },
+    {
+      "id": "cuidados-paliativos",
+      "title": "Cuidados Paliativos, IPO Coimbra",
+      "category": "branding",
+      "year": "2025",
+      "role": "Brand Designer",
+      "partners": "Carolina Seixas",
+      "contextText": "A freelance project produced for an external client.",
+      "heroVideo": "videos/cuidados-paliativos.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/cuidados-paliativos.webp",
+      "description": "A visual identity for the Palliative Care Service of IPO Coimbra. The brief asked for a warm, human and comforting brand for a sensitive healthcare context. The client loved the concept, though it was never deployed.",
+      "body": [
+        "Made together with Carolina Seixas in a real project context, the work started from the role of palliative care and the words that guide the medical team: compassion, respect and dignity. The butterfly, a symbol the client asked for, standing for transformation and the cycle of life, was the starting point.",
+        "The icon was simplified and adapted, fluidly combining the butterfly's silhouette with the organic form of a heart. The overlap and transparency of the elements express the continuous bond between patient, family and healthcare professionals. For type, Rubik Light was chosen, its rounded forms conveying softness and closeness.",
+        "The palette was designed to bring calm and serenity: soft tones of pink, baby blue and purple interweaving in transparency. The system includes vertical and simplified logo variants, a visual pattern for institutional support, and the brand applied across ID materials, cards and service documentation."
+      ],
+      "techStack": [
+        "Logotype",
+        "Visual Identity",
+        "Pattern Design"
+      ],
+      "links": [],
+      "mockups": [],
+      "videoHasAudio": true
+    },
+    {
+      "id": "quebra-jazz-website",
+      "title": "Quebra Jazz Website",
+      "category": "uiux",
+      "year": "2024",
+      "role": "UI/UX Designer & Front-end Developer",
+      "partners": "Afonso Almeida · Laura Freire · Tiago Gomes",
+      "contextText": "This project was developed for the Web Identity course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/quebra-jazz.webm",
+      "heroEmbed": "",
+      "description": "The Quebra Jazz website is a concept digital platform for the jazz festival on the emblematic Quebra-Costas steps in Coimbra's historic centre. It carries the brand's vibrant identity onto the web with an interactive, responsive experience built around the festival's culture, line-up and commercial side.",
+      "body": [
+        "Developed as a team with Afonso Almeida in the Project 1: Web Identity course (Design & Multimedia degree, University of Coimbra), the work focused on taking an already-built graphic identity into a complete, responsive, functional digital system.",
+        "The visual language drew directly from the festival's brand: the geometric logo concept (shaped from the saxophone-like silhouette of the steps seen by satellite) and the block-and-negative-space structure that nods to strings, keys and the stairs themselves. A high-contrast black-and-white aesthetic, punctuated by a vibrant yellow accent, keeps it legible with an urban, sophisticated atmosphere.",
+        "I owned the overall interface design (UI/UX) in Figma and implemented most of the components and areas. The platform is organised into four pages sharing a unified header and footer: the Homepage, with artist line-up cards and a dark-themed map; the Shop, with sticky category navigation, a product grid and an auto-scrolling banner; the band Registration page, with a crossfading dynamic background; and Contact.",
+        "On the front end, the whole thing was coded from scratch in plain HTML, CSS and JavaScript, with no frameworks. One of the biggest technical challenges was the homepage's opening banner animation, a piece Afonso Almeida led. The result is a light, tailored experience fully adapted to mobile, tablet and desktop."
+      ],
+      "techStack": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "links": [
+        {
+          "label": "Visit the site",
+          "url": "https://rogerioedgar.infinityfree.me/?i=1"
+        }
+      ],
+      "mockups": [],
+      "slideshow": [
+        "assets/banners/quebra-jazz-website/img1.webp",
+        "assets/banners/quebra-jazz-website/img2.webp"
+      ],
+      "videoHasAudio": true
+    },
+    {
+      "id": "kapout-app",
+      "title": "Kapout App",
+      "category": "uiux",
+      "year": "2025",
+      "role": "Product Designer",
+      "partners": "",
+      "contextText": "A project developed at jeKnowledge, the UC Junior Enterprise, for a real client brief.",
+      "heroVideo": "",
+      "heroEmbed": "",
+      "poster": "assets/banners/kapout-app.webp",
+      "description": "Kapout is a mobile app for a young audience that turns a night out into a shared game between friends. It blends drink tracking and counting with a gamified mechanic of real-time challenges, leaderboards and group achievements, under a dark, immersive, neon-lit visual language.",
+      "body": [
+        "Developed within jeKnowledge (the University of Coimbra Junior Enterprise), I led the entire product design side: from the naming concept and brand art direction to the information architecture, user flows and interface design (UI/UX in Figma) for mobile.",
+        "The concept grew out of young celebration culture and slang. The name 'Kapout' is a play on cap (from 'no cap'), tap out, and the humorous idea of 'falling over' on a night out. To hold the nocturnal mood, the interface was designed on a high-contrast dark theme, with the geometric Pac-Man-inspired logo, crossing the character's shape with the silhouette of a bottle, and an electrifying neon palette.",
+        "In UX/UI, the focus was a fluid, fast, intuitive experience optimised for low light and heavy social interaction. The flow opens at sign-up, where age and favourite drink set the profile. Through the night, users log drinks on a dynamic counter that updates the group podium, earning XP and levelling up. The social dimension is reinforced with pending and completed challenges, photo albums and group notifications, turning the app into an interactive meeting point."
+      ],
+      "techStack": [
+        "UI/UX",
+        "Mobile Design",
+        "Illustration"
+      ],
+      "links": [],
+      "mockups": []
+    },
+    {
+      "id": "eateasy",
+      "title": "EatEasy",
+      "category": "uiux",
+      "year": "2025",
+      "role": "Developer & UI/UX Designer",
+      "partners": "Carolina Seixas",
+      "contextText": "This project was developed for the Information Systems course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/eateasy.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/eateasy.webp",
+      "description": "A functional desktop web platform for discovering and booking restaurants. No placeholders: real data syncs live by location and category, on a MySQL relational database.",
+      "body": [
+        "Developed as a team with Carolina Seixas in the Information Systems course, the work combined interface design (UI/UX in Figma), full-stack web development and relational database modelling in SQL and PHP. For the technical and conceptual rigour across every phase, the project was awarded top marks.",
+        "The platform rests on a clear split between two profiles: Client and Administrator. On the client side, the experience lets you explore restaurants by location or cuisine, book dynamically, and manage a profile with a visit history and favourites. On the admin side, the interface becomes a control panel to register and manage venues, update menus, set hours and manage the status of each booking.",
+        "In the data architecture, I designed a robust relational model that stores the history of changes (of users, venues and booking states) with believable fictional datasets for the demo. The key differentiator is the analytics module in the admin area: the platform processes the database and presents it as clear charts, letting owners analyse booking volume and their restaurant's performance."
+      ],
+      "techStack": [
+        "PHP",
+        "MySQL",
+        "JavaScript",
+        "HTML",
+        "CSS"
+      ],
+      "links": [
+        {
+          "label": "Open the platform",
+          "url": "https://si-carolina-rogerio.onrender.com/"
+        }
+      ],
+      "mockups": [
+        {
+          "src": "assets/mockups/eateasy/img1.webp",
+          "alt": "Dish illustrations created for the EatEasy platform",
+          "span": "full",
+          "caption": "Illustration set"
+        }
+      ],
+      "videoHasAudio": true
+    },
+    {
+      "id": "abrigo",
+      "title": "Abrigo",
+      "category": "uiux",
+      "year": "2026",
+      "role": "Product Designer · Researcher · Frontend Dev",
+      "partners": "Pedro Teixeira · Afonso Almeida · Tiago Gomes",
+      "contextText": "This project was developed for the Interactive Media Design course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/abrigo.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/abrigo.png",
+      "description": "Abrigo is a mobile civil-protection and safety app, built to provide immediate assistance during military crises or extreme emergencies. It was designed to work under low connectivity and high psychological stress, centralising safety protocols, evacuation routes and the real-time location of the nearest shelters.",
+      "body": [
+        "Development began with a rigorous user-centred research process, prioritising concept validation before any final interface. The information architecture and visual language rested on a 'Stress-First Design' principle: high contrast on a dark background with yellow signalling elements, large touch targets to prevent selection errors, and the fewest possible steps to carry out critical actions.",
+        "To ensure it would work in the limit, the project went through several usability-validation phases: it started with paper wireframes and Wizard-of-Oz simulations, moved to user testing across six critical survival tasks, and ended in a full audit against Material Design 3 guidelines.",
+        "Technically, the solution was a dual ecosystem: a high-fidelity interactive prototype in Figma and a functional web implementation for testing, in HTML, CSS and JavaScript. The platform integrates search and navigation to the nearest shelter, with detail on available resources (water, power, sanitation, accessibility), an SOS button with deferred sending on network failure, a guide for checking the emergency kit, and tools to organise the family evacuation plan.",
+        "The result is a robust, intuitive digital solution that answers the usability demands of a crisis, showing how user-centred design and the simplification of complex flows can turn emergency protocols into immediate, accessible actions."
+      ],
+      "techStack": [
+        "Figma",
+        "JavaScript",
+        "HTML",
+        "CSS"
+      ],
+      "links": [
+        {
+          "label": "App prototype",
+          "url": "https://student.dei.uc.pt/~pfteixeira/abrigo3/",
+          "note": "Best on mobile"
+        },
+        {
+          "label": "Usability test site",
+          "url": "https://student.dei.uc.pt/~recgrc/Projeto/Website_Abrigo_Teste/"
+        },
+        {
+          "label": "Figma prototype",
+          "url": "https://www.figma.com/proto/u7AfvdxHfPhBcp4PlYwEdV/DMI---Projeto-de-Grupo?node-id=756-5536&starting-point-node-id=756%3A5510&show-proto-sidebar=1"
+        }
+      ],
+      "mockups": [
+        {
+          "src": "assets/mockups/abrigo/abrigo.webp",
+          "alt": "The Abrigo mark: a house whose negative space forms a human figure, above the ABR!GO wordmark",
+          "span": "half",
+          "caption": "Symbol and wordmark"
+        }
+      ],
+      "videoHasAudio": true
+    },
+    {
+      "id": "capicua-lenga",
+      "title": "Capicua, Lenga",
+      "category": "motion",
+      "year": "2025",
+      "role": "Illustrator & Stop-Motion Animator",
+      "partners": "Carolina Seixas",
+      "contextText": "This project was developed for the Audiovisual Labs course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/lenga-capicua.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/capicua-lenga.webp",
+      "description": "An animated music video for 'Lenga', by the Portuguese artist Capicua. The piece translates the song's lyrical world into an animated narrative that combines innocence, lightness and technical rigour in an audiovisual language.",
+      "body": [
+        "The concept was based on a literal and symbolic translation of the lyrics. From keywords in Capicua's verses we conceived specific scenes (a classroom, a history book, a mountain range) that come to life as the song progresses. To tie them together, a main character was introduced: a young child who crosses and interacts with each space. With no dialogue or text, the narrative is carried purely by the protagonist's movement, posture and journey.",
+        "Aesthetically, the video draws on a child's imagination: simple outlines, soft organic shapes and a hand-drawn-looking typeface, mimicking the authentic, imperfect texture of children's drawings.",
+        "For technique, we adopted a purely handmade methodology of stop-motion and frame-by-frame animation. Every frame was drawn individually from scratch, with no reuse and no digital interpolation. The choice demanded strict control of line consistency and visual rhythm, yielding a 'living' texture where the linework holds a constant micro-motion. The result is an organic, expressive piece perfectly in tune with the song's musical identity."
+      ],
+      "techStack": [
+        "Frame-by-Frame",
+        "Digital Illustration",
+        "Adobe"
+      ],
+      "links": [
+        {
+          "label": "Watch the film",
+          "url": "https://drive.google.com/file/d/1lC8h7Wy24gNs4cTN9GbT7OR_QMVu407G/view?usp=sharing"
+        }
+      ],
+      "mockups": [],
+      "videoHasAudio": true
+    },
+    {
+      "id": "a-ultima-chama",
+      "title": "A Última Chama",
+      "category": "motion",
+      "year": "2025",
+      "role": "Modeler · Sound & Visuals Designer",
+      "partners": "Carolina Seixas",
+      "contextText": "This project was developed for the Audiovisual Labs course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/exercise-2-a-ultima-chama.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/a-ultima-chama.webp",
+      "description": "A Última Chama is a stop-motion animated short, a direct adaptation of the medieval manuscript the Apocalypse of Lorvão. It reinterprets the manuscript's imagery in a narrative that unfolds literally inside the pages of a book, staging the eternal fight between good and evil through animation and sound design.",
+      "body": [
+        "The design drew directly from the manuscript's original illuminations, which served as the model for the characters. The central clash sets good (a celestial knight on his horse) against evil, a multi-headed, fire-breathing mythological dragon. Knights, dragon and backgrounds were all drawn and painted by hand from scratch, preserving the raw, expressive texture of the historical source.",
+        "Production involved articulated paper puppets and the capture of over 1,800 individual photographs to give motion to the combat scenes. Editing and post were done in Adobe Premiere Pro, syncing the image sequence, adding the credits and grading the colour to steady the visual rhythm.",
+        "Sound was central to the realism and dramatic weight. A hybrid audio ecosystem combined professional libraries with home-recorded Foley: the horse's gallop, swords drawn, combat impacts and the dragon's fire, synced to the millisecond with the action. The result shows how traditional illustration, frame control and detailed sound design can turn a historical archive into a dynamic audiovisual narrative."
+      ],
+      "techStack": [
+        "Stop-Motion",
+        "Puppetry",
+        "Foley",
+        "Sound Design",
+        "Adobe"
+      ],
+      "links": [
+        {
+          "label": "Watch the film",
+          "url": "https://drive.google.com/file/d/18fzZAB8G7apTSBkZMn_IjfxKy9b2ROSm/view?usp=sharing"
+        }
+      ],
+      "mockups": [],
+      "videoHasAudio": true
+    },
+    {
+      "id": "o-sonho",
+      "title": "O Sonho (Zobeide)",
+      "category": "motion",
+      "year": "2025",
+      "role": "Co-Director · Editor · Sound Designer",
+      "partners": "Ana Oliveira · Rafael Campos",
+      "contextText": "This project was developed for the Project II course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "",
+      "heroEmbed": "",
+      "description": "Inspired by Italo Calvino's invisible city of Zobeide, O Sonho (The Dream) is a short film exploring the universal themes of desire, obsession and the endless pursuit of what stays out of reach.",
+      "body": [
+        "The story follows five men of different trades (a Mason, a Navigator, an Architect, a Visionary and a Cartographer), strangers to one another but bound by the same night-time vision. In their dreams, each walks labyrinthine, fog-wrapped streets, chasing the fleeting silhouette of a mysterious woman who vanishes before revealing where she is going.",
+        "Waking uneasy, the vividness of the memory drives each man to abandon his routine and set out on his own journey. Their paths eventually cross, and they decide to make the shared vision real: to build a city from nothing, in the exact image of their dreams. But over time, obsession gives way to nostalgia and doubt. The labyrinthine city becomes a psychological reflection of human frustration, until a woman appears in its streets carrying a suitcase, with no one quite sure who she is.",
+        "With an art direction inspired by the turn from the 19th to the 20th century, the project builds an intimate, mysterious, dreamlike atmosphere. Deep shadow contrast, fog and detailed sound design (repetitive footsteps, breathing, nocturnal ambiences) carry the viewer into an immersive world about the endless search and the melancholy of the unreachable."
+      ],
+      "techStack": [
+        "Cinematic Direction",
+        "Scriptwriting",
+        "Foley",
+        "Post-Production"
+      ],
+      "links": [
+        {
+          "label": "Watch the film",
+          "url": "https://drive.google.com/file/d/1padqScfnTWCch7ZtKFxpyi2hyRqC6JUV/view?usp=sharing"
+        }
+      ],
+      "mockups": [],
+      "slideshow": [
+        "assets/banners/o-sonho/teaser-1.webp",
+        "assets/banners/o-sonho/teaser-2.webp",
+        "assets/banners/o-sonho/teaser-3.webp"
+      ]
+    },
+    {
+      "id": "silvestre",
+      "title": "Silvestre, Opening Titles",
+      "category": "motion",
+      "year": "2024",
+      "role": "Director · Typographer · Cinematographer · Editor",
+      "partners": "",
+      "contextText": "This project was developed for the Typography in Digital Media course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/silvestre.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/silvestre.webp",
+      "description": "A graphic reinterpretation of the opening sequence of João César Monteiro's feature Silvestre (1982), starring Luís Miguel Cintra. Developed for the 30th edition of the Caminhos do Cinema Português festival, the work was selected and screened in cinema during the festival.",
+      "body": [
+        "The proposal set out to translate the film's dark, enigmatic, psychologically dense atmosphere through a deeply handmade, immersive language. To build the suspense I created a deliberately dim set, with a dark cloth backdrop cancelling distractions and highlighting the main elements. The unstable, dynamic lighting was achieved practically: the footage was shot while a real flame was held and moved near the lens, so the fire's flicker cast living shadows across the set.",
+        "The typography settled on the classic Baskerville, whose elegance and historical formality build a subtle bridge to the story's era. The sequence is structured as a spiral of tension that culminates in the dramatic sight of a blood-covered arm, a striking visual cue that introduces the looming tragedy and prepares the viewer for the weight of the film."
+      ],
+      "techStack": [
+        "Motion Graphics",
+        "Macro Cinematography",
+        "Chiaroscuro",
+        "Typography"
+      ],
+      "links": [
+        {
+          "label": "Watch the film",
+          "url": "https://drive.google.com/file/d/1ZfQQcPj0Yt9mKsiHjRg_gpdyOIoieL0l/view?usp=sharing"
+        }
+      ],
+      "mockups": [],
+      "videoHasAudio": true
+    },
+    {
+      "id": "o-escaravelho",
+      "title": "O Escaravelho",
+      "category": "motion",
+      "year": "2025",
+      "role": "3D Modeler · Animator · Lighting",
+      "partners": "",
+      "contextText": "This project was developed for the Computer Graphics course, part of my Design & Multimedia degree at the University of Coimbra.",
+      "heroVideo": "videos/sisifo.webm",
+      "heroEmbed": "",
+      "poster": "assets/banners/o-escaravelho.webp",
+      "description": "Sísifo is a short 3D Blender animation that breaks, both conceptually and aesthetically, from the brief's original prompt. Instead of the suggested office interior, the composition was taken into an immersive outdoor setting dominated by an imposing mountain and a vast forest.",
+      "body": [
+        "At the centre is a beetle, modelled from scratch in Blender, that endlessly pushes a ball of organic matter. The name and theme allude to the myth of Sisyphus, suggesting a reflection on persistence and the burden of a never-ending task. The scene comes alive through a complex insect walk cycle, with detailed leg animation and overlapping action, synced to the ball's rotation. The effort is interrupted in the final seconds by a bird, drawn with Bézier curves in the NLA editor, that grabs the beetle and ends the action with an unexpected twist.",
+        "The build balanced visual rigour and optimisation. The foreground carries full texture maps (Albedo, Normal and Displacement) applied via UV Mapping and adjusted in Photoshop, while the background uses simplified trees to keep the render fluid. The lighting combines a direct sun source with a controlled ambient HDRI for depth and consistent shadows. In post, the project received dedicated sound design, with realistic effects and small variations that heighten the natural atmosphere and the drama of the ten-second animation."
+      ],
+      "techStack": [
+        "Blender",
+        "NLA Editor",
+        "Photoshop",
+        "Premiere Pro"
+      ],
+      "links": [
+        {
+          "label": "Watch the film",
+          "url": "https://drive.google.com/file/d/1U4lbQjXzuJMke9Ma4NRuJe6EgnAaMCTt/view?usp=sharing"
+        }
+      ],
+      "mockups": [
+        {
+          "src": "assets/mockups/o-escaravelho/escaravelho-tras-34.webp",
+          "alt": "The 3D beetle pushing its ball, seen from three-quarters behind",
+          "span": "half",
+          "caption": "3D model, rear view"
+        }
+      ],
+      "videoHasAudio": true
+    }
+  ]
+}

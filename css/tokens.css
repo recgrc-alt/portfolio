@@ -1,0 +1,296 @@
+/* ==========================================================================
+   TOKENS  ·  Design system single source of truth
+   --------------------------------------------------------------------------
+   Every color, size, space and timing used across the site is declared here
+   as a CSS Custom Property. Components NEVER hardcode values — they reference
+   these tokens. Change a value here and it updates everywhere.
+
+   TABLE OF CONTENTS
+     1. COLOR
+     2. TYPOGRAPHY  (families · sizes · weights · tracking · leading)
+     3. SPACING     (rule of 8 · even numbers only)
+     4. LAYOUT      (page margins · max width · z-index)
+     5. MOTION      (durations · easings)
+   ========================================================================== */
+
+:root {
+
+  /* ------------------------------------------------------------------ *
+   * 1. COLOR                                                            *
+   * ------------------------------------------------------------------ */
+  --color-bg:          #000000;                     /* page background — pure black */
+  --color-ink:         #ffffff;                     /* primary text / UI            */
+  --color-ink-dim:     rgba(255, 255, 255, 0.55);   /* secondary / meta labels      */
+  --color-ink-faint:   rgba(255, 255, 255, 0.30);   /* hints / disabled             */
+  --color-hairline:    rgba(255, 255, 255, 0.14);   /* thin separators              */
+
+  /* Brand accents — sampled from the eye's iris (reused by JS shader too) */
+  --color-iris-green:  #5f7d3f;
+  --color-iris-amber:  #d99a34;
+
+  /* Something is wrong. Desaturated rather than a pure red: on a black page a
+     full-strength red vibrates against the background and reads as an alarm,
+     which is the wrong volume for "check the @ in your email". This was already
+     the colour of the form's failure line — now it is named, so the field
+     errors and the status line cannot drift apart. */
+  --color-error:       #d98a7a;
+
+  /* ------------------------------------------------------------------ *
+   * 2. TYPOGRAPHY                                                       *
+   * ------------------------------------------------------------------ */
+  /* Families */
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif; /* headings / big type */
+  --font-body:    "Inter", system-ui, sans-serif;                  /* body / UI / meta    */
+
+  /* Sizes — small UI type is fixed; the hero title is fluid (clamp) */
+  --text-xs:    0.75rem;   /* 12px — meta labels          */
+  --text-sm:    0.875rem;  /* 14px — nav / wordmark       */
+  --text-base:  1rem;      /* 16px — default body         */
+  --text-md:    1.125rem;  /* 18px                        */
+  --text-lg:    1.5rem;    /* 24px                        */
+  --text-xl:    2rem;      /* 32px                        */
+  --text-2xl:   3rem;      /* 48px                        */
+  /* Hero title scales with the viewport but is clamped at both ends */
+  --text-hero:      clamp(2.5rem, 9vw, 9.5rem);      /* 40px … 152px      */
+  --text-service:   clamp(1.75rem, 5.2vw, 4.5rem);   /* services list     */
+  --text-statement: clamp(2.5rem, 8.5vw, 7rem);      /* about statement   */
+  --text-section:   clamp(2.5rem, 8vw, 6.5rem);      /* section titles    */
+  --text-card:      clamp(1.5rem, 2.6vw, 2.25rem);   /* card headings     */
+
+  /* Weights */
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-bold:    700;
+
+  /* Letter-spacing (tracking) */
+  --tracking-tight:  -0.02em;   /* big display type          */
+  --tracking-normal:  0;
+  --tracking-wide:    0.08em;   /* small caps labels         */
+  --tracking-wider:   0.18em;   /* footer meta / nav         */
+
+  /* Line-height (leading) */
+  --leading-tight:  0.95;   /* hero title                    */
+  --leading-snug:   1.15;
+  --leading-normal: 1.5;    /* body copy                     */
+
+  /* ------------------------------------------------------------------ *
+   * 3. SPACING  ·  rule of 8, even numbers only                        *
+   * ------------------------------------------------------------------ *
+   * Named by their pixel value so the 8-grid stays visible at a glance.
+   * --space-4 is the only sub-8 step (still even) for fine adjustments. */
+  --space-4:    0.25rem;   /*   4px */
+  --space-8:    0.5rem;    /*   8px */
+  --space-16:   1rem;      /*  16px */
+  --space-24:   1.5rem;    /*  24px */
+  --space-32:   2rem;      /*  32px */
+  --space-40:   2.5rem;    /*  40px */
+  --space-48:   3rem;      /*  48px */
+  --space-64:   4rem;      /*  64px */
+  --space-80:   5rem;      /*  80px */
+  --space-96:   6rem;      /*  96px */
+  --space-128:  8rem;      /* 128px */
+
+  /* ------------------------------------------------------------------ *
+   * 4. LAYOUT                                                           *
+   * ------------------------------------------------------------------ */
+  --page-margin: clamp(1.5rem, 4vw, 3rem);  /* outer gutter — 24px … 48px */
+  --page-maxw:   120rem;                    /* 1920px — cap on ultra-wide  */
+
+  /* About → A Quick Look. Percentages, not pixels, so the composition holds
+     from a laptop to a television. */
+  --card-width:          clamp(16rem, 34vw, 26rem);
+  --about-title-offset:  -9%;   /* lifts the title from centre to eye level */
+  --about-cards-bottom:  28%;   /* card rail's distance from the stage floor */
+  --about-cards-inset:   clamp(3rem, 11vw, 14rem);  /* side margin for the rail */
+  --about-photo-growth:  0.20;  /* 82vh → ~100vh, matching the old framing   */
+
+  /* --- Selected works · CCTV wall ---------------------------------------
+   * Six live cameras in a 3 × 2 mosaic. The max-width is the point: without
+   * it the cards keep stretching on an ultra-wide screen and the gaps read
+   * as empty space.                                                        */
+  --work-maxw:  84rem;
+  --work-gap:   clamp(1rem, 2.2vw, 2.5rem);
+
+  /* Viewfinder corner marks. They sit OUTSIDE the footage — the negative
+     inset below is what lifts them off the video — and they keep the same
+     physical size on every card, which is how a real HUD overlay behaves:
+     the reticle belongs to the instrument, not to the picture. */
+  --cam-corner-out:    clamp(0.4rem, 0.85vw, 0.8rem);   /* how far outside   */
+  --cam-corner-size:   clamp(0.85rem, 1.7vw, 1.5rem);   /* arm length        */
+  --cam-corner-stroke: 2;      /* SVG user units — scales with the mark      */
+  --cam-frame:         rgb(255 255 255 / 0.32);         /* at rest           */
+  --cam-frame-active:  rgb(140 190 105 / 0.95);         /* the eye's green   */
+
+  /* On-screen display: the small burnt-in camera data. */
+  --cam-data-size:    clamp(0.5rem, 0.62vw, 0.6875rem);
+  --cam-data-colour:  rgb(255 255 255 / 0.62);
+  --cam-data-inset:   clamp(0.4rem, 0.9vw, 0.75rem);
+  --cam-live:         #ff4438;                          /* recording dot     */
+  --cam-live-pulse:   2.4s;
+
+  /* Unselected cameras fall back while one is being read. The blur is in rem
+     rather than px so the defocus stays proportional on a large display. */
+  --cam-dim-blur:     0.1875rem;
+  --cam-dim-opacity:  0.35;
+
+  /* --- Selected works · expanded preview --------------------------------
+   * Narrower than a naive "big centred card" on purpose: the width left over
+   * on either side is what makes room for the floating metadata to sit in
+   * genuinely clean space. See 10e in style.css for the collision rule.    */
+  --preview-width:      clamp(17rem, 42vw, 38rem);
+  --preview-backdrop:   rgb(0 0 0 / 0.78);
+  --preview-line:       rgb(140 190 105 / 0.85);    /* the eye's green       */
+  --preview-line-weight: 0.075rem;
+  --preview-meta-gap:   clamp(1rem, 2.6vw, 2.75rem); /* card ↔ floating text */
+  --preview-meta-width: clamp(7.5rem, 15vw, 13rem);
+
+  /* Typographic hierarchy inside the record. The project name is the loudest
+     thing on screen after the footage; the labels are instrument markings and
+     stay deliberately quiet. Three clear steps, not a gentle ramp. */
+  --preview-title:  clamp(1.5rem, 3vw, 2.75rem);
+  --preview-theme:  clamp(0.75rem, 1.05vw, 0.95rem);
+  --preview-value:  clamp(0.8125rem, 1vw, 1rem);
+  /* Deliberately NOT --cam-data-size. That token is sized for data burnt into
+     the footage, where tiny reads as authentic; these are labels the visitor
+     is actually meant to read, and at the OSD size they were 8px. */
+  --preview-label:  clamp(0.625rem, 0.8vw, 0.8125rem);
+
+  /* How far the expanded card is allowed to slide off dead centre. The
+     asymmetry is not decoration — it is what opens the clean corridor the
+     metadata needs. Expressed in vw so it scales with the composition.
+     No var() reads this: work-preview.js resolves it to pixels, because the
+     geometry has to be in the same units as the rectangles it compares. */
+  --preview-shift-max:  7vw;
+
+  --dur-preview:        520ms;   /* the capture expanding                    */
+  /* Collapsing is deliberately faster than expanding. Moving from one camera
+     to the next plays a full retract before the next capture starts, and at
+     the expand duration that round trip would feel like waiting. */
+  --dur-preview-out:    220ms;
+  --dur-preview-line:   420ms;   /* the projection lines drawing in          */
+  --dur-cam-dim:        420ms;   /* the other cameras falling back           */
+  /* The brief's curve. Identical to --ease-out, aliased so the intent is
+     readable at every call site in this section. */
+  --ease-preview:       cubic-bezier(0.16, 1, 0.3, 1);
+
+  --z-preview:          50;      /* above the masthead — full focus          */
+
+  /* --- Footer -----------------------------------------------------------
+   * The closing statement. Sized to fill the width the way the hero does,
+   * so the page opens and shuts on the same typographic note.              */
+  /* Measured off the Figma frame: the line spans ~70% of the width there,
+     which works out at roughly 4.6vw. At 7.4vw it was wrapping to two lines on
+     every desktop size, which is not what the design does. */
+  --footer-title:   clamp(1.75rem, 4.6vw, 5rem);
+  --footer-icon:    clamp(2.5rem, 3.6vw, 3.25rem);
+  --footer-radius:  0.5rem;
+  --footer-gap:     clamp(var(--space-16), 1.8vw, var(--space-24));
+  --footer-pulse:   3.2s;        /* slower than the CCTV dot: a status, not a
+                                    recording light                          */
+
+  /* The HUD is fixed to the bottom edge and must never be covered — the
+     footer reserves exactly its height so the legal line clears it. Derived
+     from the HUD's own box (padding on both sides plus one line of
+     --text-xs at --leading-normal), not guessed. */
+  --hud-reserve:    calc(var(--page-margin) * 2 + var(--text-xs) * var(--leading-normal));
+
+  /* z-index scale — keep every layer here, never invent magic numbers.
+     The eye sits at -1 (behind normal-flow content) ON PURPOSE: it keeps the
+     eye and the blended text in the SAME root stacking context, so
+     mix-blend-mode can reach across and invert the text over the eye. */
+  --z-canvas: -1;  /* the WebGL eye (behind content)   */
+  --z-chrome:  2;  /* header / footer (always on top)  */
+  --z-veil:    9;  /* the black wipe between pages     */
+  --z-loader: 10;  /* the first-paint loading screen   */
+
+  /* ------------------------------------------------------------------ *
+   * 5. MOTION                                                          *
+   * ------------------------------------------------------------------ */
+  --dur-fast:   200ms;
+  --dur-base:   400ms;
+  --dur-slow:   800ms;
+
+  /* How long the black veil takes to cover the page on the way out.
+     page-transition.js waits exactly this long before navigating, so the two
+     must be changed together. The way IN is --dur-slow: arriving should feel
+     unhurried, leaving should not keep anyone waiting. */
+  --veil-leave: 420ms;
+
+  /* How long the loading screen will wait before giving up and showing the
+     site anyway. loader.js uses the same ceiling; change them together. */
+  --loader-max: 6000ms;
+  --dur-reveal: 1200ms;   /* hero title entrance          */
+
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);    /* soft settle   */
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ------------------------------------------------------------------ *
+   * 6. EFFECTS  ·  shadows & blur (keep every shadow on this scale)     *
+   * ------------------------------------------------------------------ *
+   * Consistency rule: components never invent box/drop shadows — they
+   * pick one of these. Two elevations + a soft glow for depth.          */
+  --shadow-1:    0 0.125rem 0.5rem  rgba(0, 0, 0, 0.40);   /* resting  */
+  --shadow-2:    0 0.75rem  2rem    rgba(0, 0, 0, 0.55);   /* lifted   */
+  --drop-1:      drop-shadow(0 0.25rem 0.75rem rgba(0, 0, 0, 0.55));
+  --drop-soft:   drop-shadow(0 0.5rem  1.5rem  rgba(0, 0, 0, 0.45));
+
+  /* Backdrop blurs, in rem so they track the reader's font size like every
+     other measure here. The seam value was hard-coded as 20px in two separate
+     places — the exact thing this file exists to prevent. */
+  --blur-nav:    0.625rem;   /* under the top bar            */
+  --blur-seam:   1.25rem;    /* the soft hand-off between stacked sections */
+
+  /* Overlap used where two stacked surfaces must not leave a sub-pixel gap.
+     One of the few places a device pixel is the honest unit: this exists to
+     defeat rasterisation rounding, which happens in device pixels. */
+  --seam-overlap: 1px;
+
+  /* Nav hover: how far the duplicated word slides. In `em` ON PURPOSE — it is
+     relative to the font size, so the offset stays proportional to the type on
+     a phone, a tablet or a television. A px value would drift; a % would be
+     relative to each word's own width, so "CONTACT" would shift further than
+     "PT" and the effect would look inconsistent across the bar. */
+  --nav-hover-shift: 0.16em;
+  --nav-hover-dur:   520ms;   /* slower than --dur-fast: the hover was abrupt */
+  --glow-nav:        0 0 0.9rem rgb(255 255 255 / 0.40);  /* lang hover lift */
+
+  /* ------------------------------------------------------------------ *
+   * 7. SKILLS MARQUEE                                                   *
+   * ------------------------------------------------------------------ */
+  /* The word AND the mark above it both carry the difference echo, so both
+     read the same way: present but unresolved at rest, clean white on hover.
+
+     The type is deliberately smaller than a section heading — the brief was to
+     fit more of the toolkit across the track without shrinking it to a label.
+     8vw was the old size; 4.4vw is roughly half the width per word, so about
+     twice as many fit in one pass. */
+  --skill-size:    clamp(1.5rem, 4.4vw, 3.5rem);
+  --skill-icon:    calc(var(--skill-size) * 1.15);  /* mark reads above the word */
+  /* Echo offset. In `em`, so it stays proportional to the type — but that is
+     exactly why it had to be re-derived when the type shrank: halving the font
+     halved the ghost's displacement in real terms, and the effect went quiet.
+
+       old:  8.0vw type x 0.09em  =  9.4px at 1440
+       new:  4.4vw type x 0.165em =  9.4px at 1440
+
+     0.165 holds that displacement across the whole clamp range (9.4px wide,
+     7.4px at 1024, 3.6px at the floor) — the same ghost the bigger type had. */
+  --skill-shift:   0.165em;
+  --skill-muted:   #121212;  /* "hidden" colour: reads against black but
+                                never fully disappears                      */
+  --skill-stack:   clamp(var(--space-8), 1vw, var(--space-16));  /* mark ↔ word */
+  /* How long one VIEWPORT WIDTH of track takes to pass. Speed used to be a
+     fixed loop duration, which quietly depended on how much was in the track:
+     smaller type or fewer tools meant a shorter track, and the same 46s then
+     scrolled it more slowly. Expressed as pace, the speed is the same whatever
+     the content — see marquee.js, which measures the track and sets the
+     duration from this.
+
+     13s is not a guess: reconstructing the old track (8 words at 104px with
+     the old gaps) gives ~5095px travelled in 46s = 111px/s, which at a 1440px
+     screen is one width every 13.0s. The smaller type made that same 46s run
+     at 65% of the old speed — which is the drag you noticed. */
+  --marquee-pace:  13s;
+  --marquee-speed: 46s;      /* fallback for the frame before JS measures    */
+  --eye-drop:      44vh;     /* how far the eye sinks so only its top shows */
+}

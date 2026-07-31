@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Rogério Edgar · Portfolio</title>
+  <meta name="description" content="Portfolio of Rogério Edgar: design and multimedia." />
+
+  <!-- Content-Security-Policy: a rede de seguranca. Mesmo que um dia
+       entre por engano markup vindo de fora, o browser recusa-se a
+       executar seja o que for que nao esteja listado aqui.
+
+       blob: nao e decorativo. O GLTFLoader extrai as texturas de dentro
+       do eye.glb e serve-as como URLs blob:; sem isso o olho carrega sem
+       iris. Foi apanhado a testar esta politica, nao em producao. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'sha256-4ODAao+sk3HqfLrhlo1/4J/pP6Iybrzy9N3XLy4mCSg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+
+  <!-- Favicon. Three sizes because browsers ask for different ones and none of
+       them negotiate: 16/32 for the tab, 180 for an iOS home screen. The PNGs
+       rather than the 1000px WebP source, which Safari will not accept in this
+       role and which every other browser would have to download whole just to
+       draw sixteen pixels. favicon.ico sits at the site root as well, because
+       some clients request /favicon.ico without ever reading the markup. -->
+  <link rel="icon" href="assets/favicon-32.png?v=63" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=63" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=63" />
+
+  <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Design tokens first, then the stylesheet. -->
+  <link rel="stylesheet" href="css/tokens.css?v=63" />
+  <link rel="stylesheet" href="css/style.css?v=63" />
+  <link rel="stylesheet" href="css/pages.css?v=63" />
+
+  <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
+       This MUST come before any module load or preload (see below). -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+        "lenis": "https://unpkg.com/lenis@1.1.14/dist/lenis.mjs"
+      }
+    }
+  </script>
+
+  <!-- ONLY NOW may a module be fetched. These are hints, not imports, but a
+       modulepreload counts as "module loading has begun" — and an import map
+       that arrives after that point is rejected outright. Firefox enforces
+       this strictly: with the preload above the map, every bare "three"
+       specifier failed to resolve and the whole bundle died. Keep them here. -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="modulepreload" href="https://unpkg.com/three@0.160.0/build/three.module.js" crossorigin />
+</head>
+
+<body>
+
+  <!-- ====================================================================
+       LOADER  ·  shown once per visit, while the site arrives
+       In the markup rather than built by script, so it is on screen from the
+       first paint — a loading screen that waits for JavaScript has missed the
+       moment it exists for. loader.js only takes it away again.
+       ==================================================================== -->
+  <div class="loader" data-loader aria-hidden="true">
+    <video class="loader__eye" data-loader-eye autoplay muted loop playsinline
+           width="200" height="200">
+      <source src="assets/loading-eye.webm" type="video/webm" />
+    </video>
+    <p class="loader__dots"><span></span><span></span><span></span></p>
+  </div>
+
+
+  <!-- The black wipe between pages. Its fade-IN is a pure CSS animation so it
+       clears itself even if JS never runs; page-transition.js only drives the
+       fade-OUT on the way to the next page. -->
+  <div class="page-veil" data-page-veil aria-hidden="true"></div>
+
+  <!-- ====================================================================
+       FIXED BACKGROUND EYE
+       Stays put across all scroll. Decorative → aria-hidden.
+       ==================================================================== -->
+  <canvas class="eye-layer" id="eye-canvas" aria-hidden="true"></canvas>
+
+  <!-- ====================================================================
+       MASTHEAD  (fixed top bar with a blur/gradient underlay)
+       ==================================================================== -->
+  <header class="masthead" data-masthead>
+    <a class="wordmark" href="index.html">Rogério Edgar</a>
+
+    
+    <!-- Phone only: the masthead's links collapse behind this. Two bars, which
+         rotate into an X when the panel is open (see .nav-toggle in style.css).
+         display:none above the breakpoint, so desktop never sees it. -->
+    <button class="nav-toggle" type="button" data-nav-toggle
+            aria-expanded="false" aria-controls="nav-panel"
+            aria-label="Menu" data-i18n-attr="aria-label=nav.menu">
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+    </button>
+
+    <nav class="nav" id="nav-panel" data-nav-panel aria-label="Main navigation">
+      <!-- data-text feeds the hover duplicate that CSS draws in ::after.
+           Work and Contact are their own pages now; About is a same-page
+           scroll, so it keeps data-scroll-to and the others drop it. -->
+      <ul class="nav__list">
+        <li><a class="nav__link text-echo" href="#about" data-scroll-to="#about" data-text="About" data-i18n="nav.about" data-i18n-attr="data-text=nav.about">About</a></li>
+        <li><a class="nav__link text-echo" href="work.html" data-text="Work" data-i18n="nav.work" data-i18n-attr="data-text=nav.work">Work</a></li>
+        <li><a class="nav__link text-echo" href="contact.html" data-text="Contact" data-i18n="nav.contact" data-i18n-attr="data-text=nav.contact">Contact</a></li>
+      </ul>
+
+      <div class="nav__controls">
+        <div class="lang" role="group" aria-label="Language">
+          <button class="lang__btn text-echo" type="button" data-lang="pt" data-text="PT" aria-pressed="false">PT</button>
+          <button class="lang__btn text-echo is-active" type="button" data-lang="en" data-text="ENG" aria-pressed="true">ENG</button>
+        </div>
+
+        <!-- Mutes the whole site: ambience, click ticks, a reel's own sound.
+             Both glyphs ship here and CSS picks one from aria-pressed — the
+             hover shows the OTHER, previewing what a click will do. -->
+        <button class="sound-btn" type="button" data-sound-toggle aria-pressed="false"
+                aria-label="Sound" data-i18n-attr="aria-label=sound.label">
+          <svg class="sound-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="sound-btn__glyph sound-btn__glyph--on" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            <path class="sound-btn__glyph sound-btn__glyph--off" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ====================================================================
+       SCROLLING CONTENT  (panels layered over the fixed eye)
+       ==================================================================== -->
+  <main class="content">
+
+    <!-- Hero: the title slides up & fades as you scroll away from it. -->
+    <section class="panel panel--hero" id="hero">
+      <h1 class="hero-title" data-hero-title>
+        <span class="hero-title__line" data-i18n="hero.line1">Through the Eyes of</span>
+        <span class="hero-title__line hero-title__name">Rogério Edgar</span>
+      </h1>
+
+      <p class="scroll-hint" data-scroll-hint data-i18n="hero.hint">Drag / Scroll to explore</p>
+    </section>
+
+    <!-- Disciplines: reveal on scroll, each links to its project area. -->
+    <section class="panel panel--services" id="services">
+      <ul class="services">
+        <li class="service" data-reveal>
+          <a class="service__link" href="work.html#cat-interactive">
+            <span class="service__index">01.</span>
+            <span class="service__label" data-i18n="services.01">Interactive Web &amp; 3D</span>
+          </a>
+        </li>
+        <li class="service" data-reveal>
+          <a class="service__link" href="work.html#cat-uiux">
+            <span class="service__index">02.</span>
+            <span class="service__label" data-i18n="services.02">UI/UX &amp; Product Design</span>
+          </a>
+        </li>
+        <li class="service" data-reveal>
+          <a class="service__link" href="work.html#cat-branding">
+            <span class="service__index">03.</span>
+            <span class="service__label" data-i18n="services.03">Branding &amp; Motion</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <!-- About → A Quick Look: ONE continuous section sharing ONE photo.
+         Scrolling swaps the text and grows the photo; the hover reveal fades
+         out as that happens, then the cards travel sideways. -->
+    <section class="about" id="about" data-hscroll>
+      <div class="about__stage" data-hscroll-stage>
+
+        <!-- Phase 1: the cutout with its hover-revealed statement -->
+        <div class="reveal" data-photo-reveal data-reveal-text="Interactive web|built with code|and curiosity"
+             data-i18n-attr="data-reveal-text=about.statement">
+          <!-- The statement lives here for screen readers and search engines;
+               both visible copies are painted to the canvases below. -->
+          <!-- Hidden on desktop, where the statement is painted to the canvases
+               below and revealed by the cursor. On a phone there is no cursor,
+               so THIS becomes the visible statement, sitting over the photo. -->
+          <h2 class="visually-hidden about__statement" data-i18n="about.statementSr">Interactive web built with code and curiosity</h2>
+
+          <div class="reveal__stage">
+            <!-- text → photo → text. Both statement layers are canvases painted
+                 by ONE drawing function, so they cannot fall out of alignment. -->
+            <canvas class="reveal__canvas reveal__canvas--back" data-reveal-back aria-hidden="true"></canvas>
+            <!-- The cutout is rendered in WebGL and displaced per pixel by a
+                 depth map, so features at different distances move by
+                 different amounts. See photo-depth.js. -->
+            <canvas class="reveal__photo" data-photo-depth aria-hidden="true"></canvas>
+
+            <!-- The phone's copy of the same photo. The canvas above renders a
+                 landscape image at its own aspect, which on a 375px screen
+                 comes out a 375x281 letterbox stranded in a 650px block. This
+                 is a plain <img> with object-fit: cover, so it fills the frame
+                 edge to edge and crops to portrait like a phone expects.
+                 display:none on desktop; and on touch photo-depth.js is never
+                 started at all, so the phone is spared a WebGL context. -->
+            <img class="reveal__still" src="assets/foto.webp?v=63" alt="" decoding="async" />
+            <canvas class="reveal__canvas reveal__canvas--front" data-reveal-front aria-hidden="true"></canvas>
+          </div>
+        </div>
+
+        <!-- Phase 2: the title that replaces the statement -->
+        <p class="about__title" aria-hidden="true" data-i18n="about.title">A Quick Look</p>
+
+        <!-- Phase 3: cards driven sideways by the remaining scroll -->
+        <div class="about__track" data-hscroll-track>
+          <article class="card">
+            <h3 class="card__title" data-i18n="about.card1.title">Who Am I</h3>
+            <p class="card__body" data-i18n="about.card1.body">I'm Rogério Edgar, a 20-year-old Designer &amp; Multimedia
+              Developer based in Portugal. I work right where creative vision meets code.</p>
+          </article>
+
+          <article class="card">
+            <h3 class="card__title" data-i18n="about.card2.title">What I Do</h3>
+            <p class="card__body" data-i18n="about.card2.body">Building immersive 3D WebGL scenes, digital platforms, and
+              audiovisual stories. Focused on turning complex ideas into tactile digital
+              experiences.</p>
+          </article>
+
+          <article class="card">
+            <h3 class="card__title" data-i18n="about.card3.title">Where I'm At</h3>
+            <p class="card__body" data-i18n="about.card3.body">Graduated in Design &amp; Multimedia from the University of
+              Coimbra, currently working as Senior Designer at jeKnowledge.</p>
+          </article>
+
+          <article class="card">
+            <h3 class="card__title" data-i18n="about.card4.title">Perspective / Status</h3>
+            <p class="card__body" data-i18n="about.card4.body">I design things people can click, play, and get lost in.</p>
+            <p class="card__tag" data-i18n="about.card4.tag">[ Available for new projects / freelance ]</p>
+          </article>
+        </div>
+
+        <!-- Phone only: the deck's position indicator. Built by
+             card-carousel.js from the cards above, so it can never fall out of
+             step with how many there are. Empty and display:none on desktop. -->
+        <div class="quick-dots" data-quick-dots aria-label="A Quick Look"></div>
+
+        <p class="about__hint" data-about-hint aria-hidden="true" data-i18n="about.hint">Move to reveal</p>
+
+        <!-- Phone only. The hero's own hint scrolls away with the hero, and on
+             a phone this section is three screens of pinned scrolling with no
+             sign that it is still going — so the same words are repeated here,
+             pinned to the foot of the stage. "Move to reveal" above is the
+             DESKTOP hint and says something else entirely (it is about the
+             cursor wipe), which is why this is a second element and not a
+             restyling of that one. -->
+        <p class="about__scrollhint" aria-hidden="true" data-i18n="hero.hint">Drag / Scroll to explore</p>
+      </div>
+    </section>
+
+    <!-- Capabilities: the eye returns, sunk so only its top shows, while the
+         toolkit scrolls past. Words rest in the "echoed" state and resolve to
+         clean white on hover — the inverse of the nav. -->
+    <section class="skills" id="skills" data-skills>
+      <div class="skills__stage">
+        <h2 class="skills__title" data-i18n="skills.title">Capabilities &amp; Toolkit</h2>
+
+        <div class="marquee" data-marquee>
+          <ul class="marquee__track">
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="Figma">Figma</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="Blender">Blender</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Ps" aria-hidden="true">Ps</span>
+              </span>
+              <span class="skill__name text-echo" data-text="Photoshop">Photoshop</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Ai" aria-hidden="true">Ai</span>
+              </span>
+              <span class="skill__name text-echo" data-text="Illustrator">Illustrator</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Ae" aria-hidden="true">Ae</span>
+              </span>
+              <span class="skill__name text-echo" data-text="After Effects">After Effects</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Pr" aria-hidden="true">Pr</span>
+              </span>
+              <span class="skill__name text-echo" data-text="Premiere Pro">Premiere Pro</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="Three.js">Three.js</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="JavaScript">JavaScript</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="HTML">HTML</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="CSS">CSS</span>
+            </li>
+          </ul>
+
+          <!-- Duplicate set: the loop translates by exactly one track width, so
+               the seam is invisible. Hidden from assistive tech. -->
+          <ul class="marquee__track" aria-hidden="true">
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="Figma">Figma</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="Blender">Blender</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Ps" aria-hidden="true">Ps</span>
+              </span>
+              <span class="skill__name text-echo" data-text="Photoshop">Photoshop</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Ai" aria-hidden="true">Ai</span>
+              </span>
+              <span class="skill__name text-echo" data-text="Illustrator">Illustrator</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Ae" aria-hidden="true">Ae</span>
+              </span>
+              <span class="skill__name text-echo" data-text="After Effects">After Effects</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <span class="skill__mono text-echo" data-text="Pr" aria-hidden="true">Pr</span>
+              </span>
+              <span class="skill__name text-echo" data-text="Premiere Pro">Premiere Pro</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="Three.js">Three.js</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="JavaScript">JavaScript</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="HTML">HTML</span>
+            </li>
+            <li class="skill">
+              <span class="skill__mark">
+                <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
+                <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
+              </span>
+              <span class="skill__name text-echo" data-text="CSS">CSS</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Sits muted like the marquee's own entries and lights up to full ink
+             on hover, with the same echo the nav uses. Not a filled button —
+             this is a quiet close to the section, not a call to action. -->
+        <a class="skills__cta text-echo" href="work.html" data-text="Check my work"
+           data-i18n="skills.cta" data-i18n-attr="data-text=skills.cta">Check my work</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================================================================
+       FOOTER  ·  the close
+       ------------------------------------------------------------------
+       Carries #contact, which the masthead's Contact link has been
+       pointing at all along with nothing to land on.
+       ================================================================== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <h2 class="footer__title" data-i18n="footer.title">Let's build something unique</h2>
+
+      <p class="footer__status">
+        <span class="footer__dot" aria-hidden="true"></span>
+        <span data-i18n="footer.status">Available for freelance &amp; full-time roles</span>
+      </p>
+
+      <ul class="footer__links">
+        <li>
+          <a class="footer__link" href="mailto:recgrc@gmail.com">
+            <span class="footer__glyph text-echo" data-text="@" aria-hidden="true">@</span>
+            <span class="visually-hidden" data-i18n="footer.email">Email Rogério Edgar Correia</span>
+          </a>
+        </li>
+        <li>
+          <a class="footer__link" href="https://www.behance.net/Rogerio_Correia"
+             target="_blank" rel="noopener noreferrer">
+            <span class="footer__glyph text-echo" data-text="Bē" aria-hidden="true">Bē</span>
+            <span class="visually-hidden" data-i18n="footer.behance">Behance profile</span>
+          </a>
+        </li>
+        <li>
+          <a class="footer__link" href="https://github.com/recgrc-alt"
+             target="_blank" rel="noopener noreferrer">
+            <svg class="footer__icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                       0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                       -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                       .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                       -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 2-.27c.68 0
+                       1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                       1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                       1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+            <span class="visually-hidden" data-i18n="footer.github">GitHub profile</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="footer__legal" data-i18n="footer.legal">© 2026 Rogério Edgar Correia. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ====================================================================
+       HUD  (fixed, persistent — local time never disappears)
+       ==================================================================== -->
+  <div class="hud">
+    <!-- The time gets a wrapper of its own because the hour picker is
+         positioned against it, and a <p> cannot legally contain the panel's
+         markup. This div is the positioning context; see .hud__slot. -->
+    <div class="hud__slot">
+    <p class="meta meta--time">
+      <span class="meta__label" data-i18n="hud.time">Local time:</span>
+      <span class="meta__value" data-clock>[ --&nbsp;:&nbsp;--&nbsp;:&nbsp;-- ]</span>
+    </p>
+    </div>
+    <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
+  </div>
+
+  <script type="module" src="js/main.js?v=63"></script>
+
+</body>
+
+</html>

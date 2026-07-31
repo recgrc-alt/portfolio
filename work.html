@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Work · Rogério Edgar</title>
+  <meta name="description" content="Selected projects by Rogério Edgar: interactive web, 3D, UI/UX, branding and motion." />
+
+  <!-- Content-Security-Policy: a rede de seguranca. Mesmo que um dia
+       entre por engano markup vindo de fora, o browser recusa-se a
+       executar seja o que for que nao esteja listado aqui.
+
+       blob: nao e decorativo. O GLTFLoader extrai as texturas de dentro
+       do eye.glb e serve-as como URLs blob:; sem isso o olho carrega sem
+       iris. Foi apanhado a testar esta politica, nao em producao. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'sha256-4ODAao+sk3HqfLrhlo1/4J/pP6Iybrzy9N3XLy4mCSg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+
+  <!-- Favicon. Three sizes because browsers ask for different ones and none of
+       them negotiate: 16/32 for the tab, 180 for an iOS home screen. The PNGs
+       rather than the 1000px WebP source, which Safari will not accept in this
+       role and which every other browser would have to download whole just to
+       draw sixteen pixels. favicon.ico sits at the site root as well, because
+       some clients request /favicon.ico without ever reading the markup. -->
+  <link rel="icon" href="assets/favicon-32.png?v=63" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=63" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=63" />
+
+  <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Tokens first, then the shared stylesheet, then the page layouts. -->
+  <link rel="stylesheet" href="css/tokens.css?v=63" />
+  <link rel="stylesheet" href="css/style.css?v=63" />
+  <link rel="stylesheet" href="css/pages.css?v=63" />
+
+  <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
+       This MUST come before any module load or preload (see below). -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+        "lenis": "https://unpkg.com/lenis@1.1.14/dist/lenis.mjs"
+      }
+    }
+  </script>
+
+  <!-- ONLY NOW may a module be fetched. These are hints, not imports, but a
+       modulepreload counts as "module loading has begun" — and an import map
+       that arrives after that point is rejected outright. Firefox enforces
+       this strictly: with the preload above the map, every bare "three"
+       specifier failed to resolve and the whole bundle died. Keep them here. -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="modulepreload" href="https://unpkg.com/three@0.160.0/build/three.module.js" crossorigin />
+</head>
+
+<body class="page page--work">
+
+  <!-- ====================================================================
+       LOADER  ·  shown once per visit, while the site arrives
+       In the markup rather than built by script, so it is on screen from the
+       first paint — a loading screen that waits for JavaScript has missed the
+       moment it exists for. loader.js only takes it away again.
+       ==================================================================== -->
+  <div class="loader" data-loader aria-hidden="true">
+    <video class="loader__eye" data-loader-eye autoplay muted loop playsinline
+           width="200" height="200">
+      <source src="assets/loading-eye.webm" type="video/webm" />
+    </video>
+    <p class="loader__dots"><span></span><span></span><span></span></p>
+  </div>
+
+
+  <!-- The black wipe between pages. Its fade-IN is a pure CSS animation so it
+       clears itself even if JS never runs; page-transition.js only drives the
+       fade-OUT on the way to the next page. -->
+  <div class="page-veil" data-page-veil aria-hidden="true"></div>
+
+  <!-- ====================================================================
+       FIXED BACKGROUND EYE
+       Stays put across all scroll, on every page. Decorative → aria-hidden.
+       ==================================================================== -->
+  <canvas class="eye-layer" id="eye-canvas" aria-hidden="true"></canvas>
+
+  <!-- Veil over the eye: on interior pages it is background, not subject. -->
+  <div class="eye-scrim" aria-hidden="true"></div>
+
+  <!-- ====================================================================
+       MASTHEAD  (fixed top bar with a blur/gradient underlay)
+       ==================================================================== -->
+  <header class="masthead" data-masthead>
+    <a class="wordmark" href="index.html">Rogério Edgar</a>
+
+    
+    <!-- Phone only: the masthead's links collapse behind this. Two bars, which
+         rotate into an X when the panel is open (see .nav-toggle in style.css).
+         display:none above the breakpoint, so desktop never sees it. -->
+    <button class="nav-toggle" type="button" data-nav-toggle
+            aria-expanded="false" aria-controls="nav-panel"
+            aria-label="Menu" data-i18n-attr="aria-label=nav.menu">
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+    </button>
+
+    <nav class="nav" id="nav-panel" data-nav-panel aria-label="Main navigation">
+      <!-- data-text feeds the hover duplicate that CSS draws in ::after -->
+      <ul class="nav__list">
+        <li><a class="nav__link text-echo" href="index.html#about" data-text="About" data-i18n="nav.about" data-i18n-attr="data-text=nav.about">About</a></li>
+        <li><a class="nav__link text-echo" href="work.html" data-text="Work" data-i18n="nav.work" data-i18n-attr="data-text=nav.work" aria-current="page">Work</a></li>
+        <li><a class="nav__link text-echo" href="contact.html" data-text="Contact" data-i18n="nav.contact" data-i18n-attr="data-text=nav.contact">Contact</a></li>
+      </ul>
+
+      <div class="nav__controls">
+        <div class="lang" role="group" aria-label="Language">
+          <button class="lang__btn text-echo" type="button" data-lang="pt" data-text="PT" aria-pressed="false">PT</button>
+          <button class="lang__btn text-echo is-active" type="button" data-lang="en" data-text="ENG" aria-pressed="true">ENG</button>
+        </div>
+
+        <!-- Mutes the whole site: ambience, click ticks, a reel's own sound.
+             Both glyphs ship here and CSS picks one from aria-pressed — the
+             hover shows the OTHER, previewing what a click will do. -->
+        <button class="sound-btn" type="button" data-sound-toggle aria-pressed="false"
+                aria-label="Sound" data-i18n-attr="aria-label=sound.label">
+          <svg class="sound-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="sound-btn__glyph sound-btn__glyph--on" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            <path class="sound-btn__glyph sound-btn__glyph--off" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="content">
+
+    <!-- Page head: the only static text on this page. Everything below is
+         built by work-gallery.js from data/projects.json. -->
+    <section class="page-head">
+      <div class="page-head__inner">
+        <h1 class="page-head__title" data-i18n="work.pageTitle">Work</h1>
+        <p class="page-head__lead" data-i18n="work.pageLead">
+          Interactive web, 3D, product design and motion, grouped by what they are.
+        </p>
+      </div>
+    </section>
+
+    <!-- The gallery renders here: one section per category, cards inside. -->
+    <div class="gallery" data-work-gallery></div>
+
+  </main>
+
+  <!-- ====================================================================
+       FOOTER  ·  the close
+       ==================================================================== -->
+  <footer class="footer">
+    <div class="footer__inner">
+        <h2 class="footer__title" data-i18n="footer.title">Let's build something unique</h2>
+
+        <p class="footer__status">
+          <span class="footer__dot" aria-hidden="true"></span>
+          <span data-i18n="footer.status">Available for freelance &amp; full-time roles</span>
+        </p>
+
+        <ul class="footer__links">
+          <li>
+            <a class="footer__link" href="mailto:recgrc@gmail.com">
+              <span class="footer__glyph text-echo" data-text="@" aria-hidden="true">@</span>
+              <span class="visually-hidden" data-i18n="footer.email">Email Rogério Edgar Correia</span>
+            </a>
+          </li>
+          <li>
+            <a class="footer__link" href="https://www.behance.net/Rogerio_Correia" target="_blank" rel="noopener noreferrer">
+              <span class="footer__glyph text-echo" data-text="Bē" aria-hidden="true">Bē</span>
+              <span class="visually-hidden" data-i18n="footer.behance">Behance profile</span>
+            </a>
+          </li>
+          <li>
+            <a class="footer__link" href="https://github.com/recgrc-alt" target="_blank" rel="noopener noreferrer">
+              <!-- two copies: the second is the difference ghost, revealed on hover -->
+              <span class="footer__mark">
+                <svg class="footer__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                         0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                         -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                         .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                         -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 2-.27c.68 0
+                         1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                         1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                         1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" /></svg>
+                <svg class="footer__icon footer__icon--echo" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                         0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                         -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                         .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                         -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 2-.27c.68 0
+                         1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                         1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                         1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" /></svg>
+              </span>
+              <span class="visually-hidden" data-i18n="footer.github">GitHub profile</span>
+            </a>
+          </li>
+        </ul>
+
+        <p class="footer__legal" data-i18n="footer.legal">© 2026 Rogério Edgar Correia. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ====================================================================
+       HUD  (fixed, persistent — local time never disappears)
+       ==================================================================== -->
+  <div class="hud">
+    <!-- The time gets a wrapper of its own because the hour picker is
+         positioned against it, and a <p> cannot legally contain the panel's
+         markup. This div is the positioning context; see .hud__slot. -->
+    <div class="hud__slot">
+    <p class="meta meta--time">
+      <span class="meta__label" data-i18n="hud.time">Local time:</span>
+      <span class="meta__value" data-clock>[ --&nbsp;:&nbsp;--&nbsp;:&nbsp;-- ]</span>
+    </p>
+    </div>
+    <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
+  </div>
+
+  <script type="module" src="js/main.js?v=63"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,1238 @@
+/* ==========================================================================
+   PAGES  ·  layouts for work.html, project.html, contact.html
+   --------------------------------------------------------------------------
+   Loaded after style.css on every page. Everything here reuses the tokens in
+   tokens.css — no new colours, no hard-coded sizes. Sizes are relative
+   throughout (rem / em / % / vw / vh / clamp); the only px allowed is a
+   1px hairline where a sub-pixel border would otherwise vanish.
+
+   TABLE OF CONTENTS
+     1. SHARED   page head · buttons · active nav link
+     2. WORK     the gallery: sections, grid, cards
+     3. PROJECT  hero · metadata · story + mockups · craft · onward
+     4. CONTACT  the split: direct address + form
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. SHARED
+   ========================================================================== */
+
+/* Push page content clear of the fixed masthead. The hero pages size their
+   own top space; these interior pages need the offset stated. */
+.page .content { padding-top: clamp(var(--space-96), 18vh, var(--space-128)); }
+
+/* The current page's nav link stays lit rather than resting dim. */
+.nav__link[aria-current="page"] { color: var(--color-ink); }
+
+/* --- Page head: the title block that opens work and contact -------------- */
+.page-head {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  padding-block: clamp(var(--space-32), 6vh, var(--space-80));
+}
+
+.page-head__title {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-section);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+.page-head__lead {
+  margin: 0;
+  max-width: 46ch;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--color-ink-dim);
+}
+
+/* --- Buttons -------------------------------------------------------------
+ * One base, three variants. The bracketed labels ([ SEND ↗ ]) are set in the
+ * markup, so the button is styling only. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-16) var(--space-24);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink);
+  border: 1px solid var(--color-hairline);   /* hairline — the allowed px */
+  border-radius: var(--footer-radius);
+  transition: border-color var(--dur-base) var(--ease-out),
+              color var(--dur-base) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out);
+}
+
+.btn:hover,
+.btn:focus-visible {
+  border-color: var(--color-ink);
+  transform: translateY(-0.15rem);
+}
+
+/* Primary: the inverted plate, like the footer's contact marks. */
+.btn--primary {
+  background-color: var(--color-ink);
+  color: var(--color-bg);
+  border-color: var(--color-ink);
+}
+
+/* Hover is the difference-echo, not a colour change — the same language as the
+   nav. The label is a .text-echo; hovering the button switches its ghost on.
+   No green: that was a second accent this page does not need. */
+.btn .text-echo { --echo-opacity: 0; --echo-shift: 0; }
+
+.btn:hover .text-echo,
+.btn:focus-visible .text-echo {
+  --echo-opacity: 1;
+  --echo-shift: var(--nav-hover-shift);
+}
+
+/* Next-project: stacks a quiet label over the project's name. */
+.btn--next { flex-direction: column; align-items: flex-start; gap: var(--space-4); text-align: left; }
+.btn__label { color: var(--color-ink-dim); font-size: var(--text-xs); }
+.btn__name  { font-size: var(--text-md); letter-spacing: var(--tracking-tight); text-transform: none; }
+
+
+/* ==========================================================================
+   2. WORK  ·  the gallery
+   --------------------------------------------------------------------------
+   One section per category, built by work-gallery.js. Cards are clean video
+   thumbnails — no viewfinder, no overlay — that link into project.html.
+   ========================================================================== */
+.gallery {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  padding-bottom: clamp(var(--space-96), 16vh, var(--space-128));
+}
+
+.gallery__section { margin-top: clamp(var(--space-64), 10vh, var(--space-128)); }
+
+.gallery__empty {
+  padding-block: var(--space-96);
+  text-align: center;
+  color: var(--color-ink-dim);
+}
+
+/* Category header: title on the left, count on the right, a hairline under. */
+.gallery__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-24);
+  padding-bottom: var(--space-24);
+  margin-bottom: clamp(var(--space-32), 5vh, var(--space-64));
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.gallery__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-card);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+.gallery__count {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-faint);
+}
+
+/* Two per row, dropping to one when a card would fall below its floor.
+   auto-fit + minmax gives that without a media query. */
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: clamp(var(--space-24), 3vw, var(--space-48));
+  margin: 0;
+}
+
+.card-work { display: grid; gap: var(--space-16); color: inherit; }
+
+.card-work__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--footer-radius);
+  background-color: #0e0e0e;          /* holds the frame before the poster */
+}
+
+.card-work__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.001);            /* hides sub-pixel edge seams */
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.card-work:hover .card-work__video,
+.card-work:focus-visible .card-work__video { transform: scale(1.04); }
+
+/* The banner image, when a card has no video or the video failed: fills the
+   media box exactly like the video would. */
+.card-work__still {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.001);
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.card-work:hover .card-work__still,
+.card-work:focus-visible .card-work__still { transform: scale(1.04); }
+
+/* No footage yet. The same diagonal hatching the project hero uses, so an
+   unfinished card reads as deliberately pending rather than broken — and the
+   box keeps its aspect ratio, so nothing reflows when the video arrives. */
+.card-work__media.is-empty {
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 1.4rem,
+      rgb(255 255 255 / 0.03) 1.4rem 2.8rem);
+}
+
+.card-work:focus-visible { outline: 1px solid var(--color-ink); outline-offset: var(--space-8); }
+
+/* --- Slideshow -----------------------------------------------------------
+ * When a project's banner is a *folder* of stills, slideshow.js builds this:
+ * the frames stack and cross-fade. Generic on purpose — it fills whatever
+ * media box it is dropped into (a gallery card or the project hero), so both
+ * contexts share one rule. The parent box is always position:relative. */
+.slides { position: absolute; inset: 0; transition: transform var(--dur-slow) var(--ease-out); }
+
+.slides__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.slides__img.is-current { opacity: 1; }
+
+/* Match the same lift the card's video/still gets on hover. */
+.card-work:hover .slides,
+.card-work:focus-visible .slides { transform: scale(1.04); }
+
+/* Name left, year right, role beneath — a compact record under the footage. */
+.card-work__meta {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--space-16);
+}
+
+.card-work__name {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+/* The card speaks the same hover language as the nav and the buttons: the name
+   holds a displaced ghost that resolves when the card is hovered or focused —
+   no colour change, no green. The whole card lifts a touch at the same time, so
+   the pointer gets the feedback the buttons already give. */
+.card-work__name.text-echo { --echo-opacity: 0; --echo-shift: 0; }
+
+.card-work:hover .card-work__name.text-echo,
+.card-work:focus-visible .card-work__name.text-echo {
+  --echo-opacity: 1;
+  --echo-shift: var(--nav-hover-shift);
+}
+
+.card-work {
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.card-work:hover,
+.card-work:focus-visible { transform: translateY(-0.25rem); }
+
+.card-work__year {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-faint);
+}
+
+.card-work__role {
+  grid-column: 1 / -1;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+
+/* ==========================================================================
+   3. PROJECT  ·  the template
+   --------------------------------------------------------------------------
+   Built by project-page.js in five blocks, in the order a visitor needs them.
+   ========================================================================== */
+
+/* On this page the content sits under the fixed masthead but the hero is
+   full-bleed, so the top padding is removed and the hero provides the gap. */
+.page--project .content { padding-top: 0; }
+
+/* --- 1 · Hero: edge to edge ---------------------------------------------- */
+.project-hero {
+  position: relative;
+  width: 100vw;
+  /* the .content may be narrower than the viewport on wide screens; pull the
+     hero back out to full width regardless of its parent */
+  margin-left: 50%;
+  transform: translateX(-50%);
+  height: clamp(24rem, 70vh, 48rem);
+  overflow: hidden;
+  background-color: #0e0e0e;
+}
+
+.project-hero__video,
+.project-hero__still {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A live embed fills the hero the same way the video does. No border, and it
+   sits above the waking hint so the hint only shows through until the scene
+   paints over it. */
+.project-hero__embed {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* Shown behind the iframe, so a cold-starting free host reads as loading
+   rather than broken. */
+.project-hero__waking {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* Empty state: keep the block's height so the page below does not reflow when
+   footage is added later. */
+.project-hero.is-empty::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 1.4rem,
+      rgb(255 255 255 / 0.02) 1.4rem 2.8rem);
+}
+
+/* --- 2 · Metadata header ------------------------------------------------- */
+.project-head {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  padding-block: clamp(var(--space-48), 8vh, var(--space-96));
+}
+
+.project-head__title {
+  margin: 0 0 clamp(var(--space-32), 5vh, var(--space-64));
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-hero);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+/* Just two things, both large: the discipline and the year. No rule above
+   them — the hairlines are gone throughout this page. A small quiet label
+   sits over each big value. */
+.project-head__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(var(--space-48), 8vw, var(--space-128));
+}
+
+.project-head__cell { display: grid; gap: var(--space-8); }
+
+.project-head__label {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* The headline metadata: category and year, sized to be read across the room. */
+.project-head__big {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-card);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+/* --- 3 · Story + showcase ------------------------------------------------ */
+.project-story__inner {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+}
+
+.project-story__text {
+  max-width: 60ch;                    /* a readable measure, not the full width */
+  margin: 0 0 var(--space-32);
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+  color: var(--color-ink-dim);
+}
+
+/* The provenance line — smaller and dimmer than the intro, so it reads as a
+   footnote to it rather than a second headline. */
+.project-story__context {
+  max-width: 60ch;
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--color-ink-faint);
+}
+
+/* With no renders the section stays as it was: text at full measure, and the
+   breathing room below it that the context line used to carry itself. */
+.project-story__inner:not(.has-showcase) .project-story__context {
+  margin-bottom: clamp(var(--space-48), 8vh, var(--space-96));
+}
+
+/* --- The showcase: cut-out renders, large, beside the words --------------
+ * These images are exported WITHOUT a background on purpose — 3D models,
+ * illustration sets, character sheets. So there is deliberately no fill and no
+ * radius here: a card would paint a box straight back in behind the
+ * transparency and undo the export. The page's black is the background, and
+ * the subject sits ON the page rather than inside a slot.
+ *
+ * One column on narrow screens (text, then renders). Two from tablet up, with
+ * the renders taking the LARGER share — they are the reason this block exists;
+ * the text is a caption to them, not the other way round. */
+.project-story__inner.has-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(var(--space-32), 5vw, var(--space-80));
+  align-items: center;
+}
+
+.project-showcase {
+  display: grid;
+  gap: clamp(var(--space-32), 5vh, var(--space-64));
+}
+
+.project-showcase__item { margin: 0; }
+
+/* Bare on purpose: no background, no border, no radius — and no drop-shadow
+   either. The tokens carry a black shadow, which over a black page is invisible
+   work: it would cost a full-size filter pass on a very large image and change
+   nothing on screen. These renders already carry their own baked lighting. */
+.project-showcase__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* `span: "half"` in the project data. For a mark rather than a scene: a
+   logotype does not get bigger by being printed bigger, and at the full column
+   width it stops reading as identity and starts reading as signage. Centred in
+   its column so the text opposite still has something to sit against, and
+   capped in rem so it does not keep growing on a very wide screen — past a
+   certain size a logo is just large, not clearer. */
+.project-showcase__item[data-span="half"] .project-showcase__img {
+  max-width: clamp(9rem, 58%, 19rem);
+  margin-inline: auto;
+}
+
+.project-showcase__caption {
+  margin-top: var(--space-16);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+@media (min-width: 56rem) {
+  /* Text on the left, renders on the right and larger. `is-left` swaps them
+     via order, so the DOM keeps reading text-first for a screen reader. */
+  .project-story__inner.has-showcase { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); }
+  .project-story__copy      { order: 1; }
+  .project-showcase         { order: 2; }
+
+  .project-story__inner.has-showcase.is-left { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+  .project-story__inner.has-showcase.is-left .project-showcase { order: 1; }
+  .project-story__inner.has-showcase.is-left .project-story__copy { order: 2; }
+}
+
+/* --- 3b · Reels: companion motion pieces --------------------------------
+ * A set of vertical Instagram reels that belong to an identity project rather
+ * than standing alone (see project-page.js buildReels). An intro, then one row
+ * per reel, read top to bottom in chronological order. Rows alternate sides —
+ * clip left, then right — with the concept beside each and a small Instagram
+ * link. reel-player.js plays each clip as it scrolls into view. */
+.project-reels {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  padding-block: clamp(var(--space-48), 8vh, var(--space-96));
+}
+
+.project-reels__label {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+.project-reels__body {
+  margin: 0 0 clamp(var(--space-48), 8vh, var(--space-80));
+  max-width: 60ch;
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--color-ink);
+}
+
+/* The rows, stacked with generous air so each reel gets its own moment as you
+   scroll — which is also what lets reel-player.js keep just one playing. */
+.reel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(var(--space-64), 12vh, var(--space-128));
+}
+
+.reel-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(var(--space-24), 4vw, var(--space-64));
+  align-items: center;
+  justify-items: center;
+}
+
+/* The clip: a 9:16 frame, the shape these reels were exported in, capped so it
+   never overwhelms the row. */
+.reel-row__media {
+  position: relative;
+  width: 100%;
+  max-width: 20rem;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: var(--footer-radius);
+  background-color: #0e0e0e;
+}
+
+.reel-row__video,
+.reel-row__still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Same hatching as the hero, so a missing clip reads as pending not broken. */
+.reel-row__media.is-empty::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 1.4rem,
+      rgb(255 255 255 / 0.02) 1.4rem 2.8rem);
+}
+
+.reel-row__text { max-width: 42ch; }
+
+.reel-row__note {
+  margin: 0 0 var(--space-8);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.reel-row__concept {
+  margin: 0 0 var(--space-24);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--color-ink);
+}
+
+/* The Instagram link: the shared button, its glyph riding the same hover echo
+   as the label. */
+.reel-row__link { font-size: var(--text-xs); }
+
+.reel-row__ig {
+  width: 1.1em;
+  height: 1.1em;
+  flex: 0 0 auto;
+}
+
+/* Two columns from tablet up. Clip left / note right by default; `.is-right`
+   swaps them via order, so the DOM stays in chronological reading order. */
+@media (min-width: 48rem) {
+  .reel-row { grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); }
+  .reel-row__media { order: 1; }
+  .reel-row__text  { order: 2; }
+
+  .reel-row.is-right { grid-template-columns: minmax(0, 1fr) minmax(0, 20rem); }
+  .reel-row.is-right .reel-row__media { order: 2; }
+  .reel-row.is-right .reel-row__text  { order: 1; }
+}
+
+/* --- 4 · Craft: stack + process ------------------------------------------ */
+.project-craft {
+  margin-top: clamp(var(--space-64), 12vh, var(--space-128));
+  padding-block: clamp(var(--space-48), 9vh, var(--space-96));
+}
+
+.project-craft__inner {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(var(--space-32), 5vw, var(--space-80));
+}
+
+/* Two columns once there is room: the narrow stack beside the wider prose. */
+@media (min-width: 48rem) {
+  .project-craft__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+}
+
+.project-craft__label {
+  margin: 0 0 var(--space-24);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.tech-stack { display: flex; flex-wrap: wrap; gap: var(--space-8); margin: 0; }
+
+.tech-stack__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  border: 1px solid var(--color-hairline);
+  border-radius: 2rem;                /* pill */
+}
+
+/* The tool logo, inlined from assets/icons and inheriting the pill's colour.
+   The pill keeps the same padding on both sides whether or not an icon is
+   present — the icon and its gap live *inside* that padding, so a pill with a
+   logo is no tighter on the left than a text-only pill beside it. */
+.tech-stack__icon {
+  width: 1.05em;
+  height: 1.05em;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+
+.project-craft__text {
+  margin: 0 0 var(--space-24);
+  max-width: 60ch;
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--color-ink-dim);
+}
+
+/* The long process account: flowing paragraphs, the main read of the page.
+   Set at a comfortable measure, quieter than the headline metadata. */
+.project-craft__body {
+  margin: 0 0 var(--space-24);
+  max-width: 66ch;
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--color-ink-dim);
+}
+.project-craft__body:last-child { margin-bottom: 0; }
+
+/* The technical bullets. A leading hairline dash rather than a disc, so the
+   list reads as engineering notes, not marketing copy. */
+.project-craft__list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-16);
+  max-width: 62ch;
+}
+
+.project-craft__point {
+  position: relative;
+  padding-left: var(--space-24);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  color: var(--color-ink);
+}
+
+.project-craft__point::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: var(--space-16);
+  height: 1px;                        /* the allowed hairline */
+  background-color: var(--cam-frame-active);
+}
+
+/* --- Credits (before onward) --------------------------------------------
+ * Collaborators, at the end rather than the header. Quiet: a single line. */
+.project-credits {
+  margin-top: clamp(var(--space-48), 9vh, var(--space-96));
+}
+
+.project-credits__inner {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+}
+
+.project-credits__label {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.project-credits__names {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+
+/* --- Launch button (under the toolkit) ----------------------------------
+ * The way into the live project sits right below "Built with" — one clear,
+ * prominent button rather than a floating one that repeated itself down the
+ * page. It fills the toolkit column and lifts a touch on hover like the rest. */
+.project-craft__launch {
+  margin-top: var(--space-24);
+  justify-content: center;
+  width: 100%;
+  box-shadow: var(--shadow-2);
+}
+
+
+/* --- 5 · Onward ---------------------------------------------------------- */
+.project-onward {
+  margin-top: clamp(var(--space-48), 9vh, var(--space-96));
+  padding-bottom: clamp(var(--space-96), 16vh, var(--space-128));
+}
+
+.project-onward__inner {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-24);
+}
+
+/* One project can carry several links (Abrigo has three); they wrap as a
+   cluster on the left, with NEXT PROJECT staying on the right. */
+.project-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+}
+
+/* A small qualifier on a link, like "best on mobile". Set apart from the
+   label so it reads as a note, not part of the button's name. */
+.btn__note {
+  margin-left: var(--space-8);
+  padding-left: var(--space-8);
+  border-left: 1px solid currentColor;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.75;
+}
+
+/* The notice a bad ?id= lands on, and a way back out. */
+.project__notice {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin: clamp(var(--space-96), 20vh, var(--space-128)) auto;
+  display: grid;
+  gap: var(--space-24);
+  justify-items: start;
+  color: var(--color-ink-dim);
+}
+
+
+/* ==========================================================================
+   4. CONTACT  ·  direct address + form
+   ========================================================================== */
+.contact {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  padding-bottom: clamp(var(--space-96), 16vh, var(--space-128));
+}
+
+/* One column on a phone, two once there is room for the form beside the
+   address. */
+.contact__inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(var(--space-48), 6vw, var(--space-96));
+}
+
+@media (min-width: 48rem) {
+  .contact__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+}
+
+/* --- Left: the address --------------------------------------------------- */
+.contact__label {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.contact__address {
+  margin: 0 0 var(--space-24);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;            /* never overflow on a narrow screen */
+}
+
+.btn--copy { position: relative; }
+.btn--copy.is-done { border-color: var(--cam-frame-active); color: var(--cam-frame-active); }
+
+.contact__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-24);
+  margin: clamp(var(--space-48), 8vh, var(--space-80)) 0 0;
+}
+
+.contact__social-link {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-ink-dim);
+  transition: color var(--dur-base) var(--ease-out);
+}
+.contact__social-link:hover { color: var(--color-ink); }
+
+/* --- Right: the form ----------------------------------------------------- */
+.contact__form { display: grid; gap: var(--space-24); }
+
+.field { display: grid; gap: var(--space-8); }
+
+.field__label {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-ink-dim);
+}
+
+.field__input {
+  width: 100%;
+  padding: var(--space-16);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink);
+  background-color: rgb(255 255 255 / 0.03);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--footer-radius);
+  transition: border-color var(--dur-base) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out);
+}
+
+.field__input::placeholder { color: var(--color-ink-faint); }
+
+.field__input:focus {
+  outline: none;
+  border-color: var(--color-ink);
+  background-color: rgb(255 255 255 / 0.05);
+}
+
+.field__input--area { resize: vertical; min-height: 8rem; line-height: var(--leading-normal); }
+
+/* --- The dropdown ---------------------------------------------------------
+ * See select.js for why the native control is replaced rather than styled: the
+ * list it opens is drawn by the operating system, and the blue highlight row
+ * inside it is unreachable from CSS.
+ *
+ * The native <select> is still here and still the element the form submits and
+ * the browser validates. It is only taken out of sight — and off-screen rather
+ * than display:none, so it keeps a size and stays a real form control. */
+.select { position: relative; }
+
+.select__native {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Deliberately built from the same declarations as .field__input rather than
+   sharing the class: this is a <button>, and inheriting the input's rules
+   would drag along the text alignment and font that a button does not get. */
+.select__button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  width: 100%;
+  padding: var(--space-16);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  text-align: left;
+  color: var(--color-ink);
+  background-color: rgb(255 255 255 / 0.03);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--footer-radius);
+  cursor: pointer;
+  transition: border-color var(--dur-base) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out);
+}
+
+/* The chevron, drawn rather than typed: a text character would sit on the
+   font's baseline and shift with the typeface. Rotates when the list opens,
+   which is the only motion the control has. */
+.select__button::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-right: 1px solid var(--color-ink-dim);
+  border-bottom: 1px solid var(--color-ink-dim);
+  transform: translateY(-0.15em) rotate(45deg);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.select.is-open .select__button::after { transform: translateY(0.1em) rotate(-135deg); }
+
+.select__button:focus-visible {
+  outline: none;
+  border-color: var(--color-ink);
+  background-color: rgb(255 255 255 / 0.05);
+}
+
+@media (hover: hover) {
+  .select__button:hover { border-color: var(--color-ink-dim); }
+}
+
+/* Until something is chosen, the prompt reads as placeholder text and not as
+   an answer already given. */
+.select__value.is-placeholder { color: var(--color-ink-faint); }
+
+/* --- The list ------------------------------------------------------------- */
+.select__list {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  left: 0;
+  right: 0;
+  z-index: var(--z-chrome);
+  margin: 0;
+  /* Wider on the right so the scrollbar sits beside the option text rather
+     than on top of it. */
+  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-4);
+  list-style: none;
+  /* Taller than this and it scrolls rather than running off the page. In rem
+     so it holds however large the reader's type is. */
+  max-height: 15rem;
+  overflow-y: auto;
+
+  /* The scrollbar, which is otherwise the last piece of operating-system
+     furniture left in a control built specifically to get rid of it. Firefox
+     takes these two properties; WebKit needs the pseudo-elements below, and
+     both are given because neither browser understands the other's. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-faint) transparent;
+
+  background-color: rgb(10 10 10 / 0.97);
+  backdrop-filter: blur(var(--blur-nav));
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--footer-radius);
+  box-shadow: var(--shadow-2);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(var(--space-4) * -1));
+  transition: opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out),
+              visibility 0s linear var(--dur-fast);
+}
+
+.select.is-open .select__list {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+.select__list:focus-visible { outline: none; }
+
+/* WebKit's half. A bar rather than a scrollbar: no arrows, no track, no
+   groove, just a thin mark showing where you are in the list. It brightens on
+   hover so it stops being purely decorative when there is a reason to grab
+   it. Sized in rem so it thickens with the reader's type like everything
+   else does. */
+.select__list::-webkit-scrollbar { width: 0.375rem; }
+.select__list::-webkit-scrollbar-track { background: transparent; }
+
+.select__list::-webkit-scrollbar-thumb {
+  background-color: var(--color-ink-faint);
+  border-radius: 0.1875rem;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.select__list::-webkit-scrollbar-thumb:hover { background-color: var(--color-ink-dim); }
+
+.select__option {
+  padding: var(--space-8) var(--space-16);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-dim);
+  border-radius: var(--footer-radius);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+}
+
+/* One highlight for both the mouse and the keyboard. Two different-looking
+   states for "the pointer is here" and "the arrow keys are here" is a thing
+   custom dropdowns do and it reads as a bug. */
+.select__option.is-active,
+.select__option[aria-selected="true"] {
+  color: var(--color-ink);
+  background-color: rgb(255 255 255 / 0.07);
+}
+
+@media (hover: hover) {
+  .select__option:hover { color: var(--color-ink); background-color: rgb(255 255 255 / 0.07); }
+}
+
+.select__option--placeholder { color: var(--color-ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .select__list { transition: opacity var(--dur-fast) linear, visibility 0s linear var(--dur-fast); transform: none; }
+  .select.is-open .select__list { transform: none; }
+  .select__button::after { transition: none; }
+}
+
+/* --- Individual or company ----------------------------------------------
+ * The native radio is replaced by its label, styled as a pill. The input stays
+ * in the DOM and keeps every behaviour that matters - arrow keys move between
+ * options, the group is announced as a group, and the form reads it normally.
+ * Only its appearance is discarded. */
+/* --- A field that grows into the form ------------------------------------
+ * The company name, revealed by choosing "company". Animating to a real height
+ * without measuring anything: a grid row goes from 0fr to 1fr, and 1fr on a
+ * single-row grid resolves to the content's own height. `height: auto` cannot
+ * be transitioned; this is the same result and it is pure CSS.
+ *
+ * THE NEGATIVE MARGIN IS NOT A HACK, IT IS ARITHMETIC
+ * The form is a grid with a gap. A collapsed item is still an item, so it
+ * still gets a gap on each side — closed, this would leave a double space
+ * where the field is not. Pulling one gap's worth back while closed makes the
+ * spacing exactly the same as if the element were not there, and releasing it
+ * as the row opens keeps the movement in one piece. */
+.field--reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-block-start: calc(var(--space-24) * -1);
+  transition: grid-template-rows var(--dur-base) var(--ease-out),
+              margin-block-start var(--dur-base) var(--ease-out);
+}
+
+/* min-height:0 is required — a grid item's default min-height is auto, which
+   refuses to shrink below its content and would leave the row stuck open. */
+.field--reveal__inner { overflow: hidden; min-height: 0; }
+
+.field--reveal.is-open {
+  grid-template-rows: 1fr;
+  margin-block-start: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field--reveal { transition: none; }
+}
+
+.choice { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.choice__option { flex: 1 1 8rem; }
+
+/* Off-screen rather than display:none, which would drop it out of the tab
+   order and take the keyboard support with it. */
+.choice__option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px; height: 1px;
+  pointer-events: none;
+}
+
+.choice__face {
+  display: block;
+  padding: var(--space-16);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-ink-dim);
+  background-color: rgb(255 255 255 / 0.03);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--footer-radius);
+  cursor: pointer;
+  transition: border-color var(--dur-base) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out),
+              color var(--dur-base) var(--ease-out);
+}
+
+.choice__option input:checked + .choice__face {
+  color: var(--color-ink);
+  border-color: var(--color-ink);
+  background-color: rgb(255 255 255 / 0.08);
+}
+
+/* The focus ring has to be put back by hand: it normally belongs to the input,
+   and the input is the part that is no longer visible. Without this the group
+   is invisible to anyone navigating by keyboard. */
+.choice__option input:focus-visible + .choice__face { outline: 0.125rem solid var(--color-ink); outline-offset: 0.125rem; }
+
+@media (hover: hover) {
+  .choice__face:hover { color: var(--color-ink); border-color: var(--color-ink-dim); }
+}
+
+/* --- What went wrong, said under the field itself -------------------------
+ * Next to the input rather than in one summary at the top: the message has to
+ * be where the correction happens, or it is read, scrolled away from, and
+ * forgotten before the field is reached.
+ *
+ * The message is EMPTY until something is actually wrong, and collapses to no
+ * height, so nothing reserves space for an error that may never come. */
+.field__error {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--color-error);
+}
+
+.field__error:empty { display: none; }
+
+/* Colour is not the only signal - the border changes too. On its own, red text
+   is invisible to anyone who cannot separate red from grey. */
+.field.is-invalid .field__input,
+.field.is-invalid .select__button,
+.field.is-invalid .choice__face {
+  border-color: var(--color-error);
+}
+
+/* The honeypot. Off-screen rather than display:none: a field that is display
+   :none is a well-known signal to skip, so the better-written bots ignore it
+   and the trap catches nothing. Moved out of view it still looks like a real
+   field to anything reading the DOM, while no person can reach it — the
+   markup also carries tabindex="-1" and aria-hidden so keyboard and screen
+   reader users never land on it. */
+.field--honeypot {
+  position: absolute;
+  left: -100vw;
+  width: 1rem;
+  height: 1rem;
+  overflow: hidden;
+}
+
+/* The submit outcome, coloured from data-state that contact.js sets. */
+.contact__status { margin: 0; font-size: var(--text-sm); min-height: 1.5em; }
+.contact__status[data-state="ok"]    { color: var(--cam-frame-active); }
+.contact__status[data-state="error"] { color: var(--color-error); }
+
+/* The way out of a failure. Underlined because it is the one thing on the
+   status line that can be acted on, and nothing else nearby looks like a link. */
+.contact__status-link {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  white-space: nowrap;
+}
+.contact__status-link:hover { color: var(--color-ink); }
+
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover,
+  .btn:focus-visible,
+  .card-work:hover .card-work__video,
+  .card-work:focus-visible .card-work__video { transform: none; }
+}
+
+
+/* ==========================================================================
+   EYE SCRIM  ·  interior pages
+   --------------------------------------------------------------------------
+   On work / project / contact the eye should be background, not subject — it
+   competes with the actual content otherwise. Dimming the WebGL layer itself
+   would let the black page show through unevenly; a flat veil in front of it
+   is cleaner and is what Rogério asked for. The home page has no scrim, so
+   the eye stays at full presence there.
+   ========================================================================== */
+.eye-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-canvas);            /* same layer as the eye; painted after it */
+  background-color: rgb(0 0 0 / 0.66);
+  pointer-events: none;
+}
+
+
+/* ==========================================================================
+   NO HOVER  ·  the same undo as in style.css, for the rules declared here
+   --------------------------------------------------------------------------
+   These have to live in THIS file rather than with the others: pages.css loads
+   after style.css, so a neutraliser over there would be overruled by the
+   :hover rules above. Same selectors, later in the cascade, no extra weight.
+   ========================================================================== */
+@media (hover: none) {
+  .btn:hover .text-echo { --echo-opacity: 0; --echo-shift: 0; }
+  .btn:hover { transform: none; }
+
+  .card-work:hover .card-work__name.text-echo { --echo-opacity: 0; --echo-shift: 0; }
+  .card-work:hover { transform: none; }
+  .card-work:hover .card-work__video,
+  .card-work:hover .card-work__still,
+  .card-work:hover .slides { transform: scale(1.001); }
+}

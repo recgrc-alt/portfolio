@@ -1,0 +1,2619 @@
+/* ==========================================================================
+   STYLE  ·  Rogério Edgar — Portfolio
+   --------------------------------------------------------------------------
+   Depends on tokens.css (loaded first). No hardcoded colors/sizes/spaces.
+   No inline styles. The only !important lives in the Lenis block below and is
+   required by the smooth-scroll library.
+
+   TABLE OF CONTENTS
+     1.  LENIS            (smooth-scroll library — required rules)
+     2.  RESET
+     3.  BASE
+     4.  UTILITIES
+     5.  LAYER · EYE      (fixed 3D background)
+     6.  LAYER · MASTHEAD (fixed top bar + blur underlay)
+     7.  LAYER · HUD      (fixed footer — local time never disappears)
+     8.  CONTENT · PANELS (full-height sections over the eye)
+     9.  HERO             (title: split type · blend · reveal · scroll-away)
+     10. SERVICES         (disciplines list · reveal · hover · blend)
+     10f.FOOTER           (closing statement · contact marks)
+     11. MOTION           (keyframes · reduced-motion)
+     12. RESPONSIVE       (foundation — full breakpoints next phase)
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. LENIS  (smooth scroll) — library-required rules
+   -------------------------------------------------------------------------- */
+html.lenis,
+html.lenis body { height: auto; }
+
+.lenis.lenis-smooth { scroll-behavior: auto !important; } /* lib requirement */
+
+.lenis.lenis-stopped { overflow: hidden; }
+
+
+/* ==========================================================================
+   2. RESET
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+img, canvas { display: block; max-width: 100%; }
+
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; padding: 0; }
+
+
+/* ==========================================================================
+   3. BASE
+   ========================================================================== */
+body {
+  min-height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;   /* never scroll sideways */
+}
+
+
+/* ==========================================================================
+   4. UTILITIES
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   TEXT ECHO  ·  a duplicate of a word, offset and blended with the original
+   --------------------------------------------------------------------------
+   `difference` inverts wherever the two sets of strokes overlap, which is what
+   produces the interference pattern. The copy comes from `data-text`;
+   `text-transform` is inherited, so markup can stay in sentence case.
+
+   ONE implementation, driven by two variables, so each caller picks its own
+   trigger instead of duplicating the effect:
+     --echo-opacity : 0 hidden … 1 fully present
+     --echo-shift   : how far the copy slides (use `em`, so it scales with the
+                      type rather than drifting between screen sizes)
+
+     · the nav REVEALS the echo on hover        (0 → 1)
+     · the skills marquee REMOVES it on hover   (1 → 0)
+
+   `isolation: isolate` is essential: without it the blend mixes with whatever
+   is behind — including the 3D eye — so the effect would change as you scroll.
+   -------------------------------------------------------------------------- */
+.text-echo {
+  position: relative;
+  display: inline-block;               /* inline boxes can't host inset: 0 */
+  isolation: isolate;
+  --echo-opacity: 0;
+  --echo-shift: 0;
+}
+
+.text-echo::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: inherit;
+  mix-blend-mode: difference;
+  opacity: var(--echo-opacity);
+  transform: translateX(var(--echo-shift));
+  transition: opacity var(--nav-hover-dur) var(--ease-out),
+              transform var(--nav-hover-dur) var(--ease-out);
+  pointer-events: none;
+}
+
+/* Reduced motion: keep the state change, drop the slide. */
+@media (prefers-reduced-motion: reduce) {
+  .text-echo::after { transform: none; transition: opacity var(--dur-fast) linear; }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+
+/* ==========================================================================
+   5. LAYER · EYE  (fixed 3D background, stays across all scroll)
+   --------------------------------------------------------------------------
+   Three.js writes width/height inline on the <canvas> (renderer behaviour) —
+   we only own the CSS box. Sits under everything; ignores pointer events.
+   ========================================================================== */
+.eye-layer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+}
+
+
+/* ==========================================================================
+   6. LAYER · MASTHEAD  (fixed top bar)
+   --------------------------------------------------------------------------
+   Always visible. A ::before pseudo-element paints a blur + gradient bar that
+   fades out downward, so when the eye scrolls under it there's a soft frosted
+   strip rather than a hard edge.
+   ========================================================================== */
+.masthead {
+  position: fixed;
+  inset: 0 0 auto 0;                 /* pinned to the top edge */
+  z-index: var(--z-chrome);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-24);
+  padding: var(--page-margin);
+  pointer-events: none;              /* re-enabled on children */
+}
+.masthead > * { pointer-events: auto; }
+
+/* The phone deck's position dots. Empty and hidden until the breakpoint
+   builds them — desktop keeps the scroll-driven rail and needs no indicator. */
+.quick-dots { display: none; }
+
+/* The phone's copy of the About photo. Hidden here; the breakpoint turns it
+   on and hides the WebGL canvas it stands in for. */
+.reveal__still { display: none; }
+
+/* The phone-only scroll hint inside the About stage (see the breakpoint). */
+.about__scrollhint { display: none; }
+
+/* The grey/blue flash a mobile browser paints over whatever you tap. It is the
+   platform's own affordance, and on a dark site with its own hover language it
+   reads as a bug rather than feedback. Removed site-wide; :focus-visible still
+   draws a real ring for anyone using a keyboard. */
+a, button, [role="button"], summary, input, textarea, select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The nav panel is given tabindex="-1" so it can receive focus when it opens
+   (see nav-menu.js). It is a container, not a control, so it must not draw a
+   focus ring of its own. */
+.nav:focus { outline: none; }
+
+/* --- Nav toggle ----------------------------------------------------------
+ * The two-bar button that opens the phone's full-screen menu. It does not
+ * exist above the breakpoint: the rule that shows it lives in the responsive
+ * section at the bottom of this file, so nothing here can reach the desktop
+ * masthead. The bars are sized in em so they track the button's own font-size
+ * rather than being pinned to a device pixel. */
+.nav-toggle {
+  /* The two measures the mark is built from, declared once. Everything below
+     is derived from them — including how far each bar must travel to cross —
+     so the X stays a true X at any size instead of relying on numbers that
+     happened to line up at one. Both are rem, so they scale with the reader's
+     font size like every other measure on the site. */
+  /* Both scale with the screen between rem bounds, so the mark keeps its
+     proportions on a small phone and on a large one instead of holding one
+     absolute size. The clamps stop the thickness disappearing at the bottom
+     end or turning into a slab at the top. */
+  --bar: clamp(0.125rem, 0.5vw, 0.1875rem);   /* the thickness of one bar */
+  --bar-gap: clamp(0.35rem, 1.5vw, 0.5rem);   /* the space between the two */
+
+  display: none;                       /* the breakpoint turns this on */
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--bar-gap);
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--color-ink);
+}
+
+.nav-toggle__bar {
+  display: block;
+  width: 100%;
+  height: var(--bar);
+  background-color: currentColor;
+  border-radius: var(--bar);
+  /* Both bars animate on the SAME two properties, so the open state only has
+     to state where each one ends up. */
+  transition: transform var(--dur-base) var(--ease-out),
+              opacity var(--dur-base) var(--ease-out);
+}
+
+/* Open: the bars cross into an X. Each travels to the midpoint between them —
+   half the gap plus half its own thickness — and rotates the opposite way. */
+.is-menu-open .nav-toggle__bar:first-child {
+  transform: translateY(calc((var(--bar-gap) + var(--bar)) / 2)) rotate(45deg);
+}
+.is-menu-open .nav-toggle__bar:last-child {
+  transform: translateY(calc((var(--bar-gap) + var(--bar)) / -2)) rotate(-45deg);
+}
+
+/* ==========================================================================
+   LOADER  ·  the eye that turns while the site arrives
+   --------------------------------------------------------------------------
+   Above everything, including the page veil, because it IS the first thing.
+   loader.js removes it when the page is ready; the animation below is the
+   safety net — it hides the loader on its own after the same ceiling the
+   script uses, so a failed bundle can never leave a visitor staring at a
+   black screen with no way past it.
+   ========================================================================== */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loader);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: clamp(var(--space-24), 4svh, var(--space-48));
+  background-color: var(--color-bg);
+  opacity: 1;
+  transition: opacity var(--dur-slow) var(--ease-out);
+  /* The net: fades itself out at the ceiling, whatever the script is doing. */
+  animation: loader-giveup 0s linear var(--loader-max) forwards;
+}
+
+/* What the script does when the page is actually ready. */
+.loader.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes loader-giveup { to { opacity: 0; pointer-events: none; } }
+
+.loader__eye {
+  display: block;
+  /* Deliberately small. The eye is a full-screen presence everywhere else on
+     the site, so at the door it works better as a quiet mark than as another
+     big one. Tops out at 100px; the source is rendered at 200 so it stays
+     sharp where those are 200 real pixels. */
+  width: clamp(3.5rem, 18vw, 6.25rem);
+  height: auto;
+}
+
+/* Three dots counting under the eye. They fade in turn rather than bounce:
+   the eye is already moving, and two motions competing would read as busy. */
+.loader__dots {
+  display: flex;
+  gap: var(--space-8);
+  margin: 0;
+}
+
+.loader__dots span {
+  width: 0.375rem;
+  height: 0.375rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--color-ink-faint);
+  animation: loader-dot 1.4s var(--ease-inout) infinite;
+}
+
+.loader__dots span:nth-child(2) { animation-delay: 0.18s; }
+.loader__dots span:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes loader-dot {
+  0%, 70%, 100% { opacity: 0.25; transform: none; }
+  35%           { opacity: 1;    transform: translateY(-0.25rem); }
+}
+
+/* Reduced motion: keep the screen, drop the movement. The eye still shows,
+   it simply does not spin, and the dots hold instead of pulsing. */
+@media (prefers-reduced-motion: reduce) {
+  .loader__dots span { animation: none; opacity: 0.6; }
+}
+
+/* --- Page veil -----------------------------------------------------------
+ * The black wipe between pages (see page-transition.js).
+ *
+ * The ENTRANCE is a CSS animation, not a JS one, and that is the whole safety
+ * story: the element ships opaque and clears itself on load whether or not any
+ * script runs. A broken bundle can cost you the exit animation; it can never
+ * leave a visitor staring at a black rectangle waiting for JS to lift it.
+ *
+ * The EXIT is a transition the script triggers by adding .is-leaving — its
+ * duration is --veil-leave, which page-transition.js waits out before it hands
+ * over to the next document. Change one and change the other. */
+.page-veil {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-veil);
+  background-color: var(--color-bg);
+  pointer-events: none;                /* never intercepts a click */
+  opacity: 0;
+  animation: veil-clear var(--dur-slow) var(--ease-out) both;
+}
+
+@keyframes veil-clear {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.page-veil.is-leaving {
+  animation: none;                     /* hand over from the entrance */
+  opacity: 1;
+  transition: opacity var(--veil-leave) var(--ease-out);
+}
+
+.masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  backdrop-filter: blur(var(--blur-nav));
+  -webkit-backdrop-filter: blur(var(--blur-nav));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), transparent);
+  /* Fade the blur strip out toward the bottom. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+          mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+/* Wordmark (top-left) */
+.wordmark {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+/* Navigation (top-right).
+   The big gap is between the links and the language switch — the masthead is
+   space-between, so widening it pulls Work/About/Contact leftwards and leaves
+   PT/ENG sitting on the right edge as their own pair. */
+.nav { display: flex; align-items: center; gap: clamp(var(--space-64), 8vw, var(--space-128)); }
+.nav__list { display: flex; gap: var(--space-24); }
+
+/* Positioning/isolation come from the shared .text-echo utility. */
+.nav__link,
+.lang__btn {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+/* Nav links opt into the shared echo utility (see UTILITIES) and reveal it
+   on hover — the skills marquee uses the SAME utility the other way round. */
+.nav__link:hover,
+.lang__btn:hover,
+.nav__link:focus-visible,
+.lang__btn:focus-visible {
+  --echo-opacity: 1;
+  --echo-shift: var(--nav-hover-shift);
+}
+
+/* Language switch — the two sit tight together as one pair. */
+/* Language + sound sit together as one cluster, so the big gap in .nav opens
+   between the LINKS and the CONTROLS rather than between every item — which is
+   what pulls the whole nav slightly left now that there is one more control. */
+.nav__controls { display: flex; align-items: center; gap: var(--space-24); }
+
+.lang { display: flex; gap: var(--space-16); }
+
+/* --- Sound toggle --------------------------------------------------------
+ * Mutes the site. Both glyphs are in the markup; only one is ever painted.
+ * At rest it shows the CURRENT state, and on hover it shows the OTHER one —
+ * so pointing at it previews what pressing it does, which is the whole reason
+ * the struck-through speaker reads as "click to mute" rather than "is muted".
+ *
+ * aria-pressed="true" means MUTED. */
+.sound-btn {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-ink-dim);
+  transition: color var(--nav-hover-dur) var(--ease-out);
+}
+
+.sound-btn:hover,
+.sound-btn:focus-visible { color: var(--color-ink); }
+
+.sound-btn__icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sound-btn__glyph { fill: currentColor; }
+
+/* Sound ON: speaker at rest, struck-through on hover (what a click will do). */
+.sound-btn[aria-pressed="false"] .sound-btn__glyph--off,
+.sound-btn[aria-pressed="false"]:hover .sound-btn__glyph--on,
+.sound-btn[aria-pressed="false"]:focus-visible .sound-btn__glyph--on { display: none; }
+
+/* Sound OFF: struck-through at rest, plain speaker on hover. */
+.sound-btn[aria-pressed="true"] .sound-btn__glyph--on,
+.sound-btn[aria-pressed="true"]:hover .sound-btn__glyph--off,
+.sound-btn[aria-pressed="true"]:focus-visible .sound-btn__glyph--off { display: none; }
+
+/* Muted is a resting state, not an alert — it sits quieter than the rest of
+   the chrome until pointed at. */
+.sound-btn[aria-pressed="true"] { color: var(--color-ink-faint); }
+
+/* WITHOUT HOVER THE PREVIEW IS NOT JUST POINTLESS, IT IS BROKEN.
+   A phone leaves :hover stuck on whatever you last tapped. Combined with the
+   two rules above, both glyphs then match a display:none — the state hides one
+   and the stuck hover hides the other — and the button renders EMPTY, in both
+   states. Verified before fixing.
+   Here the preview is dropped entirely: the icon simply shows the current
+   state, and tapping inverts it. Which is what a phone expects anyway. */
+@media (hover: none) {
+  .sound-btn[aria-pressed="false"]:hover .sound-btn__glyph--on { display: inline; }
+  .sound-btn[aria-pressed="true"]:hover  .sound-btn__glyph--off { display: inline; }
+}
+
+/* Inactive is dimmed; the active one is full white. */
+.lang__btn {
+  color: var(--color-ink-dim);
+  text-shadow: none;
+  transition: color var(--nav-hover-dur) var(--ease-out),
+              text-shadow var(--nav-hover-dur) var(--ease-out);
+}
+.lang__btn.is-active { color: var(--color-ink); }
+
+/* Hovering the inactive one brings it up to full white and adds a soft lift,
+   on top of the shared translate/difference effect. */
+.lang__btn:hover,
+.lang__btn:focus-visible {
+  color: var(--color-ink);
+  text-shadow: var(--glow-nav);
+}
+
+
+/* ==========================================================================
+   7. LAYER · HUD  (fixed footer — persistent)
+   --------------------------------------------------------------------------
+   Local time (left) + location (right) stay on screen at all times; they do
+   NOT belong to any scrolling panel.
+   ========================================================================== */
+.hud {
+  position: fixed;
+  inset: auto 0 0 0;                 /* pinned to the bottom edge */
+  z-index: var(--z-chrome);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  gap: var(--space-24);
+  padding: var(--page-margin);
+  pointer-events: none;
+}
+.hud > * { pointer-events: auto; }
+
+.meta {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+.meta--time  { justify-self: start; }
+.meta--place { justify-self: end; text-align: right; }
+
+.meta__label { color: var(--color-ink-faint); }
+.meta__value { color: var(--color-ink); font-variant-numeric: tabular-nums; }
+
+/* --- The hour picker ------------------------------------------------------
+ * Opened from the local time in the bottom-left. Anchored to that corner and
+ * deliberately NOT a centred modal: the whole point is watching the eye change
+ * while the slider moves, so covering or dimming the page would hide the
+ * result of the very thing being adjusted.
+ *
+ * The HUD needs a stacking context of its own for this — the panel is
+ * positioned against the time readout, which has to become the reference. */
+/* The picker's anchor. It has to be a real element wrapping the time, not the
+   time itself: hour-picker.js appends the panel to the trigger's PARENT, and
+   with the <p> as trigger that parent was the whole HUD — so `left: 50%` was
+   half of 1265px instead of half of the readout, and the panel landed near the
+   middle of the screen instead of over the clock. */
+.hud__slot { position: relative; justify-self: start; }
+
+.meta--time.is-pressable { cursor: pointer; }
+
+@media (hover: hover) {
+  .meta--time.is-pressable:hover .meta__value { color: var(--color-iris-amber); }
+}
+
+/* No panel, no border, no background. The controls sit straight on the page
+   above the readout that opened them — anything drawn around them would be a
+   second box competing with the eye for a job that needs three elements. */
+.hour-picker {
+  position: absolute;
+  /* One line of type above the readout, and no more. This used to resolve
+     against the whole HUD rather than the time, which is where the "too far
+     up" came from — 100% was the HUD's full height, not the clock's. */
+  bottom: calc(100% + var(--space-16));
+  /* Centred over the time it belongs to. Left-aligned, the panel is wider than
+     the words and reads as sitting off to one side rather than above them. */
+  left: 50%;
+  z-index: var(--z-chrome);
+  display: grid;
+  gap: var(--space-8);
+  justify-items: center;
+  /* Wide enough for the slider to be worth dragging, and never wider than the
+     screen it is pinned to the corner of. */
+  width: clamp(11rem, 24vw, 15rem);
+
+  /* Closed by default so the open state is one class. Kept out of the tab
+     order while hidden — visibility does that, opacity alone would not.
+     The X half of the transform is the centring and must survive both states,
+     so the two are written together rather than as translateY alone. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, var(--space-8));
+  transition: opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out),
+              visibility 0s linear var(--dur-fast);
+}
+
+.hour-picker.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-delay: 0s;
+}
+
+.hour-picker__readout {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(var(--text-lg), 3.2vw, var(--text-xl));
+  /* Tabular figures so nothing resizes as the digits change — at a proportional
+     width, 11:00 and 00:00 are different lengths and the whole block would
+     twitch on every step of the slider. */
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+/* Track and reset on one line. */
+.hour-picker__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  width: 100%;
+}
+
+/* The track is drawn from scratch: left native it arrives in the operating
+   system's accent colour, which is the one thing on the page nobody chose. */
+.hour-picker__slider {
+  appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 1.25rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hour-picker__slider::-webkit-slider-runnable-track {
+  height: 0.0625rem;
+  background-color: var(--color-ink-faint);
+}
+
+.hour-picker__slider::-moz-range-track {
+  height: 0.0625rem;
+  background-color: var(--color-ink-faint);
+}
+
+/* Grey at rest, white under the hand. The colour change IS the feedback — it
+   is the only thing that says the dot is the part you take hold of. */
+.hour-picker__slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 0.6875rem;
+  height: 0.6875rem;
+  margin-top: -0.3125rem;   /* centres it on the hairline track */
+  border-radius: 50%;
+  border: 0;
+  background-color: var(--color-ink-dim);
+  transition: background-color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.hour-picker__slider::-moz-range-thumb {
+  width: 0.6875rem;
+  height: 0.6875rem;
+  border-radius: 50%;
+  border: 0;
+  background-color: var(--color-ink-dim);
+  transition: background-color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+/* Repeated rather than grouped on purpose: a selector list containing a vendor
+   pseudo-element one browser does not know is thrown away ENTIRELY by that
+   browser, taking the rules for the others with it. */
+.hour-picker__slider:hover::-webkit-slider-thumb,
+.hour-picker__slider:active::-webkit-slider-thumb,
+.hour-picker__slider:focus-visible::-webkit-slider-thumb {
+  background-color: var(--color-ink);
+  transform: scale(1.15);
+}
+
+.hour-picker__slider:hover::-moz-range-thumb,
+.hour-picker__slider:active::-moz-range-thumb,
+.hour-picker__slider:focus-visible::-moz-range-thumb {
+  background-color: var(--color-ink);
+  transform: scale(1.15);
+}
+
+.hour-picker__slider:focus-visible { outline: none; }
+
+/* The reset. An icon rather than words: next to a slider and a time, "Back to
+   now" is a third piece of language in a corner that already has two. */
+.hour-picker__now {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  padding: 0;
+  color: var(--color-ink-dim);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-base) var(--ease-out);
+}
+
+.hour-picker__now svg { width: 100%; height: 100%; }
+
+/* Nothing to undo yet: faded and unclickable, but still occupying its space so
+   the slider never shifts sideways underneath the hand that is using it. */
+.hour-picker__now.is-idle { opacity: 0.25; cursor: default; }
+
+@media (hover: hover) {
+  .hour-picker__now:not(.is-idle):hover {
+    color: var(--color-ink);
+    transform: rotate(-180deg);
+  }
+}
+
+.hour-picker__now:focus-visible {
+  outline: 0.125rem solid var(--color-ink);
+  outline-offset: 0.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hour-picker {
+    transition: opacity var(--dur-fast) linear, visibility 0s linear var(--dur-fast);
+    /* The lift is dropped, the centring is not — `transform: none` here would
+       shunt the panel half its own width to the right. */
+    transform: translate(-50%, 0);
+  }
+}
+
+/* --- The place readout, before it knows where you are ---------------------
+ * While it can still ask, it is a button and has to look like one — a dotted
+ * underline rather than a solid one, which reads as "there is more here" and
+ * not as a link to somewhere else. Once the distance is showing there is
+ * nothing left to press and every one of these is dropped again. */
+[data-distance].is-askable {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--color-ink-faint);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  [data-distance].is-askable:hover { color: var(--color-ink); }
+}
+
+/* Waiting on the fix. Deliberately a fade and nothing more: a spinner in the
+   corner of the screen pulls the eye away from the page for something the
+   visitor asked for and can see the result of. */
+[data-distance].is-busy { animation: hud-waiting 1.2s var(--ease-inout) infinite; }
+
+@keyframes hud-waiting { 50% { opacity: 0.4; } }
+
+/* While the number is running up. Tabular figures are the whole trick: with
+   proportional digits every frame of the count is a different width and the
+   readout jitters against the right edge it is aligned to. */
+[data-distance].is-counting,
+[data-distance].is-measured { font-variant-numeric: tabular-nums; }
+
+/* Once it has landed it is the one measured fact in the corner, so it stops
+   being secondary text. */
+[data-distance].is-measured {
+  color: var(--color-ink);
+  animation: hud-landed var(--dur-slow) var(--ease-out);
+}
+
+@keyframes hud-landed { from { opacity: 0.55; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-distance].is-busy { animation: none; opacity: 0.6; }
+  [data-distance].is-measured { animation: none; }
+}
+
+
+/* ==========================================================================
+   8. CONTENT · PANELS
+   --------------------------------------------------------------------------
+   Each panel is a full-height stage centred over the fixed eye. Panels are
+   transparent so the eye shows through every one of them.
+   ========================================================================== */
+/* No z-index here on purpose: .content must NOT form an isolating stacking
+   context, or the panels' mix-blend-mode couldn't reach the eye behind them.
+   Normal-flow content already paints above the eye (which is at z-index -1). */
+.content { position: relative; }
+
+.panel {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-96) var(--page-margin);
+}
+
+
+/* ==========================================================================
+   9. HERO
+   --------------------------------------------------------------------------
+   Title typography is split: line 1 in Space Grotesk (display), the name in
+   Inter italic. The whole title blends against the eye (mix-blend difference).
+   `--exit` (0→1, driven by JS on scroll) slides it up and fades it out.
+   ========================================================================== */
+/* --exit (0→1) is set by scroll-fx.js on the hero section so BOTH the title
+   and the scroll-hint (siblings) inherit it. */
+.panel--hero { --exit: 0; }
+
+.hero-title {
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  mix-blend-mode: difference;
+  /* scroll-away */
+  transform: translateY(calc(var(--exit) * -18vh));
+  opacity: calc(1 - var(--exit));
+  will-change: transform, opacity;
+}
+
+.hero-title__line {
+  display: block;
+  font-family: var(--font-display);   /* "Through the Eyes of" */
+  font-weight: var(--weight-bold);
+  font-size: var(--text-hero);
+}
+
+/* The name: Inter, italic — the deliberate typographic contrast. */
+.hero-title__name {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-weight: var(--weight-bold);
+}
+
+/* Scroll hint (fades out as you leave the hero). */
+.scroll-hint {
+  position: absolute;
+  bottom: var(--space-64);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  opacity: calc(1 - var(--exit, 0));
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+
+/* ==========================================================================
+   10. SERVICES  (disciplines list)
+   --------------------------------------------------------------------------
+   Big clickable items that reveal on scroll and blend over the eye. Each is a
+   link into its future project area.
+   ========================================================================== */
+.services {
+  display: flex;
+  flex-direction: column;
+  align-items: center;               /* centre each item on the page */
+  gap: var(--space-24);
+  width: min(100%, var(--page-maxw));
+  text-align: center;
+  mix-blend-mode: difference;
+}
+
+.service__link {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;           /* centre index + label within the item */
+  gap: var(--space-24);
+  font-family: var(--font-display);
+  font-size: var(--text-service);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+  transition: transform var(--dur-base) var(--ease-out),
+              filter    var(--dur-base) var(--ease-out);
+}
+
+.service__index {
+  color: var(--color-ink-dim);
+  font-weight: var(--weight-medium);
+}
+
+/* Hover: nudge right + lift with the shared drop-shadow token. */
+.service__link:hover {
+  transform: translateX(var(--space-16));
+  filter: var(--drop-1);
+}
+.service__link:hover .service__index { color: var(--color-ink); }
+
+
+/* ==========================================================================
+   10b. ABOUT → A QUICK LOOK  ·  one section, one photo
+   --------------------------------------------------------------------------
+   The SAME cutout carries both phases: it is never swapped for a second image.
+   Scrolling grows it, swaps the statement for the title, retires the hover
+   reveal, then drives the cards sideways.
+
+   horizontal-scroll.js writes only --h-progress (0→1) and --h-distance. Every
+   phase below is derived from that single value HERE, in CSS, so the whole
+   choreography stays responsive and the JS stays dumb.
+   ========================================================================== */
+.about {
+  position: relative;
+  /* Room for: reading the statement, the hand-over to the title, a good long
+     look at the title over the photo, and finally the card travel.
+     The extra height matters — squeeze it and the card rail is forced through
+     in too little scroll, which makes it race sideways. */
+  height: calc(280svh + var(--h-distance, 0px));
+  background-color: var(--color-bg);
+  isolation: isolate;
+}
+
+/* Soft transition cast UPWARD as this section slides over the eye.
+   A box-shadow would be invisible (black on black), so this blurs and darkens
+   what is behind it — the eye — the same way the masthead does.
+   Two details stop it reading as a rectangle:
+     · the gradient closes at FULL black, so it meets the panel with no seam
+       (ending at 0.9 left a visible hard line across the eye);
+     · a mask fades the blur itself out towards the top, otherwise
+       backdrop-filter stops dead at the element's edge. */
+.about::before,
+.about::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(7rem, 20vh, 16rem);
+  backdrop-filter: blur(var(--blur-seam));
+  -webkit-backdrop-filter: blur(var(--blur-seam));
+  pointer-events: none;
+}
+
+/* Entering the section from the hero.
+   The negative margin makes the gradient OVERLAP the section by a hair. Butted
+   exactly against it, sub-pixel rounding leaves a sliver where neither paints,
+   and the eye shows through undimmed as a thin bright line. The seam is full
+   width, but only visible where something bright sits behind it — which is why
+   it reads as a line the width of the eye. */
+.about::before {
+  bottom: 100%;                       /* directly above the section's top edge */
+  margin-bottom: calc(var(--seam-overlap) * -1);
+  background: linear-gradient(to top, rgb(0 0 0 / 1), rgb(0 0 0 / 0));
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 100%);
+          mask-image: linear-gradient(to top, #000 10%, transparent 100%);
+}
+
+/* Leaving it into Capabilities. Without this the section's solid black simply
+   stops and the eye behind appears along a hard horizontal line; this lets it
+   surface gradually instead. Mirror of ::before, pointing the other way. */
+.about::after {
+  top: 100%;                          /* directly below the section's bottom edge */
+  margin-top: calc(var(--seam-overlap) * -1);
+  background: linear-gradient(to bottom, rgb(0 0 0 / 1), rgb(0 0 0 / 0));
+  -webkit-mask-image: linear-gradient(to bottom, #000 10%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 10%, transparent 100%);
+}
+
+.about__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+
+  /* LAYOUT — each phase is its own absolutely-positioned layer.
+     Deliberately NOT a grid: the card rail is `width: max-content` (wider than
+     the screen on purpose), and any grid cell it shares gets stretched to that
+     width, pushing everything else off-centre. Absolute layers cannot be
+     stretched by a sibling, so this whole class of bug is gone. */
+
+  /* --- the choreography, all from one progress value -------------------
+   * PHASE 1 HOLDS AT REST until 34%. That hold is the whole point: it is the
+   * hover-reveal moment, and starting the growth at 0 meant it was already
+   * scaling and fading within ~200px of scroll — you never got to see it. */
+  --p: var(--h-progress, 0);
+
+  /* PHASE 1 holds at rest until 18%. That hold is the hover-reveal moment. */
+  --p-grow: clamp(0, calc((var(--p) - 0.18) / 0.24), 1);    /* photo grows */
+
+  /* HAND-OVER — deliberately two separate curves with a GAP between them.
+     Driving both from one value made the statement fade out while the title
+     faded in, so the two texts overlapped mid-cross-fade and read as a mess.
+     The statement is fully gone by 32%; the title only starts at 40%. */
+  --p-statement-out: clamp(0, calc((var(--p) - 0.20) / 0.12), 1);
+  --p-title-in:      clamp(0, calc((var(--p) - 0.40) / 0.10), 1);
+
+  /* The title then holds over the photo for a long stretch — that window is
+     the whole point of the difference blend, so the photo recedes late. */
+  --p-fade:  clamp(0, calc((var(--p) - 0.64) / 0.12), 1);   /* photo recedes */
+  --p-slide: clamp(0, calc((var(--p) - 0.62) / 0.38), 1);   /* cards travel  */
+
+  /* Cursor parallax belongs to phase 1 only, so it leaves with the statement. */
+  --parallax: calc(1 - var(--p-statement-out));
+}
+
+/* Phase 2 title. Sits at the photo's eye line rather than dead centre —
+   --about-title-offset lifts it from the middle, as a percentage of the stage,
+   so it tracks the face at any screen height. */
+.about__title {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-section);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+  mix-blend-mode: difference;
+  opacity: var(--p-title-in);
+  transform: translateY(var(--about-title-offset));
+  pointer-events: none;
+}
+
+/* Phase 3 cards — pinned to the lower band so they clear the centred title. */
+.about__track {
+  position: absolute;
+  left: 0;
+  bottom: var(--about-cards-bottom);
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(var(--space-32), 6vw, var(--space-96));
+  padding-inline: var(--about-cards-inset);   /* bigger side margin, off the edge */
+  width: max-content;
+  will-change: transform;
+  opacity: var(--p-fade);              /* arrive as the photo recedes */
+  transform: translate3d(
+    calc(var(--p-slide) * var(--h-distance, 0px) * -1), 0, 0);
+}
+
+.card {
+  width: var(--card-width);
+  flex: 0 0 auto;
+}
+
+.card__title {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-display);
+  font-size: var(--text-card);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.card__body {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-ink-dim);
+}
+
+.card__tag {
+  margin: var(--space-16) 0 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+/* Pinned to the bottom edge, out of the grid flow so it can't add a row. */
+.about__hint {
+  position: absolute;
+  bottom: var(--space-48);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  opacity: calc(1 - var(--p-statement-out));   /* retires with the hover reveal */
+  pointer-events: none;
+}
+
+/* Phase 1 lives in its OWN centred layer, absolutely positioned OUTSIDE the
+   stage's grid flow. That is deliberate: the card rail is `width: max-content`
+   and, if the photo shared a grid cell with it, the column would stretch to
+   the rail's width and the photo would be centred on THAT — visibly pushed
+   off to one side. Taking it out of the flow keeps it centred on the screen. */
+.reveal {
+  --px: 0; --py: 0;                    /* cursor parallax, set by reveal-photo.js */
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.reveal__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 80vh;
+  /* Viewport-relative ON PURPOSE, and the one measure here that could not be
+     rem. photo-depth.js sizes the canvas at ~80vh, so the photo grows with the
+     screen — but a perspective fixed in px does not. The viewing distance would
+     shrink relative to the subject, and the same mouse tilt would read as a far
+     more violent swing on a big display than on a laptop.
+     133vh keeps the distance-to-subject ratio the old 1200px had at a ~900px
+     tall window (133vh = 1197px there), so the tilt now feels identical at
+     every size instead of only at the one it was tuned on. */
+  perspective: 133vh;
+}
+
+/* BOTH statement layers are <canvas>: the back copy sits behind the cutout,
+   the revealed copy in front of it. They share this class — same box, same
+   typography, same drift — and reveal-photo.js paints both with ONE drawing
+   function, so they physically cannot fall out of alignment.
+
+   The typography lives here as CSS tokens and the JS reads it back with
+   getComputedStyle. That keeps the type fluid (clamp) and token-driven: on a
+   bigger screen the size grows and the canvas follows, with nothing in the JS
+   hard-coded in pixels. */
+.reveal__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;                /* the stage handles the cursor */
+
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-statement);
+  line-height: 1.04;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+
+  /* Sideways slide while a hint sweep passes.
+     The unit is `em`, NOT `%`: a percentage resolves against each element's own
+     box, so if the two canvases were ever sized differently they would slide by
+     different amounts and the letters would ghost again. `em` resolves against
+     font-size — the same token on both — so they are locked together by
+     construction, and it still scales with the type on any screen.
+     will-change promotes it to its own layer, so the per-frame value change is
+     a cheap composite instead of a repaint. */
+  transform: translate3d(calc(var(--sweep-shift, 0) * 1em), 0, 0);
+  will-change: transform;
+  /* A barely-there breath so the statement is never dead on screen. Identical
+     on both layers, and the photo does not share it. */
+  animation: statement-drift 9s var(--ease-inout) infinite alternate;
+  /* Both retire BEFORE the "A Quick Look" title arrives — no cross-fade. */
+  opacity: calc(1 - var(--p-statement-out, 0));
+}
+
+.reveal__canvas--back  { z-index: 0; }   /* behind the cutout */
+.reveal__canvas--front { z-index: 2; }   /* revealed on top of it */
+
+/* Uses the individual `translate` property ON PURPOSE, leaving `transform`
+   free for the sweep slide above — the two then compose instead of overwriting
+   each other.
+   In `em` for the same reason as the slide: both layers must move by an
+   identical amount, and em depends only on font-size, never on box size.
+   The old version also breathed a `scale`, which was dropped: scale is
+   inherently relative to each element's own box, so it could pull the two
+   copies apart. */
+@keyframes statement-drift {
+  from { translate: 0 0.022em; }
+  to   { translate: 0 -0.022em; }
+}
+
+/* The cutout, between the two statement layers. It is a WebGL canvas: the
+   cursor parallax is a per-pixel displacement driven by a depth map, done in
+   photo-depth.js, NOT a CSS transform. A CSS rotation only tilts a flat plane
+   — every pixel obeys the same rule, so it still reads as a flat sheet. Only
+   displacing each pixel by its own depth produces parallax between features.
+
+   CSS keeps just the scroll choreography: the phase growth and the fade.
+   --about-photo-growth is 0.20 on purpose — it matches the photo going from
+   82vh to ~100vh. More than that and it gets cropped by the stage.
+   Its display size is set by JS to the photo's own aspect ratio. */
+.reveal__photo {
+  display: block;
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  user-select: none;
+  transform: scale(calc(1 + var(--p-grow, 0) * var(--about-photo-growth)));
+  opacity: 0;                                   /* revealed once textures load */
+  transition: opacity var(--dur-base) var(--ease-out);
+  will-change: transform;
+}
+
+/* photo-depth.js adds this once both textures are decoded, so the photo fades
+   in instead of popping. The scroll fade then takes over. */
+.reveal__photo.is-ready {
+  opacity: calc(1 - var(--p-fade, 0) * 0.86);   /* recedes behind the cards */
+}
+
+.reveal__hint {
+  position: absolute;
+  bottom: var(--space-16);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  pointer-events: none;
+}
+
+
+/* ==========================================================================
+   10c. CAPABILITIES  ·  skills marquee over the sunken eye
+   --------------------------------------------------------------------------
+   Transparent on purpose so the fixed 3D eye shows through; JS sinks the eye
+   (--eye-y) while this section is on screen so only its top half is visible.
+
+   Each entry is a MARK above a WORD, and both carry the same difference echo:
+   at rest they sit just above the background with a displaced ghost, and
+   pointing at one resolves the pair into clean white together.
+
+   The word uses the shared .text-echo utility. The mark cannot — content:
+   attr() makes a string, not a shape — so an icon's echo is a second copy of
+   the SVG, driven by the SAME two variables. One hover, one pair of values,
+   two different kinds of ghost.
+   ========================================================================== */
+.skills {
+  position: relative;
+  height: 180svh;                      /* room for the eye to sink into place */
+}
+
+.skills__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  align-content: start;
+  gap: var(--space-64);
+  padding-block: var(--space-96);
+  overflow: hidden;                    /* clips the marquee's overflow */
+}
+
+.skills__title {
+  margin: 0;
+  text-align: center;
+  padding-inline: var(--page-margin);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-card);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+/* --- Marquee ---------------------------------------------------------
+ * Two identical tracks sit side by side and both translate by exactly one
+ * track width, so the loop has no visible seam. Pure CSS: no per-frame JS. */
+.marquee {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.marquee__track {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;               /* words share a baseline, marks stack up */
+  gap: clamp(var(--space-32), 4.5vw, var(--space-96));
+  padding-inline: clamp(var(--space-16), 2.25vw, var(--space-48));
+  margin: 0;
+  /* Duration is derived from the track's measured width by marquee.js, so the
+     speed stays the same whatever the type size or the number of tools.
+     --marquee-speed is only the fallback for the frame before JS runs. */
+  animation: marquee var(--marquee-duration, var(--marquee-speed)) linear infinite;
+}
+
+@keyframes marquee {
+  to { transform: translateX(-100%); }
+}
+
+/* Pause while pointing, otherwise hovering a moving word is a fight. */
+.marquee:hover .marquee__track { animation-play-state: paused; }
+
+/* --- One entry: mark above word --------------------------------------
+ * The echo variables live HERE, on the entry, so a single hover reaches both
+ * the icon's duplicate and the word's ::after without either knowing about
+ * the other. */
+.skill {
+  --echo-opacity: 1;
+  --echo-shift: var(--skill-shift);
+  display: grid;
+  justify-items: center;
+  gap: var(--skill-stack);
+  color: var(--skill-muted);
+  cursor: pointer;
+  transition: color var(--nav-hover-dur) var(--ease-out);
+}
+
+.skill:hover,
+.skill:focus-within {
+  --echo-opacity: 0;
+  --echo-shift: 0;
+  color: var(--color-ink);
+}
+
+/* .text-echo sets these to 0 on itself, which would beat an inherited value —
+   so the entry's state has to be restated at higher specificity for the word
+   and the monogram to follow the same hover as the icon. */
+.skill .text-echo {
+  --echo-opacity: 1;
+  --echo-shift: var(--skill-shift);
+}
+
+.skill:hover .text-echo,
+.skill:focus-within .text-echo {
+  --echo-opacity: 0;
+  --echo-shift: 0;
+}
+
+/* --- The mark --------------------------------------------------------
+ * isolation: isolate for the same reason .text-echo needs it — without it the
+ * difference blend mixes with the 3D eye behind the section and the ghost
+ * changes as you scroll. */
+.skill__mark {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: var(--skill-icon);
+  height: var(--skill-icon);
+}
+
+.skill__icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;                  /* follows the entry through the hover */
+}
+
+/* The second copy: offset, inverted where it overlaps the first. */
+.skill__icon--echo {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: difference;
+  opacity: var(--echo-opacity);
+  transform: translateX(var(--echo-shift));
+  transition: opacity var(--nav-hover-dur) var(--ease-out),
+              transform var(--nav-hover-dur) var(--ease-out);
+  pointer-events: none;
+}
+
+/* Adobe's logos are not openly licensed and their marks ARE two-letter
+   monograms, so these are set in type — which lets them reuse .text-echo
+   instead of needing a duplicated shape. */
+.skill__mono {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: calc(var(--skill-icon) * 0.72);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+}
+
+.skill__name {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--skill-size);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  white-space: nowrap;
+}
+
+/* --- Below the carousel: the quiet way out --------------------------------
+ * Sits muted like the marquee's own entries — the "darker" half of the same
+ * language — and lights up to full ink on hover, exactly like a .skill would.
+ * On top of that it carries the nav/button echo (ghost hidden at rest,
+ * resolving on hover), because this is a link, not a marquee entry: hovering
+ * it should read the same as hovering "Work" in the masthead. No fill, no
+ * border — a word on the dark, same as everything above it. */
+.skills__cta {
+  position: relative;
+  justify-self: center;
+  margin-top: clamp(var(--space-32), 5vh, var(--space-64));
+  padding-bottom: var(--space-8);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  /* Card-heading scale: this is the only thing on the section you are meant to
+     press, so it is sized against the toolkit rather than against the nav. */
+  font-size: var(--text-card);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+  /* Dim, not hidden. --skill-muted is nearly black by design — right for a
+     marquee entry that is one of a dozen, wrong for the one thing here that
+     wants pressing. It still rests below full ink and still lights to it. */
+  color: var(--color-ink-dim);
+  --echo-opacity: 0;
+  --echo-shift: 0;
+  transition: color var(--nav-hover-dur) var(--ease-out);
+}
+
+/* The rule under the word is what makes it read as a target rather than a
+   stray heading — the only "edge" it gets, since a filled button would shout.
+   It starts short and draws itself out from the centre on hover. */
+.skills__cta::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 2.5rem;
+  height: 1px;                       /* hairline — the allowed px */
+  transform: translateX(-50%);
+  background-color: currentColor;
+  transition: width var(--nav-hover-dur) var(--ease-out);
+}
+
+.skills__cta:hover,
+.skills__cta:focus-visible {
+  color: var(--color-ink);
+  --echo-opacity: 1;
+  --echo-shift: var(--nav-hover-shift);
+}
+
+.skills__cta:hover::before,
+.skills__cta:focus-visible::before { width: 100%; }
+
+/* The eye sinks while this section is on screen (JS writes --eye-y). */
+.eye-layer { transform: translateY(var(--eye-y, 0px)); }
+
+
+/* ==========================================================================
+   10d. SELECTED WORKS  ·  responsive video grid
+   --------------------------------------------------------------------------
+   Solid background: the fixed eye must not show through behind the cards.
+   ::before repeats the soft hand-off used between the other sections, so the
+   eye sinks away instead of ending on a hard line.
+   ========================================================================== */
+.work {
+  position: relative;
+  background-color: var(--color-bg);
+  padding-block: clamp(var(--space-96), 14vh, var(--space-128));
+}
+
+.work::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  margin-bottom: calc(var(--seam-overlap) * -1);   /* see .about::before */
+  height: clamp(7rem, 20vh, 16rem);
+  backdrop-filter: blur(var(--blur-seam));
+  -webkit-backdrop-filter: blur(var(--blur-seam));
+  background: linear-gradient(to top, rgb(0 0 0 / 1), rgb(0 0 0 / 0));
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 100%);
+          mask-image: linear-gradient(to top, #000 10%, transparent 100%);
+  pointer-events: none;
+}
+
+/* --- The camera wall -----------------------------------------------------
+   The cap is the point: past it the cards would keep stretching on an
+   ultra-wide screen and the gaps would read as dead space. */
+.work__inner {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+}
+
+.work__head { margin-bottom: clamp(var(--space-48), 6vh, var(--space-80)); }
+
+.work__title {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-section);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+.work__subtitle {
+  margin: 0;
+  max-width: 42ch;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-ink-dim);
+}
+
+/* Exactly three per row, two rows. auto-fit was letting a fourth column
+   squeeze in on a wide screen — the column count has to be stated, not
+   inferred. minmax(0, 1fr) rather than 1fr: the 0 floor stops a wide video
+   from forcing its track past its share and overflowing the row. */
+.work__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--work-gap);
+  margin: 0;
+}
+
+/* Every camera except the one being read falls back out of focus. The rule
+   is driven by a class on the grid rather than :hover on a sibling, because
+   the preview can also be opened by keyboard focus and by tap. */
+.work__item {
+  transition: filter var(--dur-cam-dim) var(--ease-preview),
+              opacity var(--dur-cam-dim) var(--ease-preview);
+}
+
+.work__grid.is-watching .work__item:not(.is-active) {
+  filter: blur(var(--cam-dim-blur));
+  opacity: var(--cam-dim-opacity);
+}
+
+/* No caption, no tag — the record lives in the expanded preview instead.
+   position:relative because the viewfinder anchors to THIS box, not to the
+   media box — see the viewfinder notes below for why that matters. */
+.work__card {
+  position: relative;
+  display: block;
+  color: inherit;
+}
+
+/* No border, no stroke: the media box is pure footage. overflow:hidden is
+   what keeps the zoom-on-hover from spilling, and it is confined to this
+   element — nothing that has to hang outside lives in here. */
+.work__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: #0e0e0e;          /* holds the shape before the first frame */
+}
+
+.work__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.001);            /* hides sub-pixel seams at the edges */
+  transition: transform var(--dur-slow) var(--ease-preview);
+}
+
+.work__card:hover .work__video,
+.work__card:focus-visible .work__video { transform: scale(1.04); }
+
+.work__card:focus-visible { outline: none; }        /* the viewfinder is the focus ring */
+
+
+/* --- Viewfinder ----------------------------------------------------------
+   Four L-shaped marks, shared by the grid cameras and the expanded preview so
+   both read as the same instrument.
+
+   SVG rather than a masked CSS border: a mask cuts the arms off square, and
+   there is no way to round that cut. Here the turn is an arc and the two open
+   ends carry stroke-linecap:round, which is what the brief asked for.
+
+   The negative inset is what puts the marks OUTSIDE the footage. That only
+   works if nothing between the marks and the page clips them, which is why
+   the viewfinder is a SIBLING of the media box rather than a child: the media
+   box carries overflow:hidden for the hover zoom, and anything inside it gets
+   sliced exactly where it sticks out — which is the whole of a corner mark.
+   Anchored to .work__card / .preview__frame instead, both overflow:visible. */
+.viewfinder {
+  position: absolute;
+  inset: calc(var(--cam-corner-out) * -1);
+  z-index: 1;                 /* over the footage, never under it */
+  pointer-events: none;
+}
+
+.viewfinder__corner {
+  position: absolute;
+  width: var(--cam-corner-size);
+  height: var(--cam-corner-size);
+  overflow: visible;
+  fill: none;
+  stroke: var(--cam-frame);
+  stroke-width: var(--cam-corner-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke var(--dur-cam-dim) var(--ease-preview);
+}
+
+/* One drawn shape, mirrored into four.
+
+   The path — M19 1 H6 a5 5 0 0 0 -5 5 v13 — runs left along the TOP, turns
+   through the arc, then down the LEFT. Its vertex lands at (1,1), so the mark
+   as authored is the TOP-LEFT bracket "┌". Every mirror below follows from
+   that, and each one must both flip the mark AND park it at the matching
+   corner: mirroring alone would leave it embracing the wrong angle.
+
+   transform-origin is the default centre, so scaleX(-1) carries the vertex
+   from x=1 to x=19 of a 20-unit box — the far edge — which is exactly where
+   the right-hand corners need it. */
+.viewfinder__corner:nth-child(1) { top: 0;    left: 0;                                }  /* ┌ */
+.viewfinder__corner:nth-child(2) { top: 0;    right: 0; transform: scaleX(-1);        }  /* ┐ */
+.viewfinder__corner:nth-child(3) { bottom: 0; left: 0;  transform: scaleY(-1);        }  /* └ */
+.viewfinder__corner:nth-child(4) { bottom: 0; right: 0; transform: scale(-1, -1);     }  /* ┘ */
+
+/* The camera being read lights up in the eye's green. */
+.work__card:hover .viewfinder__corner,
+.work__card:focus-visible .viewfinder__corner,
+.work__item.is-active .viewfinder__corner,
+.preview__frame .viewfinder__corner { stroke: var(--cam-frame-active); }
+
+
+/* --- On-screen display ---------------------------------------------------
+   Burnt into the picture, the way a real feed carries it. Positioned inside
+   the media box so it reads as part of the signal, not as page furniture. */
+.cam-osd {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--font-display);
+  font-size: var(--cam-data-size);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--cam-data-colour);
+  /* Footage is unpredictable — a shadow is what keeps the data legible over a
+     bright frame without laying a plate behind it. */
+  text-shadow: 0 0 0.5rem rgb(0 0 0 / 0.9), 0 0 0.15rem rgb(0 0 0 / 0.8);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.cam-osd--top    { top: var(--cam-data-inset); left: var(--cam-data-inset); }
+.cam-osd--bottom { bottom: var(--cam-data-inset); right: var(--cam-data-inset); }
+
+.cam-osd__dot {
+  width: 0.42em;
+  height: 0.42em;
+  border-radius: 50%;
+  background-color: var(--cam-live);
+  box-shadow: 0 0 0.4em var(--cam-live);
+  animation: cam-live var(--cam-live-pulse) var(--ease-inout) infinite;
+}
+
+@keyframes cam-live {
+  0%, 45%  { opacity: 1; }
+  60%, 90% { opacity: 0.25; }
+  100%     { opacity: 1; }
+}
+
+
+/* ==========================================================================
+   10e. SELECTED WORKS  ·  signal capture (the expanded preview)
+   --------------------------------------------------------------------------
+   One overlay reused by all six cameras. Four things animate on their own
+   timing so the sequence reads as cause and effect rather than one lump:
+     backdrop dims → card expands → lines draw out → metadata arrives.
+
+   THE COLLISION RULE — why the metadata can never be crossed by a line.
+
+   Every projection line has exactly two endpoints: a corner of the grid card
+   and the matching corner of the expanded card. A straight segment stays
+   inside the range of its own endpoints, so every point on every line
+   satisfies:
+
+       x  >=  min(cardLeft,  frameLeft)      and
+       x  <=  max(cardRight, frameRight)
+
+   So the region to the right of max(cardRight, frameRight) is provably
+   line-free, and so is the region left of min(cardLeft, frameLeft) — at any
+   scroll position, for any card, with no measurement of the lines themselves.
+
+   The metadata sits one gap outside the frame, so the test collapses to:
+
+       right side is clean  <=>  cardRight <= frameRight
+       left  side is clean  <=>  cardLeft  >= frameLeft
+
+   In plain terms: a side is safe when the grid card does not stick out past
+   the expanded card on that side. JS evaluates exactly that and picks the
+   layout — hence three modes below, not one. A left-column camera puts both
+   blocks on the right, a right-column camera puts both on the left, and a
+   middle camera splits them. That is also where the asymmetry comes from: the
+   offset is not decoration, it is what opens the corridor.
+
+   The whole layer is pointer-events:none ON PURPOSE. The preview is opened by
+   hovering a card and it covers that card — if the overlay could receive the
+   pointer, the card would immediately see pointerleave and the preview would
+   shut the instant it opened. Inert means the hover never leaves the card,
+   and a click still lands on the link underneath.
+   ========================================================================== */
+.preview {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-preview);
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear var(--dur-preview);
+}
+
+.preview.is-open {
+  visibility: visible;
+  transition: visibility 0s;
+}
+
+/* 1 · the wall drops back */
+.preview__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--preview-backdrop);
+  opacity: 0;
+  transition: opacity var(--dur-preview) var(--ease-preview);
+}
+
+.preview.is-open .preview__backdrop { opacity: 1; }
+
+/* 2 · the captured feed and its floating record.
+   Grid areas rather than source order decide which side each block lands on,
+   so switching modes is a template swap — no DOM moves, nothing to keep in
+   sync. --shift-x / --shift-y are written by JS and carry the asymmetry. */
+.preview__stage {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(
+    calc(-50% + var(--shift-x, 0px)),
+    calc(-50% + var(--shift-y, 0px))
+  );
+  display: grid;
+  align-items: center;
+  justify-items: stretch;
+  gap: var(--preview-meta-gap);
+  max-width: calc(100% - var(--page-margin) * 2);
+  /* NOT transitioned, deliberately. The stage moves in exactly two situations
+     and an eased transform is wrong for both:
+
+       · switching camera — the move happens while the capture is retracted
+         and invisible, so there is nothing to smooth; easing it would only
+         mean the record fades back in while still sliding into place.
+       · scrolling — the projection lines are redrawn instantly (they are SVG
+         attributes, not transitions). If the box eased and the lines did not,
+         the lines would point at where the box is about to be rather than
+         where it is, and visibly detach from its corners.
+
+     Snapping keeps the lines welded to the frame at every scroll offset. */
+}
+
+/* Split — the camera sits between the columns, so both sides are clean. */
+.preview--split .preview__stage {
+  grid-template-columns: var(--preview-meta-width) auto var(--preview-meta-width);
+  grid-template-areas: "a frame b";
+}
+
+/* Both blocks right — the camera hangs off the frame's left edge. */
+.preview--right .preview__stage {
+  grid-template-columns: auto var(--preview-meta-width);
+  grid-template-areas: "frame a" "frame b";
+  align-content: center;
+}
+
+/* Both blocks left — mirror. */
+.preview--left .preview__stage {
+  grid-template-columns: var(--preview-meta-width) auto;
+  grid-template-areas: "a frame" "b frame";
+  align-content: center;
+}
+
+/* Stacked — narrow screens, where no side corridor is wide enough. */
+.preview--stack .preview__stage {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "a" "frame" "b";
+  width: calc(100% - var(--page-margin) * 2);
+  justify-items: center;
+}
+
+/* overflow:visible ON PURPOSE — the viewfinder hangs outside this box. The
+   clipping the video needs is delegated to .preview__screen below. */
+.preview__frame {
+  grid-area: frame;
+  position: relative;
+  width: var(--preview-width);
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: visible;
+  opacity: 0;
+  transform: scale(0.9);
+  /* Base rule carries the OUT duration; .is-armed swaps in the slower expand.
+     One transition declaration, two speeds, no duplicated property list. */
+  transition: opacity var(--dur-preview-out) var(--ease-preview),
+              transform var(--dur-preview-out) var(--ease-preview);
+}
+
+.preview.is-armed .preview__frame {
+  opacity: 1;
+  transform: scale(1);
+  transition-duration: var(--dur-preview);
+}
+
+/* The picture itself: the only element here that clips. */
+.preview__screen {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  background-color: #0e0e0e;
+  box-shadow: var(--shadow-2);
+}
+
+.preview__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 3 · the record, floating clear of the feed — never over it.
+   Both columns point inwards at the footage. */
+.preview__meta {
+  margin: 0;
+  font-family: var(--font-display);
+  opacity: 0;
+  transition: opacity var(--dur-preview-out) var(--ease-preview),
+              transform var(--dur-preview-out) var(--ease-preview);
+}
+
+.preview.is-armed .preview__meta {
+  transition-duration: var(--dur-preview);
+  transition-delay: calc(var(--dur-preview) * 0.35);   /* arrives after the card */
+}
+
+.preview__meta--a { grid-area: a; }
+.preview__meta--b { grid-area: b; }
+
+/* The record slides in from FURTHER OUT, never from over the feed. Direction
+   is per mode because which side a block occupies changes with the mode.
+
+   This is not a taste call. The collision rule guarantees the RESTING
+   position is clear of the lines; a block travelling inward would spend the
+   whole transition nearer the frame than that resting spot, and a line could
+   catch it there. Entering outward-in means every intermediate position is
+   further from the frame than the one already proved safe, so the guarantee
+   covers the animation and not just its last frame. */
+.preview__meta {
+  transform: translate(var(--meta-from-x, 0), var(--meta-from-y, 0));
+}
+
+.preview--split .preview__meta--a,
+.preview--left  .preview__meta { --meta-from-x: -1.25rem; }
+
+.preview--split .preview__meta--b,
+.preview--right .preview__meta { --meta-from-x: 1.25rem; }
+
+.preview--stack .preview__meta--a { --meta-from-y: -0.75rem; }
+.preview--stack .preview__meta--b { --meta-from-y: 0.75rem; }
+
+.preview.is-armed .preview__meta { opacity: 1; transform: none; }
+
+/* Text hugs the frame in every mode: a block on the left reads flush right,
+   a block on the right reads flush left. */
+.preview--split .preview__meta--a,
+.preview--left  .preview__meta { text-align: right; }
+.preview--split .preview__meta--b,
+.preview--right .preview__meta { text-align: left; }
+/* Stacked: the travel direction is set by --meta-from-y above, so this rule
+   owns alignment only — writing `transform` here would override it. */
+.preview--stack .preview__meta { text-align: center; }
+
+.preview__cam {
+  margin: 0 0 var(--space-8);
+  font-size: var(--preview-label);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--cam-frame-active);
+}
+
+/* The loudest element in the record — it has to win against the footage next
+   to it, not merely sit above the labels. */
+.preview__name {
+  margin: 0 0 var(--space-16);
+  font-size: var(--preview-title);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  /* Long names ("The Treasure Within") are meant to stack over two or three
+     lines at this size — balanced beats ragged when the block is narrow. */
+  text-wrap: balance;
+  color: var(--color-ink);
+}
+
+.preview__theme {
+  margin: 0;
+  font-size: var(--preview-theme);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+.preview__field + .preview__field { margin-top: var(--space-24); }
+
+.preview__label {
+  margin: 0 0 var(--space-4);
+  font-size: var(--preview-label);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.preview__value {
+  margin: 0;
+  font-size: var(--preview-value);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+  color: var(--color-ink);
+}
+
+/* 4 · projection lines, corner to matching corner.
+   No viewBox: one SVG user unit is one CSS pixel of the overlay, and the
+   overlay is the viewport — so JS feeds viewport coordinates straight in
+   without converting spaces.
+
+   pathLength="1" normalises every line to length 1 however far it runs, which
+   is what lets a single dashoffset transition draw all four at an equal rate
+   with nothing measured. */
+/* Above the stage, not under it. Painted below, a line whose grid card
+   overlapped the expanded card disappeared behind the opaque video and read
+   as though it had been sliced off at the frame's edge. Floating them on top
+   is only safe because of the collision rule proved above: the lines are
+   guaranteed never to reach the text, so nothing legible can end up beneath
+   them. */
+.preview__lines {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--preview-line);
+  stroke-width: var(--preview-line-weight);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Set by work-preview.js when a line has no exterior stretch left to draw —
+   the two HUD rectangles are touching. Hidden rather than collapsed, because
+   a zero-length segment still paints a dot under stroke-linecap: round. */
+.preview__lines line[data-empty] { display: none; }
+
+.preview__lines line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--dur-preview-out) var(--ease-preview);
+}
+
+.preview.is-armed .preview__lines line {
+  stroke-dashoffset: 0;
+  transition-duration: var(--dur-preview-line);
+  transition-delay: calc(var(--dur-preview) * 0.2);
+}
+
+/* Stacked mode has no side corridor, so there is no arrangement in which the
+   lines can be guaranteed to miss the text. They are dropped rather than
+   allowed to cross it — the rule holds at every width. */
+.preview--stack .preview__lines { display: none; }
+
+
+/* --- Selected works · responsive ----------------------------------------- */
+
+/* Tablet: two cameras per row. */
+@media (max-width: 60rem) {
+  .work__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Narrow: one per row. JS switches the preview to stacked mode at the same
+   width — see PREVIEW_STACK_WIDTH in work-preview.js. */
+@media (max-width: 44rem) {
+  .work__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ==========================================================================
+   10f. FOOTER  ·  the close
+   --------------------------------------------------------------------------
+   Solid black, like Selected Works above it — the eye has already had its say
+   and the page ends on the statement, not on the background.
+
+   Everything is centred and stacked, so the rhythm is set by one gap scale
+   rather than by per-element margins.
+   ========================================================================== */
+.footer {
+  position: relative;
+  background-color: var(--color-bg);
+  padding-block: clamp(var(--space-96), 16vh, var(--space-128));
+  /* The HUD is pinned to the bottom of the viewport. Reserving its height is
+     what keeps the legal line from sliding underneath the local time — the
+     brief was that the clock never disappears, so the footer yields, not it. */
+  padding-bottom: calc(clamp(var(--space-64), 10vh, var(--space-96)) + var(--hud-reserve));
+}
+
+.footer__inner {
+  width: min(100% - var(--page-margin) * 2, var(--work-maxw));
+  margin-inline: auto;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: clamp(var(--space-32), 5vh, var(--space-64));
+}
+
+/* The closing statement. Balanced wrapping rather than ragged: at this size a
+   single orphaned word reads as a mistake. */
+/* No width cap: at desktop the line is meant to run full width, the way it
+   does in the design. The clamp on --footer-title is what keeps it inside the
+   column, and `balance` only takes over once the viewport is narrow enough to
+   force a wrap — at which point an even split beats one orphaned word. */
+.footer__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--footer-title);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--color-ink);
+}
+
+/* --- Availability --------------------------------------------------------
+   The dot is the same idea as the CCTV feed's LIVE mark, slowed down: there
+   it reports a running camera, here it reports a person who is open to work. */
+.footer__status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.footer__dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background-color: var(--color-ink);
+  animation: footer-breathe var(--footer-pulse) var(--ease-inout) infinite;
+}
+
+/* A breathe, not a blink — a blinking dot next to available reads as an
+   alert. The glow does the work; the dot itself never fully leaves. */
+@keyframes footer-breathe {
+  0%, 100% { opacity: 1;    box-shadow: 0 0 0.5em rgb(255 255 255 / 0.55); }
+  50%      { opacity: 0.55; box-shadow: 0 0 0 rgb(255 255 255 / 0); }
+}
+
+/* --- Contact marks -------------------------------------------------------
+   White plates with the glyph knocked out, inverted from everything else on
+   the page — which is exactly why they read as the one thing to press. */
+.footer__links {
+  display: flex;
+  gap: var(--footer-gap);
+  margin: 0;
+}
+
+.footer__link {
+  display: grid;
+  place-items: center;
+  width: var(--footer-icon);
+  height: var(--footer-icon);
+  border-radius: var(--footer-radius);
+  background-color: var(--color-ink);
+  color: var(--color-bg);
+  transition: background-color var(--dur-base) var(--ease-preview),
+              transform var(--dur-base) var(--ease-preview);
+}
+
+/* Hover is a lift plus the difference-echo on the mark — the same glitch the
+   nav uses. No green: it was a second accent the page does not need. */
+.footer__link:hover,
+.footer__link:focus-visible {
+  transform: translateY(-0.2rem);
+}
+
+/* Switch the ghost on when the plate is hovered — reaches the glyph's
+   .text-echo and the duplicated GitHub svg alike. */
+.footer__link:hover .text-echo,
+.footer__link:focus-visible .text-echo {
+  --echo-opacity: 1;
+  --echo-shift: var(--nav-hover-shift);
+}
+.footer__link:hover .footer__icon--echo,
+.footer__link:focus-visible .footer__icon--echo { opacity: 1; }
+
+/* A real focus ring, not a hairline: these plates are the page's only call to
+   action, so a keyboard user has to be able to see where they are. */
+.footer__link:focus-visible {
+  outline: 0.125rem solid var(--color-ink);
+  outline-offset: var(--space-8);
+}
+
+/* Set in type rather than drawn: the mark IS the typography, and this way it
+   inherits the family the rest of the page is set in. */
+.footer__glyph {
+  font-family: var(--font-display);
+  font-size: calc(var(--footer-icon) * 0.44);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+/* Holds the two GitHub copies so the echo can sit exactly over the original. */
+.footer__mark { position: relative; display: grid; place-items: center; isolation: isolate; }
+
+.footer__icon {
+  width: calc(var(--footer-icon) * 0.46);
+  height: calc(var(--footer-icon) * 0.46);
+  fill: currentColor;      /* follows the plate's colour */
+}
+
+/* The difference ghost: a second GitHub mark, offset and inverted where it
+   overlaps, revealed on hover. */
+.footer__icon--echo {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  mix-blend-mode: difference;
+  opacity: 0;
+  transform: translateX(var(--nav-hover-shift));
+  transition: opacity var(--nav-hover-dur) var(--ease-out);
+  pointer-events: none;
+}
+
+.footer__legal {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* ==========================================================================
+   11. MOTION
+   ========================================================================== */
+
+/* Hero title entrance: each line rises + fades in on load. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+.hero-title__line {
+  opacity: 0;
+  animation: rise-in var(--dur-reveal) var(--ease-out) forwards;
+}
+.hero-title__name { animation-delay: 160ms; }
+
+/* Scroll reveal: [data-reveal] starts hidden; .is-visible transitions it in.
+   IntersectionObserver (reveal.js) toggles the class — no scroll listeners. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition: opacity var(--dur-slow) var(--ease-out),
+              transform var(--dur-slow) var(--ease-out);
+}
+[data-reveal].is-visible { opacity: 1; transform: none; }
+
+/* Stagger revealed siblings so a list or grid cascades in. */
+[data-reveal]:nth-child(2) { transition-delay:  90ms; }
+[data-reveal]:nth-child(3) { transition-delay: 180ms; }
+[data-reveal]:nth-child(4) { transition-delay: 270ms; }
+[data-reveal]:nth-child(5) { transition-delay: 360ms; }
+[data-reveal]:nth-child(6) { transition-delay: 450ms; }
+
+/* Respect reduced-motion: show everything, no entrance/scroll animation. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-title__line { opacity: 1; animation: none; }
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .hero-title { transform: none; opacity: 1; }
+
+  /* The capture still happens — only the travel is dropped. The feed appears
+     at full size, the record does not slide in, the lines are simply there
+     rather than drawing themselves out, and the LIVE dot stops blinking. */
+  .preview__frame,
+  .preview__meta,
+  .preview.is-armed .preview__frame,
+  .preview.is-armed .preview__meta { transform: none; }
+  .preview__stage { transition: none; }
+  .preview__lines line { stroke-dashoffset: 0; transition: none; }
+  .cam-osd__dot,
+  .footer__dot { animation: none; }
+  .footer__link:hover,
+  .footer__link:focus-visible { transform: none; }
+
+  /* No wipe between pages. page-transition.js bows out entirely under this
+     setting, so the veil must clear itself instantly rather than sit there. */
+  .page-veil { animation: none; opacity: 0; }
+}
+
+
+/* ==========================================================================
+   12. RESPONSIVE  (foundation only — full per-breakpoint design next phase)
+   ========================================================================== */
+/* Below this width horizontal-scroll.js un-pins the section (same 768px
+   breakpoint), so the cards must stack instead of sitting on a rail. */
+@media (max-width: 48rem) {           /* ≤ 768px */
+
+  /* --- Vertical rhythm ---------------------------------------------------
+   * On desktop every panel is a full screen because each one holds a single
+   * enormous statement and the scroll between them is the pacing. On a phone
+   * the same rule was reserving 812px for 209px of content, so the page came
+   * to five and a half screens of mostly nothing and the scroll felt endless.
+   * Panels now take the height they need. The hero is the exception: it is the
+   * cover, and a cover should fill the screen. */
+  /* Each section owns a screen. Letting them shrink to their content saved
+     scroll, but it broke the reading: at the top of the services list you were
+     already looking at 482px of the About photo underneath, so two sections
+     shared one screen and neither read as a whole. A section that is shorter
+     than the screen simply centres its content in it. */
+  .panel {
+    min-height: 100svh;
+    padding-block: clamp(var(--space-64), 11vh, var(--space-96));
+  }
+
+  /* The cover's type was falling to the clamp's floor (40px) and reading as a
+     caption rather than a title. Its own ceiling on a phone, not the desktop
+     one, so it fills the width without ever overflowing it. */
+  .hero-title__line { font-size: clamp(2.75rem, 13vw, 5rem); }
+
+  /* --- Capabilities ------------------------------------------------------
+   * 180svh of section exists so the eye has runway to sink into place as you
+   * scroll past. There is no sinking eye on a phone, so that runway was
+   * 1461px of empty black around a 58px strip of tools. The section collapses
+   * to its content and the sticky stage stops being sticky. */
+  .skills {
+    height: auto;
+    min-height: 100svh;                /* same reason as .panel above */
+  }
+
+  .skills__stage {
+    position: static;
+    height: auto;
+    min-height: 100svh;
+    align-content: center;             /* centred in its screen, not stuck top */
+    padding-block: clamp(var(--space-48), 8vh, var(--space-80));
+    gap: clamp(var(--space-32), 5vh, var(--space-48));
+  }
+
+  /* --- A Quick Look, choreographed for a phone -------------------------
+   * ONE block for the whole section. It was split in two before, and each
+   * rewrite left a stale copy of .reveal / .about__title / .quick-dots behind
+   * in the other half. The later rule always wins, which is how the photo
+   * ended up 0px tall and the dots landed on the card's text. Everything the
+   * phone needs for this section is here and nowhere else.
+   *
+   * Same shape as the desktop: a sticky stage one screen tall, driven by the
+   * single --h-progress number. Only the moves differ.
+   *
+   * LAID OUT IN ROWS, NOT STACKED WITH OFFSETS. Title, deck and dots own a row
+   * each, so the dots sit below the deck by construction and cannot collide at
+   * any screen size. Only the photo and the sentence over it are out of flow,
+   * because they are the backdrop rather than part of the column. */
+  .about { height: 200svh; }           /* the runway the phases need */
+
+  .about__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    padding-block: 0;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;   /* title, deck, dots */
+    align-content: center;
+    justify-items: stretch;               /* each row centres its own content */
+    row-gap: clamp(var(--space-32), 5svh, var(--space-64));
+
+    /* The two sizes the heading travels between, and the sentence that shares
+       the larger one. All viewport-relative with a floor and a ceiling, so the
+       type grows with the screen instead of sitting at a fixed size — and the
+       clamps stop it running away on a tablet. */
+    --m-type-big:   clamp(2.5rem, 13vw, 4.5rem);
+    --m-type-small: clamp(1.75rem, 8.5vw, 2.75rem);
+
+    --m-statement-out: clamp(0, calc((var(--p) - 0.06) / 0.16), 1);
+    --m-title-in:      clamp(0, calc((var(--p) - 0.24) / 0.14), 1);
+    --m-title-up:      clamp(0, calc((var(--p) - 0.44) / 0.16), 1);
+    --m-cards-in:      clamp(0, calc((var(--p) - 0.52) / 0.16), 1);
+  }
+
+  /* --- The backdrop: photo, and the sentence over it ------------------- */
+
+  .reveal {
+    position: absolute;                /* out of the row flow entirely */
+    /* Stops short of the bottom edge. The source is landscape and the frame is
+       portrait, so cover is already at maximum zoom: a SHORTER frame crops less
+       of the width, which is what makes the face read slightly smaller. It also
+       leaves the foot of the stage free for the scroll hint. */
+    inset: 0 0 9svh 0;
+    z-index: 0;
+  }
+
+  .reveal__stage {
+    min-height: auto;
+    height: 100%;
+    perspective: none;                 /* no 3D tilt without a cursor */
+    overflow: hidden;
+  }
+
+  .reveal__canvas { display: none; }   /* the two painted statement layers */
+  .reveal__photo  { display: none; }   /* the WebGL render; the <img> stands in */
+
+  /* A plain <img>, because the source is landscape: at phone width the WebGL
+     canvas resolved to a letterbox stranded in the middle of the block, while
+     object-fit: cover crops it to portrait and fills the frame. */
+  .reveal__still {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;          /* bias up: keep the face, lose the chest */
+    /* Recedes as the cards come forward — the phone's version of the desktop
+       --p-fade, so the photo stops competing with the text on top of it. */
+    opacity: calc(1 - var(--m-cards-in) * 0.45);
+  }
+
+  /* A scrim under the type: the photo is light around the face and the
+     statement is white, so without this the words vanish into the cheek. */
+  .reveal__stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(to bottom,
+      rgb(0 0 0 / 0.55), rgb(0 0 0 / 0.25) 45%, rgb(0 0 0 / 1));
+    pointer-events: none;
+  }
+
+  /* Phase 1 - the sentence. Undoes .visually-hidden (everything that utility
+     sets has to be given back explicitly) and retires as the title arrives. */
+  .about__statement {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: var(--page-margin);
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+
+    display: grid;
+    place-items: center;
+    text-align: center;
+
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--m-type-big);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-ink);
+
+    opacity: calc(1 - var(--m-statement-out));
+  }
+
+  /* --- The column: title, deck, dots ----------------------------------- */
+
+  /* Phase 2 to 3 - fades in large and sitting low, so it reads as centred on
+     its own; then rises into its row and shrinks to one line as the cards come
+     up beneath it. The size is INTERPOLATED, not scaled: scale() would keep it
+     wrapped at two lines and merely make those lines smaller. The rise is a
+     transform, so it never changes the row heights. */
+  .about__title {
+    position: relative;
+    inset: auto;
+    grid-row: 1;
+    z-index: 3;
+    margin: 0;
+    padding-inline: var(--page-margin);
+    text-align: center;
+    opacity: var(--m-title-in);
+    /* Interpolated in vw so it stays proportional to the screen at both ends,
+       then clamped once at the outside. Written as ONE clamp wrapping a simple
+       calc on purpose: the obvious form — calc(BIG - up * (BIG - SMALL)) with
+       BIG and SMALL being clamps themselves — computes to 0px, because a
+       clamp() nested inside a multiplication inside another calc does not
+       resolve. Verified in the browser before settling on this. */
+    /* The ceiling has to clear the SMALL end too. At 5rem both ends hit it
+       around 768px and the title stopped shrinking altogether — the move just
+       vanished at that width. 6.5rem keeps the two ends apart right up to the
+       breakpoint. */
+    font-size: clamp(2rem, calc(17vw - var(--m-title-up) * 6vw), 6.5rem);
+    transform: translateY(calc((1 - var(--m-title-up)) * 14svh));
+    transition: none;                  /* progress-driven, not time-driven */
+  }
+
+  /* Phase 3 - the deck. One card at a time, filling the measure between the
+     page margins: a peeking neighbour at this width crops two cards instead of
+     showing one. Native overflow + scroll-snap, so the fling, the rubber-band
+     and the snap are the platform's own; card-carousel.js only lights a dot. */
+  .about__track {
+    position: relative;
+    inset: auto;
+    grid-row: 2;
+    z-index: 3;
+    width: 100%;
+    margin: 0;
+    gap: var(--space-16);
+    padding-inline: var(--page-margin);
+    scroll-padding-inline: var(--page-margin);
+
+    opacity: var(--m-cards-in);
+    transform: translate3d(0, calc((1 - var(--m-cards-in)) * 4svh), 0);
+
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+  .about__track::-webkit-scrollbar { display: none; }
+
+  .card {
+    /* Plain 100%: a flex-basis percentage already resolves against the track's
+       CONTENT box, which its own padding-inline has narrowed. Subtracting the
+       margins again took them off twice and left the card short. */
+    flex: 0 0 100%;
+    width: 100%;
+    scroll-snap-align: start;
+  }
+
+  .quick-dots {
+    grid-row: 3;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;               /* or a flex row stretches them tall */
+    gap: var(--space-16);
+    margin-top: var(--space-8);        /* a little clear of the deck */
+    padding-inline: var(--page-margin);
+    opacity: var(--m-cards-in);
+  }
+
+  /* They were coming out as squashed ellipses, 16 by 11, for two reasons at
+     once: a <button> carries default padding that the reset never cleared, and
+     as flex items they were free to shrink and to stretch to the row. Fixed
+     basis, no padding, and an explicit 1:1 keeps them round at any size. */
+  .quick-dots__dot {
+    flex: 0 0 auto;
+    width: 0.5rem;
+    height: 0.5rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border-radius: 50%;
+    background-color: var(--color-ink-faint);
+    transition: background-color var(--dur-base) var(--ease-out),
+                transform var(--dur-base) var(--ease-out);
+  }
+
+  .quick-dots__dot.is-current {
+    background-color: var(--color-ink);
+    transform: scale(1.35);
+  }
+
+  .about__hint { display: none; }     /* the desktop "Move to reveal" */
+
+  /* The phone's hint: centred, held off the bottom edge, and out of the row
+     grid so it cannot push the column around. */
+  .about__scrollhint {
+    display: block;                    /* hidden by default, shown only here */
+    position: absolute;
+    left: 50%;
+    bottom: clamp(var(--space-24), 4svh, var(--space-48));
+    transform: translateX(-50%);
+    z-index: 4;
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: clamp(0.5625rem, 2.4vw, 0.75rem);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+    white-space: nowrap;
+  }
+}
+
+/* --- The phone's full-screen menu ---------------------------------------
+ * Everything here is inside the breakpoint, so the desktop masthead is
+ * untouched: above 48rem the toggle stays display:none and .nav stays the
+ * plain flex row it has always been.
+ *
+ * The SAME <ul> becomes the panel's list — there is no second copy of the
+ * links to keep in sync. Only the layout changes. */
+@media (max-width: 48rem) {
+  /* Shown, and sized a touch smaller than the base so the X reads as a
+     mark rather than a slab. */
+  .nav-toggle {
+    display: flex;
+    /* Wider than it is tall: the bars run the full width, so this is what sets
+       their length. Both scale with the screen between rem bounds, like the
+       thickness above. */
+    width: clamp(2rem, 9vw, 2.75rem);
+    height: clamp(1.25rem, 5.5vw, 1.75rem);
+  }
+
+  /* The bar is padded symmetrically, but an icon that fills its whole box
+     reads as closer to the edge than a line of type whose letters start
+     inside theirs — so the button gets a little more air than the wordmark,
+     to look equally inset rather than measure equally inset.
+     env() adds whatever a notched phone reserves; it is 0 everywhere else. */
+  .masthead {
+    padding-inline:
+      max(var(--page-margin), env(safe-area-inset-left))
+      max(calc(var(--page-margin) + var(--space-8)), env(safe-area-inset-right));
+  }
+
+
+  /* A deeper, darker fade under the bar. On desktop the type passing beneath
+     the masthead is far from it and a light veil is enough; on a phone the
+     services headings run straight under the wordmark at 28px and the old
+     72px / 35% veil left them legible through it, which read as clutter
+     rather than depth. Taller and stronger, so things disappear cleanly. */
+  .masthead::before {
+    height: 160%;
+    background: linear-gradient(to bottom,
+      rgb(0 0 0 / 0.92) 35%, rgb(0 0 0 / 0.6) 65%, rgb(0 0 0 / 0));
+  }
+
+  /* The wordmark and the toggle stay above the panel, so the header still
+     reads normally over it: name on the left, X on the right. */
+  .wordmark,
+  .nav-toggle { position: relative; z-index: 1; }
+
+  .masthead .nav {
+    position: fixed;
+    inset: 0;
+    z-index: 0;                        /* under the two controls above */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: var(--page-margin);
+    background-color: var(--color-bg);
+
+    /* Closed. visibility (not display) so the fade can actually run, and
+       pointer-events so the invisible panel never swallows a tap. */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(1.04);
+    transition: opacity var(--dur-base) var(--ease-out),
+                transform var(--dur-base) var(--ease-out),
+                visibility 0s linear var(--dur-base);
+  }
+
+  .is-menu-open .masthead .nav {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition: opacity var(--dur-base) var(--ease-out),
+                transform var(--dur-base) var(--ease-out),
+                visibility 0s;
+  }
+
+  /* The links: stacked, centred, large. */
+  .masthead .nav__list {
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(var(--space-24), 5vh, var(--space-48));
+    margin: auto 0;                    /* centred in the leftover space */
+  }
+
+  .masthead .nav__link {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 8vw, 2.75rem);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  /* Each link drifts up into place, a beat after the one before it. The delay
+     is only on the way IN — closing, they all leave together, because a
+     staggered exit reads as lag rather than choreography. */
+  .masthead .nav__list li {
+    opacity: 0;
+    transform: translateY(0.75rem);
+    transition: opacity var(--dur-base) var(--ease-out),
+                transform var(--dur-base) var(--ease-out);
+  }
+  .is-menu-open .masthead .nav__list li { opacity: 1; transform: none; }
+  .is-menu-open .masthead .nav__list li:nth-child(1) { transition-delay: 60ms; }
+  .is-menu-open .masthead .nav__list li:nth-child(2) { transition-delay: 120ms; }
+  .is-menu-open .masthead .nav__list li:nth-child(3) { transition-delay: 180ms; }
+
+  /* Language and sound sit at the foot of the panel, out of the way of the
+     links but still reachable with a thumb. */
+  /* Stacked, not side by side: the languages read as the choice and the sound
+     toggle sits under them as a smaller, separate control. Lifted off the
+     bottom edge so the pair is not sitting on the very last pixel. */
+  .masthead .nav__controls {
+    flex-direction: column;
+    align-items: center;
+    margin-top: auto;
+    padding-bottom: clamp(var(--space-48), 9svh, var(--space-96));
+    gap: var(--space-24);
+  }
+  .masthead .lang__btn { font-size: var(--text-md); }
+
+  /* Larger inside the open panel: up there it is a detail of the top bar, here
+     it is a control in its own right, under the language pair. */
+  .masthead .nav__controls .sound-btn {
+    width: clamp(2rem, 8.5vw, 3rem);
+    height: clamp(2rem, 8.5vw, 3rem);
+  }
+
+  /* --- The HUD is desktop-only ------------------------------------------
+   * The clock and the location are a persistent corner of the desktop layout,
+   * where there is room to spare at the bottom of the screen. On a phone they
+   * sit on top of the content in the one place a thumb lives, and the footer
+   * has to reserve a strip of its own height to keep the legal line from
+   * sliding under them. Hidden here, and that reservation given back — see
+   * .footer below, which would otherwise keep a band of empty black at the
+   * very end of every page for a HUD that is not there. */
+  .hud { display: none; }
+
+  .footer { padding-bottom: clamp(var(--space-64), 10vh, var(--space-96)); }
+
+  /* The page behind must not scroll under an open panel. */
+  .is-menu-open body { overflow: hidden; }
+}
+
+/* ==========================================================================
+   NO HOVER  ·  undoing hover states on touch screens
+   --------------------------------------------------------------------------
+   A phone has no hover, but it fakes one: tapping a link leaves it stuck in
+   :hover until you tap something else. On this site the hover state is a
+   displaced ghost of the word drawn in mix-blend-mode: difference — so a
+   tapped menu item did not light up, it grew a hard-edged box of inverted
+   type and kept it. That is the "caixa à volta" on the open menu.
+
+   Only the :hover halves are neutralised here. :focus-visible is left alone
+   (it is the keyboard's affordance, and a keyboard can reach a touch device),
+   and the marquee's echo is untouched — there the ghost is the RESTING look,
+   not a hover, so switching it off would change the design rather than fix it.
+   What IS neutralised there is `.skill:hover`, which would otherwise leave one
+   tool permanently resolved after a stray tap.
+
+   The selectors are repeated verbatim because a media query adds no
+   specificity: only being later in the cascade wins. ========================= */
+@media (hover: none) {
+  .nav__link:hover,
+  .lang__btn:hover { --echo-opacity: 0; --echo-shift: 0; }
+
+  .skills__cta:hover { --echo-opacity: 0; --echo-shift: 0; }
+
+  .footer__link:hover .text-echo { --echo-opacity: 0; --echo-shift: 0; }
+
+  /* The marquee runs the other way round: lit ghost at rest, resolved on
+     hover. Restore the resting state so a tap cannot pin one tool "on". */
+  .skill:hover { --echo-opacity: 1; --echo-shift: var(--skill-shift); }
+  .skill:hover .text-echo { --echo-opacity: 1; --echo-shift: var(--skill-shift); }
+}
+
