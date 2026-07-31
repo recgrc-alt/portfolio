@@ -1410,8 +1410,12 @@ a, button, [role="button"], summary, input, textarea, select {
 .skills__cta:hover::before,
 .skills__cta:focus-visible::before { width: 100%; }
 
-/* The eye sinks while this section is on screen (JS writes --eye-y). */
-.eye-layer { transform: translateY(var(--eye-y, 0px)); }
+/* The eye sinks while the toolkit is on screen. JS writes ONE number,
+   --skills-p (0 → 1), onto this element; the arithmetic is here, where it
+   costs nothing to repeat. Before, the script assembled a whole calc()
+   expression on every scroll event for the browser to re-parse — sixty times a
+   second to change a single factor. */
+.eye-layer { transform: translateY(calc(var(--eye-drop) * var(--skills-p, 0))); }
 
 
 /* ==========================================================================
@@ -2223,6 +2227,10 @@ a, button, [role="button"], summary, input, textarea, select {
   .skills {
     height: auto;
     min-height: 100svh;                /* same reason as .panel above */
+    /* The tools were bottoming out at 1.5rem — the same size as the title
+       above them — because the clamp's floor was chosen so the marquee would
+       not break a wide layout, not so it could be read at arm's length. */
+    --skill-size: clamp(1.75rem, 7.5vw, 2.5rem);
   }
 
   .skills__stage {
@@ -2233,6 +2241,29 @@ a, button, [role="button"], summary, input, textarea, select {
     padding-block: clamp(var(--space-48), 8vh, var(--space-80));
     gap: clamp(var(--space-32), 5vh, var(--space-48));
   }
+
+  /* --- The eye steps back while the toolkit is on screen ------------------
+   * On desktop the eye SINKS here (--skills-p drives the transform above) so
+   * only its crown shows behind the tools. That cannot happen on a phone: the
+   * two rules directly above make the section `height: auto`, so its scroll
+   * travel is zero and the progress never leaves 0. The eye stayed whole and
+   * pale, directly behind the type.
+   *
+   * So it fades instead of sinking. And deliberately NOT from a scroll-driven
+   * value: this has two states, not a continuum, and computing an opacity on
+   * every scroll frame would be real work for a change the eye cannot even
+   * see mid-way. One class, one transition, and the compositor animates a
+   * single opacity with no layout and no paint. */
+  .eye-layer {
+    transition: opacity var(--dur-slow) var(--ease-inout);
+  }
+
+  .eye-layer.is-behind-tools { opacity: 0.14; }
+
+  /* Bigger, and now actually a title. It was --text-card, which bottoms out at
+     1.5rem on a phone — the exact size of the tool names underneath it. A
+     heading that measures the same as the list it heads is not a heading. */
+  .skills__title { font-size: clamp(2.25rem, 9.5vw, 3rem); }
 
   /* --- A Quick Look, choreographed for a phone -------------------------
    * ONE block for the whole section. It was split in two before, and each
@@ -2648,9 +2679,32 @@ a, button, [role="button"], summary, input, textarea, select {
 
   .footer__link:hover .text-echo { --echo-opacity: 0; --echo-shift: 0; }
 
-  /* The marquee runs the other way round: lit ghost at rest, resolved on
-     hover. Restore the resting state so a tap cannot pin one tool "on". */
-  .skill:hover { --echo-opacity: 1; --echo-shift: var(--skill-shift); }
-  .skill:hover .text-echo { --echo-opacity: 1; --echo-shift: var(--skill-shift); }
+  /* --- The toolkit, where there is no pointer -----------------------------
+   * On desktop each tool sits at --skill-muted (#121212) with a displaced
+   * ghost: present but unresolved against the black page, and pointing at one
+   * resolves the pair into white. The whole idea rests on two things a touch
+   * screen does not have — a black ground behind it, and a hover to resolve it.
+   *
+   * Here the eye is a pale sphere filling the section, so near-black type sits
+   * on WHITE: the inverse of the intent, and it reads as a rendering fault
+   * rather than as restraint. And nothing can ever resolve it, because there
+   * is nothing to point with.
+   *
+   * So the effect is retired rather than patched. The tools are simply legible,
+   * which is all they were ever trying to become. */
+  .skill {
+    color: var(--color-ink);
+    --echo-opacity: 0;
+    --echo-shift: 0;
+    /* Not a button, and never was: a bare <li>. The pointer promised a click
+       that does not exist. */
+    cursor: default;
+  }
+
+  .skill .text-echo { --echo-opacity: 0; --echo-shift: 0; }
+
+  /* A tap must not leave one tool looking picked. */
+  .skill:hover { color: var(--color-ink); --echo-opacity: 0; --echo-shift: 0; }
+  .skill:hover .text-echo { --echo-opacity: 0; --echo-shift: 0; }
 }
 

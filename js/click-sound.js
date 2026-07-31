@@ -20,7 +20,7 @@
    The set of things that tick is a single registry below — add a selector to
    give a new control the same voice. */
 
-import { isSoundEnabled } from "./audio-state.js?v=71";
+import { isSoundEnabled } from "./audio-state.js?v=72";
 
 const TARGETS = [
   ".nav__link",

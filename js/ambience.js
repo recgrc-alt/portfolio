@@ -25,8 +25,8 @@
    cutting the sound off mid-note).
    ========================================================================== */
 
-import { canPlay, onChange } from "./audio-state.js?v=71";
-import { onDuckChange } from "./audio-ducking.js?v=71";
+import { canPlay, onChange } from "./audio-state.js?v=72";
+import { onDuckChange } from "./audio-ducking.js?v=72";
 
 // The active instance, so page-transition.js can fade it on the way out
 // without having to be handed a reference through main.js.

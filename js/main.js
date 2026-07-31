@@ -17,29 +17,29 @@
    Orchestration lives here; logic lives in the modules.
    ========================================================================== */
 
-import { config } from "./config.js?v=71";
-import { startClock } from "./clock.js?v=71";
-import { initI18n, i18nReady } from "./i18n.js?v=71";
-import { holdPage, pageReady, sealPage } from "./page-ready.js?v=71";
-import { createPointer } from "./pointer.js?v=71";
-import { initEye } from "./eye.js?v=71";
-import { initSmoothScroll } from "./smooth-scroll.js?v=71";
-import { initReveal } from "./reveal.js?v=71";
-import { initClickSound } from "./click-sound.js?v=71";
-import { initPrefetch } from "./prefetch.js?v=71";
-import { initAmbience } from "./ambience.js?v=71";
-import { initSoundToggle } from "./sound-toggle.js?v=71";
-import { initCardAudio } from "./card-audio.js?v=71";
-import { initPageTransition } from "./page-transition.js?v=71";
-import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=71";
-import { initNavMenu } from "./nav-menu.js?v=71";
-import { initCardCarousel } from "./card-carousel.js?v=71";
-import { initLoader } from "./loader.js?v=71";
+import { config } from "./config.js?v=72";
+import { startClock } from "./clock.js?v=72";
+import { initI18n, i18nReady } from "./i18n.js?v=72";
+import { holdPage, pageReady, sealPage } from "./page-ready.js?v=72";
+import { createPointer } from "./pointer.js?v=72";
+import { initEye } from "./eye.js?v=72";
+import { initSmoothScroll } from "./smooth-scroll.js?v=72";
+import { initReveal } from "./reveal.js?v=72";
+import { initClickSound } from "./click-sound.js?v=72";
+import { initPrefetch } from "./prefetch.js?v=72";
+import { initAmbience } from "./ambience.js?v=72";
+import { initSoundToggle } from "./sound-toggle.js?v=72";
+import { initCardAudio } from "./card-audio.js?v=72";
+import { initPageTransition } from "./page-transition.js?v=72";
+import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=72";
+import { initNavMenu } from "./nav-menu.js?v=72";
+import { initCardCarousel } from "./card-carousel.js?v=72";
+import { initLoader } from "./loader.js?v=72";
 
 /* Bumped whenever the JS changes. If the console does not show this exact
    line, the browser is running a CACHED old bundle — hard-reload or clear the
    cache. This is the quickest way to tell fresh code from stale. */
-const BUILD = "build 71 · clock hover in white";
+const BUILD = "build 72 · toolkit legible on a phone";
 
 function boot() {
   console.log("%c▲ Rogério Edgar · " + BUILD, "color:#8cbe69;font-weight:bold");
@@ -100,14 +100,14 @@ function boot() {
     hudExtrasWired = true;
 
     // Neither asks for anything on arrival — see the modules.
-    import("./distance.js?v=71").then((m) =>
+    import("./distance.js?v=72").then((m) =>
       m.initDistance(document.querySelector("[data-distance]"))
     );
 
     // Pressing the local time opens the hour scrubber, which re-lights the eye
     // live. Loaded on demand: it is an extra, and a page where nobody presses
     // it should not pay to download it.
-    import("./hour-picker.js?v=71").then((m) =>
+    import("./hour-picker.js?v=72").then((m) =>
       m.initHourPicker(document.querySelector(".meta--time"))
     );
   }
@@ -209,25 +209,25 @@ function boot() {
   // WORK — the gallery, built from data/projects.json.
   if (document.querySelector("[data-work-gallery]")) {
     // The cards ARE this page. Nothing should uncover before they exist.
-    holdPage(import("./work-gallery.js?v=71").then((m) =>
+    holdPage(import("./work-gallery.js?v=72").then((m) =>
       m.initWorkGallery(document.querySelector("[data-work-gallery]"))
     ));
   }
 
   // PROJECT — one template filled from the ?id= parameter.
   if (document.querySelector("[data-project-page]")) {
-    holdPage(import("./project-page.js?v=71").then(async (m) => {
+    holdPage(import("./project-page.js?v=72").then(async (m) => {
       await m.initProjectPage(document.querySelector("[data-project-page]"));
       // The hero video is injected by the module, so its feed observer can
       // only be wired after that has run.
-      const { initCamFeeds } = await import("./cam-feeds.js?v=71");
+      const { initCamFeeds } = await import("./cam-feeds.js?v=72");
       initCamFeeds(document.querySelector("[data-project-page]"));
     }));
   }
 
   // CONTACT — the copy button and the form.
   if (document.querySelector("[data-contact]")) {
-    import("./contact.js?v=71").then((m) =>
+    import("./contact.js?v=72").then((m) =>
       m.initContact(document.querySelector("[data-contact]"))
     );
   }
@@ -250,14 +250,14 @@ async function initHome({ pointer, lenis }) {
     { initPhotoDepth },
     { initMarquee },
     { initHorizontalScroll },
-    { trackScrollProgress },
+    { bindProgressToProperty },
   ] = await Promise.all([
-    import("./scroll-fx.js?v=71"),
-    import("./reveal-photo.js?v=71"),
-    import("./photo-depth.js?v=71"),
-    import("./marquee.js?v=71"),
-    import("./horizontal-scroll.js?v=71"),
-    import("./scroll-progress.js?v=71"),
+    import("./scroll-fx.js?v=72"),
+    import("./reveal-photo.js?v=72"),
+    import("./photo-depth.js?v=72"),
+    import("./marquee.js?v=72"),
+    import("./horizontal-scroll.js?v=72"),
+    import("./scroll-progress.js?v=72"),
   ]);
 
   initHeroScrollFx(lenis);
@@ -294,15 +294,47 @@ async function initHome({ pointer, lenis }) {
   // speed holds whatever the type size or the tool list.
   initMarquee(document.querySelector("[data-marquee]"));
 
-  // Sink the eye so only its top half shows while the toolkit scrolls past.
+  /* How far through the toolkit we are, as one plain number. The eye reads it
+     to sink, and on a phone to fade back behind the tool names.
+
+     THIS USED TO BUILD A calc() STRING EVERY SCROLL FRAME
+     `setProperty("--eye-y", \`calc(${drop} * ${p}\`)` meant assembling a string
+     and handing the browser a fresh expression to PARSE on every scroll event,
+     sixty times a second, for the whole section — to express something that
+     never changes except for one factor. Now the factor is all that is
+     written, and CSS does the arithmetic it was always able to do.
+
+     Written on the eye's own element rather than on :root, so changing it
+     invalidates one element's style instead of the entire document's. This is
+     what bindProgressToProperty was written for; it was simply never used. */
   const skills = document.querySelector("[data-skills]");
-  if (skills) {
-    const root = document.documentElement;
-    const drop = getComputedStyle(root).getPropertyValue("--eye-drop").trim() || "44vh";
-    trackScrollProgress(skills, {
-      lenis,
-      onUpdate: (p) => root.style.setProperty("--eye-y", `calc(${drop} * ${p.toFixed(4)})`),
-    });
+  const eyeLayer = document.querySelector(".eye-layer");
+  if (skills && eyeLayer) {
+    bindProgressToProperty(skills, "--skills-p", { target: eyeLayer, lenis });
+
+    /* And on a phone, where sinking cannot work at all.
+       The mobile layout gives this section `height: auto`, so its scroll
+       travel is zero and the progress above never leaves 0 — the eye stayed
+       whole and pale directly behind the tool names. There it fades back
+       instead, which the stylesheet does; all this has to do is say when.
+
+       A class rather than a scroll-driven number, ON PURPOSE. The eye is
+       either behind the toolkit or it is not: a value recomputed every frame
+       would be work spent on a state with two positions. This costs one
+       observer callback each way and lets the compositor animate the opacity.
+
+       Left running on desktop too — the class changes nothing there, because
+       the rule that reads it lives inside the mobile media query, and a
+       viewport can cross the breakpoint after load. */
+    if ("IntersectionObserver" in window) {
+      const watcher = new IntersectionObserver(
+        ([entry]) => eyeLayer.classList.toggle("is-behind-tools", entry.isIntersecting),
+        // Starts a little before the section arrives, so the eye has already
+        // stepped back by the time the first tool name is readable.
+        { rootMargin: "-15% 0px -15% 0px" }
+      );
+      watcher.observe(skills);
+    }
   }
 }
 

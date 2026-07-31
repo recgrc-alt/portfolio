@@ -17,8 +17,8 @@
    pressed, and there is no cost on any page where nobody presses it.
    ========================================================================== */
 
-import { setOverride, currentHour, isOverridden } from "./time-override.js?v=71";
-import { t } from "./i18n.js?v=71";
+import { setOverride, currentHour, isOverridden } from "./time-override.js?v=72";
+import { t } from "./i18n.js?v=72";
 
 const pad = (n) => String(n).padStart(2, "0");
 

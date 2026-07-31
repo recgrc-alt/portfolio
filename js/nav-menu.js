@@ -20,7 +20,7 @@
    dormant, so the desktop masthead behaves exactly as it always did.
    ========================================================================== */
 
-import { isCompact, onCompactChange } from "./viewport.js?v=71";
+import { isCompact, onCompactChange } from "./viewport.js?v=72";
 
 const OPEN_CLASS = "is-menu-open";      // set on <html>, so CSS can reach both
                                         // the panel and the page behind it
