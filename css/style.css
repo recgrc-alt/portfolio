@@ -2706,5 +2706,18 @@ a, button, [role="button"], summary, input, textarea, select {
   /* A tap must not leave one tool looking picked. */
   .skill:hover { color: var(--color-ink); --echo-opacity: 0; --echo-shift: 0; }
   .skill:hover .text-echo { --echo-opacity: 0; --echo-shift: 0; }
+
+  /* AND IT MUST NOT STOP THE TRACK.
+     `.marquee:hover .marquee__track { animation-play-state: paused }` is a
+     good affordance with a mouse — rest on it to read a name, move away and it
+     resumes. A finger has no "away": a touch browser leaves :hover on the last
+     thing tapped until something else is tapped, so one touch paused the
+     marquee and nothing ever started it again. The tools simply stopped.
+
+     This is the same stuck-:hover failure the rest of this block exists for;
+     that rule was just never brought in. Forced back to running rather than
+     unset, because the pausing rule is more specific and would otherwise
+     still win. */
+  .marquee:hover .marquee__track { animation-play-state: running; }
 }
 

@@ -20,7 +20,8 @@
    The set of things that tick is a single registry below — add a selector to
    give a new control the same voice. */
 
-import { isSoundEnabled } from "./audio-state.js?v=72";
+import { isSoundEnabled } from "./audio-state.js?v=74";
+import { isTouch } from "./viewport.js?v=74";
 
 const TARGETS = [
   ".nav__link",
@@ -36,6 +37,21 @@ export function initClickSound(src = "assets/sound/hover.mp3", opts = {}) {
 
   // Less motion asked for → less noise given.
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  /* --- Not on a touch screen ----------------------------------------------
+   * pointerdown is the right moment with a mouse and the wrong one with a
+   * finger. It fires as soon as the finger LANDS — deliberately, before the
+   * browser has decided whether the gesture is a tap or the beginning of a
+   * scroll. On the gallery that meant every flick down the page ticked once
+   * for each card a finger happened to start on: a sound meant to confirm a
+   * press, fired by someone who was only scrolling past.
+   *
+   * Waiting for pointerup and measuring the travel would tell a tap from a
+   * drag, but it would also give back a sound that has no job here. The tick
+   * is the audible half of the hover echo, and a touch screen has neither the
+   * hover nor the need — a phone answers a press with its own haptics.
+   * Desktop keeps it exactly as it was. */
+  if (isTouch()) return;
 
   const base = new Audio(src);
   base.preload = "auto";

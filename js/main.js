@@ -17,29 +17,29 @@
    Orchestration lives here; logic lives in the modules.
    ========================================================================== */
 
-import { config } from "./config.js?v=72";
-import { startClock } from "./clock.js?v=72";
-import { initI18n, i18nReady } from "./i18n.js?v=72";
-import { holdPage, pageReady, sealPage } from "./page-ready.js?v=72";
-import { createPointer } from "./pointer.js?v=72";
-import { initEye } from "./eye.js?v=72";
-import { initSmoothScroll } from "./smooth-scroll.js?v=72";
-import { initReveal } from "./reveal.js?v=72";
-import { initClickSound } from "./click-sound.js?v=72";
-import { initPrefetch } from "./prefetch.js?v=72";
-import { initAmbience } from "./ambience.js?v=72";
-import { initSoundToggle } from "./sound-toggle.js?v=72";
-import { initCardAudio } from "./card-audio.js?v=72";
-import { initPageTransition } from "./page-transition.js?v=72";
-import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=72";
-import { initNavMenu } from "./nav-menu.js?v=72";
-import { initCardCarousel } from "./card-carousel.js?v=72";
-import { initLoader } from "./loader.js?v=72";
+import { config } from "./config.js?v=74";
+import { startClock } from "./clock.js?v=74";
+import { initI18n, i18nReady } from "./i18n.js?v=74";
+import { holdPage, pageReady, sealPage } from "./page-ready.js?v=74";
+import { createPointer } from "./pointer.js?v=74";
+import { initEye } from "./eye.js?v=74";
+import { initSmoothScroll } from "./smooth-scroll.js?v=74";
+import { initReveal } from "./reveal.js?v=74";
+import { initClickSound } from "./click-sound.js?v=74";
+import { initPrefetch } from "./prefetch.js?v=74";
+import { initAmbience } from "./ambience.js?v=74";
+import { initSoundToggle } from "./sound-toggle.js?v=74";
+import { initCardAudio } from "./card-audio.js?v=74";
+import { initPageTransition } from "./page-transition.js?v=74";
+import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=74";
+import { initNavMenu } from "./nav-menu.js?v=74";
+import { initCardCarousel } from "./card-carousel.js?v=74";
+import { initLoader } from "./loader.js?v=74";
 
 /* Bumped whenever the JS changes. If the console does not show this exact
    line, the browser is running a CACHED old bundle — hard-reload or clear the
    cache. This is the quickest way to tell fresh code from stale. */
-const BUILD = "build 72 · toolkit legible on a phone";
+const BUILD = "build 74 · no tick while scrolling on touch";
 
 function boot() {
   console.log("%c▲ Rogério Edgar · " + BUILD, "color:#8cbe69;font-weight:bold");
@@ -100,14 +100,14 @@ function boot() {
     hudExtrasWired = true;
 
     // Neither asks for anything on arrival — see the modules.
-    import("./distance.js?v=72").then((m) =>
+    import("./distance.js?v=74").then((m) =>
       m.initDistance(document.querySelector("[data-distance]"))
     );
 
     // Pressing the local time opens the hour scrubber, which re-lights the eye
     // live. Loaded on demand: it is an extra, and a page where nobody presses
     // it should not pay to download it.
-    import("./hour-picker.js?v=72").then((m) =>
+    import("./hour-picker.js?v=74").then((m) =>
       m.initHourPicker(document.querySelector(".meta--time"))
     );
   }
@@ -209,25 +209,25 @@ function boot() {
   // WORK — the gallery, built from data/projects.json.
   if (document.querySelector("[data-work-gallery]")) {
     // The cards ARE this page. Nothing should uncover before they exist.
-    holdPage(import("./work-gallery.js?v=72").then((m) =>
+    holdPage(import("./work-gallery.js?v=74").then((m) =>
       m.initWorkGallery(document.querySelector("[data-work-gallery]"))
     ));
   }
 
   // PROJECT — one template filled from the ?id= parameter.
   if (document.querySelector("[data-project-page]")) {
-    holdPage(import("./project-page.js?v=72").then(async (m) => {
+    holdPage(import("./project-page.js?v=74").then(async (m) => {
       await m.initProjectPage(document.querySelector("[data-project-page]"));
       // The hero video is injected by the module, so its feed observer can
       // only be wired after that has run.
-      const { initCamFeeds } = await import("./cam-feeds.js?v=72");
+      const { initCamFeeds } = await import("./cam-feeds.js?v=74");
       initCamFeeds(document.querySelector("[data-project-page]"));
     }));
   }
 
   // CONTACT — the copy button and the form.
   if (document.querySelector("[data-contact]")) {
-    import("./contact.js?v=72").then((m) =>
+    import("./contact.js?v=74").then((m) =>
       m.initContact(document.querySelector("[data-contact]"))
     );
   }
@@ -252,12 +252,12 @@ async function initHome({ pointer, lenis }) {
     { initHorizontalScroll },
     { bindProgressToProperty },
   ] = await Promise.all([
-    import("./scroll-fx.js?v=72"),
-    import("./reveal-photo.js?v=72"),
-    import("./photo-depth.js?v=72"),
-    import("./marquee.js?v=72"),
-    import("./horizontal-scroll.js?v=72"),
-    import("./scroll-progress.js?v=72"),
+    import("./scroll-fx.js?v=74"),
+    import("./reveal-photo.js?v=74"),
+    import("./photo-depth.js?v=74"),
+    import("./marquee.js?v=74"),
+    import("./horizontal-scroll.js?v=74"),
+    import("./scroll-progress.js?v=74"),
   ]);
 
   initHeroScrollFx(lenis);

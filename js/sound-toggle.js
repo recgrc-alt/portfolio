@@ -13,7 +13,7 @@
 
    aria-pressed means MUTED: pressed = sound is off. */
 
-import { isSoundEnabled, toggleSound, onChange } from "./audio-state.js?v=72";
+import { isSoundEnabled, toggleSound, onChange } from "./audio-state.js?v=74";
 
 export function initSoundToggle(button) {
   if (!button) return null;

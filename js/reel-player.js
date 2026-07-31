@@ -20,8 +20,8 @@
 
    Reusable: call it with any container holding [data-reel-video] elements. */
 
-import { canPlay, onChange } from "./audio-state.js?v=72";
-import { beginAudibleVideo, endAudibleVideo } from "./audio-ducking.js?v=72";
+import { canPlay, onChange } from "./audio-state.js?v=74";
+import { beginAudibleVideo, endAudibleVideo } from "./audio-ducking.js?v=74";
 
 export function initReels(section) {
   if (!section) return null;

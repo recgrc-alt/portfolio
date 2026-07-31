@@ -20,7 +20,7 @@
    new-tab clicks, downloads, external links, mailto:, and same-page anchors
    all behave exactly as the browser intends. */
 
-import { fadeOutAmbience } from "./ambience.js?v=72";
+import { fadeOutAmbience } from "./ambience.js?v=74";
 
 const LEAVE_MS = 420;
 
