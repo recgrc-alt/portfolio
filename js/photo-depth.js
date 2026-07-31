@@ -89,8 +89,8 @@ const fragmentShader = /* glsl */ `
 export function initPhotoDepth(canvas, options = {}) {
   if (!canvas) return null;
   const {
-    photoUrl = "assets/foto.webp?v=70",
-    depthUrl = "assets/foto-depthmap.webp?v=70",
+    photoUrl = "assets/foto.webp?v=71",
+    depthUrl = "assets/foto-depthmap.webp?v=71",
     pointer,
     config = {},
   } = options;

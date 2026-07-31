@@ -20,8 +20,8 @@
    anyone stuck behind it.
    ========================================================================== */
 
-import { i18nReady } from "./i18n.js?v=70";
-import { pageReady } from "./page-ready.js?v=70";
+import { i18nReady } from "./i18n.js?v=71";
+import { pageReady } from "./page-ready.js?v=71";
 
 const SEEN_KEY = "re.loaded";
 /* A floor, so a cached second visit does not flash the screen for 80ms and

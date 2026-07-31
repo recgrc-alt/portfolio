@@ -542,7 +542,13 @@ a, button, [role="button"], summary, input, textarea, select {
 .meta--time.is-pressable { cursor: pointer; }
 
 @media (hover: hover) {
-  .meta--time.is-pressable:hover .meta__value { color: var(--color-iris-amber); }
+  /* White, not the iris amber. Everywhere else on the site a hover brightens
+     text toward white; introducing a colour here made this one readout behave
+     unlike every other thing you can point at, and read as a warning rather
+     than as an invitation. The clock is already --color-ink, so the lift comes
+     from the label beside it instead. */
+  .meta--time.is-pressable:hover .meta__label,
+  .meta--time.is-pressable:hover .meta__value { color: var(--color-ink); }
 }
 
 /* No panel, no border, no background. The controls sit straight on the page
