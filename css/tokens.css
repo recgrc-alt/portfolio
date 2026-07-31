@@ -216,9 +216,19 @@
      unhurried, leaving should not keep anyone waiting. */
   --veil-leave: 420ms;
 
+  /* How long the arrival wipe takes WHEN NOBODY IS DRIVING IT — the no-script
+     path. Longer than the exit on purpose: it has to stay black long enough to
+     cover the boot of main.js on a slow connection, because that is the window
+     in which the page is still showing the language it was authored in. With
+     JavaScript alive this is barely used: the veil is pinned shut and released
+     the moment the dictionary lands, which is usually sooner than this. */
+  --veil-enter: 1200ms;
+
   /* How long the loading screen will wait before giving up and showing the
      site anyway. loader.js uses the same ceiling; change them together. */
   --loader-max: 6000ms;
+  /* And how long it takes to get out of the way once it is done. */
+  --loader-out: 450ms;
   --dur-reveal: 1200ms;   /* hero title entrance          */
 
   --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);    /* soft settle   */

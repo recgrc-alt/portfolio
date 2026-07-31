@@ -17,28 +17,29 @@
    Orchestration lives here; logic lives in the modules.
    ========================================================================== */
 
-import { config } from "./config.js?v=63";
-import { startClock } from "./clock.js?v=63";
-import { initI18n } from "./i18n.js?v=63";
-import { createPointer } from "./pointer.js?v=63";
-import { initEye } from "./eye.js?v=63";
-import { initSmoothScroll } from "./smooth-scroll.js?v=63";
-import { initReveal } from "./reveal.js?v=63";
-import { initClickSound } from "./click-sound.js?v=63";
-import { initPrefetch } from "./prefetch.js?v=63";
-import { initAmbience } from "./ambience.js?v=63";
-import { initSoundToggle } from "./sound-toggle.js?v=63";
-import { initCardAudio } from "./card-audio.js?v=63";
-import { initPageTransition } from "./page-transition.js?v=63";
-import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=63";
-import { initNavMenu } from "./nav-menu.js?v=63";
-import { initCardCarousel } from "./card-carousel.js?v=63";
-import { initLoader } from "./loader.js?v=63";
+import { config } from "./config.js?v=70";
+import { startClock } from "./clock.js?v=70";
+import { initI18n, i18nReady } from "./i18n.js?v=70";
+import { holdPage, pageReady, sealPage } from "./page-ready.js?v=70";
+import { createPointer } from "./pointer.js?v=70";
+import { initEye } from "./eye.js?v=70";
+import { initSmoothScroll } from "./smooth-scroll.js?v=70";
+import { initReveal } from "./reveal.js?v=70";
+import { initClickSound } from "./click-sound.js?v=70";
+import { initPrefetch } from "./prefetch.js?v=70";
+import { initAmbience } from "./ambience.js?v=70";
+import { initSoundToggle } from "./sound-toggle.js?v=70";
+import { initCardAudio } from "./card-audio.js?v=70";
+import { initPageTransition } from "./page-transition.js?v=70";
+import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=70";
+import { initNavMenu } from "./nav-menu.js?v=70";
+import { initCardCarousel } from "./card-carousel.js?v=70";
+import { initLoader } from "./loader.js?v=70";
 
 /* Bumped whenever the JS changes. If the console does not show this exact
    line, the browser is running a CACHED old bundle — hard-reload or clear the
    cache. This is the quickest way to tell fresh code from stale. */
-const BUILD = "build 63 · CSP, link allow-list, field caps";
+const BUILD = "build 70 · loader stops charging for time";
 
 function boot() {
   console.log("%c▲ Rogério Edgar · " + BUILD, "color:#8cbe69;font-weight:bold");
@@ -53,6 +54,30 @@ function boot() {
   // so running it ahead means nothing has to be re-done. Async, but nothing
   // below waits — modules that care listen for the `languagechange` event.
   initI18n();
+
+  /* Hold the black over the page until the words are right.
+     The site is authored in English and Portuguese is applied once the
+     dictionary lands, so for a moment every page painted "About / Work /
+     Contact" and then swapped under the reader. The veil already covered the
+     arrival — it just faded out faster than the dictionary arrived.
+     Now it waits, and the fade is the page appearing already correct.
+
+     The loader does the same on the first page of a visit (see loader.js);
+     this covers every page after it, which is where the swap was most
+     visible — the wipe opened onto the wrong language. */
+  const veil = document.querySelector("[data-page-veil]");
+  if (veil) {
+    veil.classList.add("is-held");
+    // Never .then(): i18nReady is built so it always settles, but a release
+    // that depended on success could strand the page behind the veil.
+    // Both, not just the language: on the gallery the wipe used to open onto
+    // a page with no cards in it yet. pageReady() is capped and never rejects,
+    // so this cannot leave the veil shut.
+    Promise.all([i18nReady, pageReady()]).finally(() => {
+      veil.classList.remove("is-held");
+      veil.classList.add("is-clearing");
+    });
+  }
 
   startClock(document.querySelector("[data-clock]"));
 
@@ -75,14 +100,14 @@ function boot() {
     hudExtrasWired = true;
 
     // Neither asks for anything on arrival — see the modules.
-    import("./distance.js?v=63").then((m) =>
+    import("./distance.js?v=70").then((m) =>
       m.initDistance(document.querySelector("[data-distance]"))
     );
 
     // Pressing the local time opens the hour scrubber, which re-lights the eye
     // live. Loaded on demand: it is an extra, and a page where nobody presses
     // it should not pay to download it.
-    import("./hour-picker.js?v=63").then((m) =>
+    import("./hour-picker.js?v=70").then((m) =>
       m.initHourPicker(document.querySelector(".meta--time"))
     );
   }
@@ -106,8 +131,23 @@ function boot() {
   const pointer = createPointer();
   const canvas = document.getElementById("eye-canvas");
   if (canvas) {
+    /* On touch the eye also renders at a lower pixel ratio. Measured on a
+       375px phone: at the 2x cap the loop shades 1 218 000 pixels a frame, at
+       1.5 it shades 685 000 — a 44% cut in the work that actually costs
+       something here, because this is a full-screen fragment shader and its
+       5 800 triangles are free by comparison.
+
+       It is the one element that can afford it: a soft, out-of-focus sphere
+       with no text and no hard edges. The TEXTURE is deliberately left alone —
+       the iris resolves to 315 real pixels on a phone but 1 210 on a large
+       retina desktop, and the model file is shared, so shrinking it to suit
+       the phone would soften the eye everywhere it is actually seen large. */
     const eyeConfig = isTouch()
-      ? { ...config, activeEffects: config.touchEffects }
+      ? {
+          ...config,
+          activeEffects: config.touchEffects,
+          perf: { ...config.perf, maxPixelRatio: config.perf.touchPixelRatio },
+        }
       : config;
     initEye({ canvas, pointer, config: eyeConfig });
   }
@@ -168,28 +208,35 @@ function boot() {
 
   // WORK — the gallery, built from data/projects.json.
   if (document.querySelector("[data-work-gallery]")) {
-    import("./work-gallery.js?v=63").then((m) =>
+    // The cards ARE this page. Nothing should uncover before they exist.
+    holdPage(import("./work-gallery.js?v=70").then((m) =>
       m.initWorkGallery(document.querySelector("[data-work-gallery]"))
-    );
+    ));
   }
 
   // PROJECT — one template filled from the ?id= parameter.
   if (document.querySelector("[data-project-page]")) {
-    import("./project-page.js?v=63").then(async (m) => {
+    holdPage(import("./project-page.js?v=70").then(async (m) => {
       await m.initProjectPage(document.querySelector("[data-project-page]"));
       // The hero video is injected by the module, so its feed observer can
       // only be wired after that has run.
-      const { initCamFeeds } = await import("./cam-feeds.js?v=63");
+      const { initCamFeeds } = await import("./cam-feeds.js?v=70");
       initCamFeeds(document.querySelector("[data-project-page]"));
-    });
+    }));
   }
 
   // CONTACT — the copy button and the form.
   if (document.querySelector("[data-contact]")) {
-    import("./contact.js?v=63").then((m) =>
+    import("./contact.js?v=70").then((m) =>
       m.initContact(document.querySelector("[data-contact]"))
     );
   }
+
+  /* Registration is over. Every branch above that builds real content has
+     already called holdPage synchronously, so from here "nothing is holding
+     the page" finally means what it says. Until this runs, pageReady() waits —
+     which is the whole point: it used to answer before anyone had asked. */
+  sealPage();
 }
 
 /* --- The home page's own wiring ------------------------------------------
@@ -205,12 +252,12 @@ async function initHome({ pointer, lenis }) {
     { initHorizontalScroll },
     { trackScrollProgress },
   ] = await Promise.all([
-    import("./scroll-fx.js?v=63"),
-    import("./reveal-photo.js?v=63"),
-    import("./photo-depth.js?v=63"),
-    import("./marquee.js?v=63"),
-    import("./horizontal-scroll.js?v=63"),
-    import("./scroll-progress.js?v=63"),
+    import("./scroll-fx.js?v=70"),
+    import("./reveal-photo.js?v=70"),
+    import("./photo-depth.js?v=70"),
+    import("./marquee.js?v=70"),
+    import("./horizontal-scroll.js?v=70"),
+    import("./scroll-progress.js?v=70"),
   ]);
 
   initHeroScrollFx(lenis);

@@ -20,7 +20,7 @@
    No fixed sizes: every element fills the host box the caller passes in.
    ========================================================================== */
 
-import { createSlideshow } from "./slideshow.js?v=63";
+import { createSlideshow } from "./slideshow.js?v=70";
 
 /* Fill `host` with the best media `project` offers, wiring the fallback
    cascade. `opts` lets each caller keep its own class names (the card and the
@@ -67,6 +67,26 @@ export function fillMedia(host, project, opts = {}) {
 /* A looping, muted clip. cam-feeds.js decides when it actually plays. A still
    (the poster, or the first slide) fills the frame before the clip loads and
    while it stalls, so the box is never blank. */
+/* Hands a video its poster once it is worth having one.
+   The margin is generous on purpose: the image should have arrived by the time
+   the card is actually looked at, so this trades a little early loading for
+   never showing an empty box. Falls back to setting it immediately where
+   IntersectionObserver is missing — an older browser gets the old behaviour
+   rather than no picture at all. */
+function watchForPoster(video, src) {
+  if (!("IntersectionObserver" in window)) { video.poster = src; return; }
+
+  const io = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      video.poster = src;
+      io.disconnect();          // one poster per video, then stop watching
+    }
+  }, { rootMargin: "300px 0px" });
+
+  io.observe(video);
+}
+
 function videoNode(project, className, lazy, videoAttr, onFail) {
   const video = document.createElement("video");
   video.className = className;
@@ -76,8 +96,22 @@ function videoNode(project, className, lazy, videoAttr, onFail) {
   video.playsInline = true;
   video.preload = lazy ? "none" : "metadata";
 
+  /* THE POSTER UNDOES preload="none" IF IT IS SET NOW.
+     `preload="none"` stops the VIDEO downloading, and it works. The poster is
+     a separate rule: the browser fetches it straight away regardless, because
+     it needs something to paint in the box. On the gallery that meant fifteen
+     full-size banners downloading on arrival — the careful lazy loading on the
+     clips was being paid for and then handed straight back.
+
+     And there is no `loading="lazy"` for a poster; the attribute does not
+     exist. So it is withheld and handed over when the card is actually near
+     the viewport, which is the same thing cam-feeds.js already does with the
+     clip itself. */
   const still = project.poster || (project.slideshow && project.slideshow[0]);
-  if (still) video.poster = still;
+  if (still) {
+    if (lazy) watchForPoster(video, still);
+    else video.poster = still;
+  }
 
   /* Whether this clip carries sound is DATA, not something to ask the browser.
      card-audio.js used to probe webkitAudioDecodedByteCount, which stays 0

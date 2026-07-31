@@ -19,11 +19,11 @@
    a fraction of the bytes.
    ========================================================================== */
 
-import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=63";
-import { initCamFeeds } from "./cam-feeds.js?v=63";
-import { initReveal } from "./reveal.js?v=63";
-import { fillMedia } from "./media.js?v=63";
-import { t } from "./i18n.js?v=63";
+import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=70";
+import { initCamFeeds } from "./cam-feeds.js?v=70";
+import { initReveal } from "./reveal.js?v=70";
+import { fillMedia } from "./media.js?v=70";
+import { t } from "./i18n.js?v=70";
 
 export async function initWorkGallery(root) {
   if (!root) return null;

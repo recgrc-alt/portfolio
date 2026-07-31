@@ -32,8 +32,8 @@
 
 /* The placeholder that ships in the markup. Anything containing this is not a
    real endpoint yet. */
-import { t } from "./i18n.js?v=63";
-import { initSelects } from "./select.js?v=63";
+import { t } from "./i18n.js?v=70";
+import { initSelects } from "./select.js?v=70";
 
 const UNSET = "YOUR_FORM_ID";
 

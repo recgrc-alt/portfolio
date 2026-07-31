@@ -161,6 +161,10 @@ export const config = {
 
   /* --- Performance ------------------------------------------------------ */
   perf: {
-    maxPixelRatio: 2,   // cap DPR so 4K/retina doesn't melt the GPU
+    maxPixelRatio: 2,        // cap DPR so 4K/retina doesn't melt the GPU
+    /* Lower again on a phone. The eye is full-screen and fragment-bound, so
+       the pixel count IS the cost — 1.5 instead of 2 removes 44% of it. See
+       the note in main.js for why the texture is not cut to match. */
+    touchPixelRatio: 1.5,
   },
 };

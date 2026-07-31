@@ -450,10 +450,23 @@
    either. The tokens carry a black shadow, which over a black page is invisible
    work: it would cost a full-size filter pass on a very large image and change
    nothing on screen. These renders already carry their own baked lighting. */
+/* Constrained by HEIGHT as well as width, and that is the important half.
+   Filling the column works for a square or a landscape render; a portrait one
+   at the same width is a third taller again, and if its subject also fills the
+   frame it towers over the text it is supposed to sit beside. Two renders can
+   be given the same instruction and land at completely different sizes purely
+   because of their aspect.
+
+   width:auto + max-width + max-height lets the image settle against whichever
+   limit it meets first, keeping its proportions, with no cropping and no
+   letterbox. */
 .project-showcase__img {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: 62vh;
   height: auto;
+  margin-inline: auto;
 }
 
 /* `span: "half"` in the project data. For a mark rather than a scene: a

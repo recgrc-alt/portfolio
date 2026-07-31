@@ -141,6 +141,25 @@ export function t(key, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
+/* How long anything is allowed to wait for the first dictionary before giving
+   up and showing the page anyway. A visitor on a bad connection should meet a
+   page in the wrong language, never a black screen. */
+const READY_CEILING_MS = 2500;
+
+/* Resolves once the page is showing the RIGHT language — which is not the same
+   as "the script has started". The loading screen and the black veil both wait
+   on this before uncovering, so nobody watches the words change under them.
+
+   It NEVER rejects and it always settles: a missing dictionary, a dead network
+   or a hung request all end the same way, with the page revealed in the source
+   language. Whatever waits on this cannot deadlock. */
+let settleReady;
+export const i18nReady = new Promise((resolve) => { settleReady = resolve; });
+
+function markReady() {
+  if (settleReady) { settleReady(); settleReady = null; }
+}
+
 /* Wire the switch and open in the right language.
    `available` is passed in rather than discovered so adding a third language
    is one entry here and one JSON file — no scanning, no guessing. */
@@ -154,9 +173,24 @@ export async function initI18n({ available = ["en", "pt"] } = {}) {
   });
 
   const start = preferred(available);
-  // The source language is already in the markup, so painting it again would
-  // be work for nothing — but the button state and <html lang> still need to
-  // be right, and listeners still need to hear about it.
-  await setLanguage(start, { remember: start !== DEFAULT || location.search.includes(PARAM) });
+
+  // The ceiling runs against the fetch, not after it: a dictionary that never
+  // arrives must not hold the page behind a cover for longer than this.
+  const giveUp = setTimeout(markReady, READY_CEILING_MS);
+
+  try {
+    // The source language is already in the markup, so painting it again would
+    // be work for nothing — but the button state and <html lang> still need to
+    // be right, and listeners still need to hear about it.
+    await setLanguage(start, { remember: start !== DEFAULT || location.search.includes(PARAM) });
+  } catch (err) {
+    // The page stays in the language the markup was authored in, which is a
+    // readable page — so this is a warning, not a failure.
+    console.warn("[i18n] could not apply", start, err);
+  } finally {
+    clearTimeout(giveUp);
+    markReady();
+  }
+
   return { setLanguage, getLanguage };
 }

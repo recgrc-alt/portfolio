@@ -18,8 +18,9 @@
    Works on any [data-work-video] in the given root, which is both the gallery
    cards and the project hero — they already share that marker. */
 
-import { canPlay, onChange } from "./audio-state.js?v=63";
-import { beginAudibleVideo, endAudibleVideo } from "./audio-ducking.js?v=63";
+import { canPlay, onChange } from "./audio-state.js?v=70";
+import { beginAudibleVideo, endAudibleVideo } from "./audio-ducking.js?v=70";
+import { isTouch } from "./viewport.js?v=70";
 
 /* Does this clip carry sound? true / false / null (not knowable yet).
  *
@@ -50,6 +51,14 @@ function hasAudioTrack(video) {
 
 export function initCardAudio(root) {
   if (!root) return null;
+
+  /* Nothing to hover with, so nothing to do — and leaving it bound was worse
+     than useless. `pointerover` is not a mouse-only event: on a touch screen it
+     fires on TAP, so tapping a card to open it switched its sound on along the
+     way, and `pointerout` does not reliably follow a finger that has already
+     left. A phone would carry a clip talking into the next page.
+     A preview you hear by pointing at something needs a pointer. */
+  if (isTouch()) return null;
 
   const confirmed = new WeakSet();   // clips known to carry audio
   let current = null;                // the one clip currently unmuted

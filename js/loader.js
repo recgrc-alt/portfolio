@@ -20,8 +20,20 @@
    anyone stuck behind it.
    ========================================================================== */
 
+import { i18nReady } from "./i18n.js?v=70";
+import { pageReady } from "./page-ready.js?v=70";
+
 const SEEN_KEY = "re.loaded";
-const MIN_MS = 900;      // long enough to read as deliberate, not as a stutter
+/* A floor, so a cached second visit does not flash the screen for 80ms and
+   read as a glitch. It used to be 900, chosen when this waited for almost
+   nothing and the risk really was a flash. Now it waits for the page to be
+   BUILT — so on any real connection the content is the slow part and this
+   floor is pure delay stacked on top of it. Measured locally: everything was
+   ready at 280ms and the cover still sat there until 1103ms.
+
+   400 is still clearly deliberate rather than a stutter, and it stops the
+   loader charging for time the site no longer needs. */
+const MIN_MS = 400;
 const MAX_MS = 6000;     // hard stop: the site is more use than the animation
 
 export function initLoader(el) {
@@ -44,7 +56,9 @@ export function initLoader(el) {
     // Taken out of the DOM once the fade has played, rather than left as an
     // invisible full-screen layer over the page.
     el.addEventListener("transitionend", () => el.remove(), { once: true });
-    setTimeout(() => el.remove(), 1200);
+    // Backstop for a browser that never fires transitionend (a hidden tab,
+    // reduced motion). Comfortably past --loader-out, not a second guess at it.
+    setTimeout(() => el.remove(), 900);
   }
 
   function finishWhenDue() {
@@ -52,8 +66,26 @@ export function initLoader(el) {
     setTimeout(finish, Math.max(0, MIN_MS - waited));
   }
 
-  if (document.readyState === "complete") finishWhenDue();
-  else window.addEventListener("load", finishWhenDue, { once: true });
+  /* Three conditions, not one.
+
+       load        every file the MARKUP referenced has arrived
+       i18nReady   the words are in the language that was asked for
+       pageReady   the page has finished building its actual content
+
+     The third is the one that was missing, and on a gallery it was the only
+     one that mattered. `load` is satisfied by a document whose cards do not
+     exist yet — they are built from JSON by a module fetched on demand — so
+     the cover lifted on a title and a footer and the work appeared afterwards,
+     in front of the visitor. Now the eye keeps turning until there is a whole
+     page behind it.
+
+     All three settle on their own and none of them rejects, so waiting on them
+     cannot strand anyone — and MAX_MS below is the last net regardless. */
+  const loaded = document.readyState === "complete"
+    ? Promise.resolve()
+    : new Promise((r) => window.addEventListener("load", r, { once: true }));
+
+  Promise.all([loaded, i18nReady, pageReady()]).then(finishWhenDue);
 
   setTimeout(finish, MAX_MS);
   return { finish };

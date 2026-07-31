@@ -249,7 +249,12 @@ a, button, [role="button"], summary, input, textarea, select {
   gap: clamp(var(--space-24), 4svh, var(--space-48));
   background-color: var(--color-bg);
   opacity: 1;
-  transition: opacity var(--dur-slow) var(--ease-out);
+  /* Its own duration, not --dur-slow. A cover coming OFF is not the same
+     gesture as something arriving: the page is already built and waiting
+     behind it, and every extra hundred milliseconds here is time the visitor
+     spends looking at a screen with nothing left to say. --dur-slow is right
+     for things that enter; this one should get out of the way. */
+  transition: opacity var(--loader-out) var(--ease-out);
   /* The net: fades itself out at the ceiling, whatever the script is doing. */
   animation: loader-giveup 0s linear var(--loader-max) forwards;
 }
@@ -321,12 +326,33 @@ a, button, [role="button"], summary, input, textarea, select {
   background-color: var(--color-bg);
   pointer-events: none;                /* never intercepts a click */
   opacity: 0;
-  animation: veil-clear var(--dur-slow) var(--ease-out) both;
+  animation: veil-clear var(--veil-enter) var(--ease-out) both;
 }
 
+/* Fully black for the first fifth, THEN fades. The hold is the point: the
+   curve is an ease-out, which dumps most of its opacity in the first ~150ms,
+   and that is exactly the window in which the language swap lands. Without a
+   hold the veil was technically covering the arrival and visibly not covering
+   the one thing that needed covering. */
 @keyframes veil-clear {
-  from { opacity: 1; }
-  to   { opacity: 0; }
+  0%, 45% { opacity: 1; }
+  100%    { opacity: 0; }
+}
+
+/* --- Held open until the page is actually ready --------------------------
+ * main.js pins the veil shut on arrival and lets go once the dictionary has
+ * been applied, so the words never change in front of anybody. The animation
+ * above stays as the no-JavaScript path: neither class is ever added there,
+ * it plays through, and the page is revealed regardless. */
+.page-veil.is-held {
+  animation: none;
+  opacity: 1;
+}
+
+.page-veil.is-clearing {
+  animation: none;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
 }
 
 .page-veil.is-leaving {
@@ -2145,7 +2171,12 @@ a, button, [role="button"], summary, input, textarea, select {
 
   /* No wipe between pages. page-transition.js bows out entirely under this
      setting, so the veil must clear itself instantly rather than sit there. */
+  /* No entrance fade — but the cover still has to do its job, otherwise
+     someone who asked for less motion is the only visitor who watches the
+     text change language. Held opaque, then gone, with nothing animating. */
   .page-veil { animation: none; opacity: 0; }
+  .page-veil.is-held { opacity: 1; }
+  .page-veil.is-clearing { opacity: 0; transition: none; }
 }
 
 

@@ -29,11 +29,11 @@
 
 import {
   loadProjects, getProject, getCategory, resolveField, nextProject,
-} from "./projects.js?v=63";
-import { initReveal } from "./reveal.js?v=63";
-import { t } from "./i18n.js?v=63";
-import { fillMedia } from "./media.js?v=63";
-import { initReels } from "./reel-player.js?v=63";
+} from "./projects.js?v=70";
+import { initReveal } from "./reveal.js?v=70";
+import { t } from "./i18n.js?v=70";
+import { fillMedia } from "./media.js?v=70";
+import { initReels } from "./reel-player.js?v=70";
 
 /* Tool → icon file. A tool with an entry here renders its logo beside the
    name; anything else renders the name alone. The same map is what a future

@@ -134,7 +134,7 @@
         {
           "src": "assets/mockups/soft-capture/img1.webp",
           "alt": "Two 3D characters created for Soft Capture",
-          "span": "half",
+          "span": "full",
           "caption": "3D models"
         }
       ],
@@ -502,7 +502,7 @@
       "contextText": "This project was developed for the Interactive Media Design course, part of my Design & Multimedia degree at the University of Coimbra.",
       "heroVideo": "videos/abrigo.webm",
       "heroEmbed": "",
-      "poster": "assets/banners/abrigo.png",
+      "poster": "assets/banners/abrigo.webp",
       "description": "Abrigo is a mobile civil-protection and safety app, built to provide immediate assistance during military crises or extreme emergencies. It was designed to work under low connectivity and high psychological stress, centralising safety protocols, evacuation routes and the real-time location of the nearest shelters.",
       "body": [
         "Development began with a rigorous user-centred research process, prioritising concept validation before any final interface. The information architecture and visual language rested on a 'Stress-First Design' principle: high contrast on a dark background with yellow signalling elements, large touch targets to prevent selection errors, and the fewest possible steps to carry out critical actions.",
@@ -703,7 +703,7 @@
         {
           "src": "assets/mockups/o-escaravelho/escaravelho-tras-34.webp",
           "alt": "The 3D beetle pushing its ball, seen from three-quarters behind",
-          "span": "half",
+          "span": "full",
           "caption": "3D model, rear view"
         }
       ],

@@ -17,7 +17,7 @@
    Above the breakpoint it never initialises, so the desktop rail is untouched.
    ========================================================================== */
 
-import { isCompact, onCompactChange } from "./viewport.js?v=63";
+import { isCompact, onCompactChange } from "./viewport.js?v=70";
 
 export function initCardCarousel(track, { dotsHost } = {}) {
   if (!track) return null;

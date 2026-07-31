@@ -35,7 +35,7 @@
    reflections stay put.
    ========================================================================== */
 
-import { OVERRIDE_EVENT } from "./time-override.js?v=63";
+import { OVERRIDE_EVENT } from "./time-override.js?v=70";
 
 /* Keyframes are placed at the hour they describe, and the day wraps: 23:00
    blends toward the 5:00 entry, not back through noon. */

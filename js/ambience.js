@@ -25,8 +25,8 @@
    cutting the sound off mid-note).
    ========================================================================== */
 
-import { canPlay, onChange } from "./audio-state.js?v=63";
-import { onDuckChange } from "./audio-ducking.js?v=63";
+import { canPlay, onChange } from "./audio-state.js?v=70";
+import { onDuckChange } from "./audio-ducking.js?v=70";
 
 // The active instance, so page-transition.js can fade it on the way out
 // without having to be handed a reference through main.js.
@@ -128,6 +128,9 @@ export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {})
   function refresh(ms = fadeMs) {
     const target = wants() ? volume : 0;
     if (target > 0) {
+      // The one place that decides the sound is wanted is the one place that
+      // pays for it. Returns immediately once the buffer is in hand.
+      if (!buffer) { ensureBuffer(); return; }
       if (ctx.state === "suspended") ctx.resume().catch(() => {});
       startLoop();
     }
@@ -136,11 +139,26 @@ export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {})
 
   /* --- Wiring ------------------------------------------------------------ */
 
-  fetch(src)
-    .then((r) => r.arrayBuffer())
-    .then((raw) => ctx.decodeAudioData(raw))
-    .then((decoded) => { buffer = decoded; refresh(); })
-    .catch(() => { /* missing or undecodable file: the site is simply silent */ });
+  /* --- The file is not fetched until it can actually be heard -------------
+   * This used to download on every page load, unconditionally. It is over
+   * three megabytes, it is the single heaviest thing on the site after the
+   * project media, and a browser will not play a note of it until the visitor
+   * has interacted with the page — so on a phone it was three megabytes of
+   * cellular data spent, very often, on silence.
+   *
+   * Now nothing leaves the network until the site is both unlocked and
+   * unmuted. Fetched once and kept; `refresh()` is what asks. */
+  let fetching = null;
+
+  function ensureBuffer() {
+    if (buffer || fetching) return fetching;
+    fetching = fetch(src)
+      .then((r) => r.arrayBuffer())
+      .then((raw) => ctx.decodeAudioData(raw))
+      .then((decoded) => { buffer = decoded; refresh(); })
+      .catch(() => { /* missing or undecodable file: the site is simply silent */ });
+    return fetching;
+  }
 
   onChange(() => refresh());
   onDuckChange((audible) => { ducked = audible; refresh(duckMs); });

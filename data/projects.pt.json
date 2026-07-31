@@ -134,7 +134,7 @@
         {
           "src": "assets/mockups/soft-capture/img1.webp",
           "alt": "Duas personagens 3D criadas para o Soft Capture",
-          "span": "half",
+          "span": "full",
           "caption": "Modelos 3D"
         }
       ],
@@ -502,7 +502,7 @@
       "contextText": "Este projeto foi desenvolvido para a cadeira de Design de Meios Interativos, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/abrigo.webm",
       "heroEmbed": "",
-      "poster": "assets/banners/abrigo.png",
+      "poster": "assets/banners/abrigo.webp",
       "description": "O Abrigo é uma aplicação móvel de segurança e proteção civil, concebida para prestar assistência imediata durante crises militares ou cenários de emergência extrema. Foi pensada para funcionar em baixa conetividade e sob elevado stresse psicológico, centralizando protocolos de atuação, rotas de evacuação e a localização em tempo real dos abrigos mais próximos.",
       "body": [
         "O desenvolvimento partiu de um processo rigoroso de investigação centrada no utilizador, priorizando a validação de conceitos antes da interface final. A arquitetura de informação e a linguagem visual assentaram no princípio de «Stress-First Design»: alto contraste sobre fundo escuro com elementos amarelos de sinalização, alvos de toque grandes para evitar erros e a redução ao mínimo dos passos para executar ações críticas.",
@@ -703,7 +703,7 @@
         {
           "src": "assets/mockups/o-escaravelho/escaravelho-tras-34.webp",
           "alt": "O escaravelho 3D a empurrar a bola, visto de três quartos por trás",
-          "span": "half",
+          "span": "full",
           "caption": "Modelo 3D, vista traseira"
         }
       ],
