@@ -26,6 +26,19 @@
    untranslated content on first paint. Portuguese is applied after the
    dictionary loads. To flip the default, change DEFAULT below and translate
    the markup — nothing else changes.
+
+   AND WHY IT OPENS IN ENGLISH FOR EVERYONE
+   The visitor's own browser language is never consulted. That sounds unhelpful
+   and is the opposite: a Portuguese browser used to open this site in
+   Portuguese without anyone asking, and the guess was then saved as if it had
+   been a decision, so the site opened in Portuguese for ever afterwards with
+   nothing to show why. English is the default, Portuguese is something a
+   visitor asks for, and once asked for it is remembered.
+
+   WHERE THE CHOICE LIVES
+   localStorage, so it survives closing the tab and coming back tomorrow. To
+   make it last only for the current visit instead, change the two
+   localStorage calls to sessionStorage; nothing else needs to move.
    ========================================================================== */
 
 const DEFAULT = "en";
@@ -38,20 +51,39 @@ const cache = new Map();
 let current = DEFAULT;
 
 /* --- Which language to open in ------------------------------------------
- * Order matters: an explicit ?lang= in the URL beats a remembered choice,
- * because a shared link should show what the sender saw. A remembered choice
- * beats the browser's preference, because it was deliberate. */
+ * Three sources, in this order, and the source is returned alongside the
+ * answer because what happens next depends on WHERE it came from.
+ *
+ *   url      an explicit ?lang= beats everything: a shared link has to show
+ *            what the sender saw, and following one is a deliberate act, so
+ *            it is also worth remembering.
+ *
+ *   memoria  a choice this visitor made before, on this browser.
+ *
+ *   padrao   English. Always.
+ *
+ * THE BROWSER'S OWN PREFERENCE IS DELIBERATELY NOT CONSULTED, and removing it
+ * is the point of this function. navigator.language used to sit between the
+ * second and third: a visitor with a Portuguese browser opened a site that is
+ * meant to open in English, having chosen nothing, and that guess was then
+ * SAVED as though it had been a decision. From then on the site opened in
+ * Portuguese for ever, and there was no way to tell that apart from a real
+ * choice - which is exactly what "sometimes it starts in Portuguese and
+ * sometimes in English" was.
+ *
+ * The site is authored in English and opens in English. Portuguese is
+ * something a visitor asks for, once, and it is remembered from then on.
+ */
 function preferred(available) {
   const fromUrl = new URLSearchParams(location.search).get(PARAM);
-  if (available.includes(fromUrl)) return fromUrl;
+  if (available.includes(fromUrl)) return { lang: fromUrl, fonte: "url" };
 
   try {
     const saved = localStorage.getItem(STORE_KEY);
-    if (available.includes(saved)) return saved;
-  } catch { /* private mode — fall through to the browser's preference */ }
+    if (available.includes(saved)) return { lang: saved, fonte: "memoria" };
+  } catch { /* private mode: no memory, and the default below is right */ }
 
-  const browser = (navigator.language || "").slice(0, 2).toLowerCase();
-  return available.includes(browser) ? browser : DEFAULT;
+  return { lang: DEFAULT, fonte: "padrao" };
 }
 
 async function load(lang) {
@@ -90,6 +122,28 @@ function paint(dict, root = document) {
 
 /* --- Public ------------------------------------------------------------- */
 export async function setLanguage(lang, { remember = true } = {}) {
+  /* REMEMBERED FIRST, BEFORE ANYTHING IS AWAITED.
+   * This used to sit at the bottom of the function, after the dictionary had
+   * been fetched, and that ordering lost people's choices. Pressing PT and
+   * then immediately pressing "Work" gives this about 420ms before
+   * page-transition.js tears the document down; a dictionary that takes longer
+   * than that meant the click was never recorded, the next page opened in
+   * English, and the visitor had no idea why. Storing the intent does not
+   * depend on the fetch succeeding, so it should never have waited for it.
+   *
+   * Both writes are here together on purpose: whatever is in storage and
+   * whatever is in the URL now always agree, because nothing can happen
+   * between them. */
+  if (remember) {
+    try { localStorage.setItem(STORE_KEY, lang); } catch { /* private mode */ }
+    // Reflected in the URL so a link can be shared in the language it was
+    // read in. replaceState, not pushState: switching language is not a
+    // navigation, and it should not fill up the back button.
+    const url = new URL(location.href);
+    url.searchParams.set(PARAM, lang);
+    history.replaceState(null, "", url);
+  }
+
   const dict = await load(lang);
   current = lang;
 
@@ -101,16 +155,6 @@ export async function setLanguage(lang, { remember = true } = {}) {
     const on = btn.dataset.lang === lang;
     btn.classList.toggle("is-active", on);
     btn.setAttribute("aria-pressed", String(on));
-  }
-
-  if (remember) {
-    try { localStorage.setItem(STORE_KEY, lang); } catch { /* private mode */ }
-    // Reflected in the URL so a link can be shared in the language it was
-    // read in. replaceState, not pushState: switching language is not a
-    // navigation, and it should not fill up the back button.
-    const url = new URL(location.href);
-    url.searchParams.set(PARAM, lang);
-    history.replaceState(null, "", url);
   }
 
   /* Anything painted to a canvas cannot be updated by swapping textContent —
@@ -172,17 +216,29 @@ export async function initI18n({ available = ["en", "pt"] } = {}) {
     });
   });
 
-  const start = preferred(available);
+  const { lang: start, fonte } = preferred(available);
 
   // The ceiling runs against the fetch, not after it: a dictionary that never
   // arrives must not hold the page behind a cover for longer than this.
   const giveUp = setTimeout(markReady, READY_CEILING_MS);
 
   try {
-    // The source language is already in the markup, so painting it again would
-    // be work for nothing — but the button state and <html lang> still need to
-    // be right, and listeners still need to hear about it.
-    await setLanguage(start, { remember: start !== DEFAULT || location.search.includes(PARAM) });
+    /* The source language is already in the markup, so painting it again would
+       be work for nothing — but the button state and <html lang> still need to
+       be right, and listeners still need to hear about it.
+
+       ONLY A CHOICE IS WRITTEN DOWN, and arriving is not choosing.
+         url      following ?lang=pt IS a decision, so it is stored, and from
+                  then on this visitor gets Portuguese without the parameter.
+         memoria  already stored; writing it again would say nothing, and
+                  stamping ?lang= onto the address bar of somebody who simply
+                  opened the site is noise.
+         padrao   nothing happened. Nothing is recorded.
+
+       The rule used to be `start !== DEFAULT`, which quietly promoted the
+       browser-language guess into a permanent preference. With that guess gone
+       the rule can say what it actually means. */
+    await setLanguage(start, { remember: fonte === "url" });
   } catch (err) {
     // The page stays in the language the markup was authored in, which is a
     // readable page — so this is a warning, not a failure.

@@ -13,84 +13,102 @@
    sequence is the whole design:
 
      1  hero      the work itself, before any words about it
-     2  header    what it is, when, and who did what
-     3  story     the idea, then the images that show it
-     4  craft     the stack and what was hard — the part other designers read
-     5  onward    open the live thing, or go to the next project
+     2  header    the title
+     3  story     the intro: category and year, what it is, where it came
+                  from and the way into the live thing, with the rail of who
+                  made it and what with beside all of that
+     4  sections  the case study proper: one section per question
+                  (the challenge, the concept, the process, the result), or
+                  chapters of its own for a project that has earned more
+     5  onward    credits, then the next project
 
    Nothing is decorative: a visitor who bounces after block 1 has still seen
    the work, and a visitor who reaches block 4 is the one worth writing it for.
 
    MISSING DATA IS A STATE, NOT A CRASH
-   A bad id, a project with no video yet, an empty mockup array — each of
-   these renders as an honest gap rather than an exception, because half this
-   file's content is still being produced.
+   A bad id, a project with no video yet, no links, no team, no chapters —
+   each of these renders as an honest gap rather than an exception, because
+   half this file's content is still being produced.
    ========================================================================== */
 
 import {
   loadProjects, getProject, getCategory, resolveField, nextProject,
-} from "./projects.js?v=74";
-import { initReveal } from "./reveal.js?v=74";
-import { t } from "./i18n.js?v=74";
-import { fillMedia } from "./media.js?v=74";
-import { initReels } from "./reel-player.js?v=74";
+} from "./projects.js?v=289";
+import { actionButton, echoLabel, safeUrl } from "./project-actions.js?v=289";
+import { initReveal } from "./reveal.js?v=289";
+import { keepSplit } from "./split-lines.js?v=289";
+import { buildChapters, buildSpecs } from "./project-chapters.js?v=289";
+import { resetSlots } from "./project-slot.js?v=289";
+import { buildTeamRail } from "./project-team.js?v=289";
+import { initAmbient } from "./project-ambient.js?v=289";
+import { t } from "./i18n.js?v=289";
+import { fillMedia } from "./media.js?v=289";
+import { initReels } from "./reel-player.js?v=289";
+import { setAmbienceSource } from "./ambience.js?v=289";
+import { linkSoundToBanner } from "./banner-sound.js?v=289";
 
-/* Tool → icon file. A tool with an entry here renders its logo beside the
-   name; anything else renders the name alone. The same map is what a future
-   "filter by tool" feature would read, so it lives in one place. Adobe's
-   marks were pulled from Simple Icons at Adobe's request, so Photoshop /
-   Illustrator / After Effects / Premiere stay as text on purpose. */
-const TOOL_ICONS = {
-  "three.js": "threedotjs",
-  "webgl": "webgl",
-  "javascript": "javascript",
-  "html": "html5",
-  "css": "css",
-  "php": "php",
-  "mysql": "mysql",
-  "blender": "blender",
-  "figma": "figma",
-  "processing": "processingfoundation",
-  "opencv": "opencv",
-};
+/* --- WHAT USED TO BE HERE ------------------------------------------------
+ * A table of Simple Icons slugs, a fetch cache, and an async toolIcon() that
+ * pulled assets/icons/<slug>.svg for each tool in the stack. All three went
+ * with the toolkit list itself, which is now beside the team and draws its
+ * marks from tool-icons.js — the same data the work list has always used,
+ * held inline rather than fetched. Six requests per project page, gone, and
+ * the toolkit is complete on its first frame instead of filling in.
+ * ========================================================================= */
 
-// Cache each icon's inner SVG once fetched, so a tool used on ten projects is
-// one request, not ten.
-const iconCache = new Map();
+/* The URL guard, the hover label and the button they build moved to
+   project-actions.js, so project-chapters.js can make the same button from a
+   chapter's own link without a second copy of any of it. */
 
-/* --- Only ever navigate somewhere ----------------------------------------
- * Every href on this page is built from the project JSON, which is authored
- * rather than submitted — so this is not defending against a visitor. It is
- * defending against a slip: `javascript:` and `data:` are valid in an href and
- * both RUN, so one careless paste into a links array would be a script running
- * on the site with nothing to warn anybody. An allow-list of schemes means the
- * worst a bad value can do is fail to navigate.
+
+/* --- Head tags that survive a re-render ------------------------------------
+ * Everything below writes to <head>, and render() can run more than once: the
+ * language toggle rebuilds the whole page in place. So each of these finds the
+ * tag first and only creates one if it is genuinely absent. Appending would
+ * leave a second description and a second canonical behind after one switch,
+ * and a page with two canonicals has none.
  *
- * Relative paths are kept as they are — they have no scheme to abuse. */
-const SAFE_SCHEMES = new Set(["http:", "https:", "mailto:", "tel:"]);
+ * The origin is written out rather than read from location, because a canonical
+ * has to name the address the page should be found at, which is not necessarily
+ * the one it is being viewed at: a preview host, a staging domain or a local
+ * file would each otherwise declare themselves canonical. */
+const SITE_ORIGIN = "https://rogerioedgar.com";
 
-function safeUrl(url) {
-  if (typeof url !== "string" || !url.trim()) return null;
-  try {
-    // A base is required so a relative path parses at all; if the string
-    // carries its own scheme, the base is ignored.
-    const parsed = new URL(url, location.href);
-    return SAFE_SCHEMES.has(parsed.protocol) ? url : null;
-  } catch {
-    return null;   // not a URL at all
+function headTag(selector, make) {
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = make();
+    document.head.appendChild(el);
   }
+  return el;
 }
 
-async function toolIcon(name) {
-  const slug = TOOL_ICONS[name.toLowerCase()];
-  if (!slug) return null;
-  if (iconCache.has(slug)) return iconCache.get(slug);
-  const promise = fetch(`assets/icons/${slug}.svg`)
-    .then((r) => (r.ok ? r.text() : null))
-    .then((svg) => (svg ? svg.match(/<svg[^>]*>([\s\S]*?)<\/svg>/)?.[1] ?? null : null))
-    .catch(() => null);
-  iconCache.set(slug, promise);
-  return promise;
+/* A meta by name, and the two sharing tags that carry the same sentence. A
+   description that is right in one of the three and stale in the others is
+   worse than one that is merely generic. */
+/* og: tags are addressed by `property`, not by `name`. Two functions rather
+   than one with a flag, because the attribute is the whole difference and a
+   flag would hide it. */
+function setProp(property, content) {
+  headTag(`meta[property="${property}"]`, () => {
+    const m = document.createElement("meta");
+    m.setAttribute("property", property);
+    return m;
+  }).content = content;
+}
+
+function setMeta(name, content) {
+  headTag(`meta[name="${name}"]`, () => {
+    const m = document.createElement("meta");
+    m.name = name;
+    return m;
+  }).content = content;
+
+  /* One sentence, three places. A description that is right in one of them and
+     stale in the other two is worse than one that is merely generic. */
+  if (name !== "description") return;
+  setProp("og:description", content);
+  setMeta("twitter:description", content);
 }
 
 export async function initProjectPage(root) {
@@ -109,6 +127,17 @@ export async function initProjectPage(root) {
 
     const project = id ? getProject(data, id) : null;
     if (!project) {
+      /* A SOFT 404, AND THE ONLY PLACE ON THIS PAGE THAT IS ONE.
+         project.html used to carry a blanket noindex in its markup, which hid
+         all nineteen case studies. The exclusion belongs here instead: a URL
+         naming a project that does not exist is genuinely nothing worth
+         indexing, and this is the branch that knows that. */
+      headTag('meta[name="robots"]', () => {
+        const m = document.createElement("meta");
+        m.name = "robots";
+        return m;
+      }).content = "noindex";
+
       root.replaceChildren(notice(
         id ? `${t("project.notFound", "No project called")} “${id}”.`
            : t("project.noneRequested", "No project was requested."),
@@ -117,22 +146,245 @@ export async function initProjectPage(root) {
       return null;
     }
 
-    document.title = `${project.title} · Rogério Edgar`;
+    const titulo = `${project.title} · Rogério Edgar`;
+    document.title = titulo;
+    setProp("og:title", titulo);
+    setMeta("twitter:title", titulo);
+    setProp("og:url", `${SITE_ORIGIN}/project.html?id=${encodeURIComponent(project.id)}`);
 
-    root.replaceChildren(
+    /* --- The head, per project ------------------------------------------
+     * project.html ships one description for all nineteen case studies, which
+     * is the right fallback for a crawler that does not run scripts and the
+     * wrong thing for every reader who gets this far. The same goes for the
+     * canonical: the file's own points at the bare template.
+     *
+     * UPDATED IN PLACE, NEVER APPENDED. render() runs again on every language
+     * change, and appending would leave two of each behind after one switch.
+     *
+     * A crawler that renders (Google does) sees these. One that does not still
+     * sees the file's own generic pair, which is why that pair stays. */
+    setMeta("description",
+      String(resolveField(project.description) || project.title).slice(0, 155));
+
+    headTag('link[rel="canonical"]', () => {
+      const l = document.createElement("link");
+      l.rel = "canonical";
+      return l;
+    }).href = `${SITE_ORIGIN}/project.html?id=${encodeURIComponent(project.id)}`;
+
+    /* A previous render may have marked the page noindex for a bad id. This one
+       found a project, so that verdict is out of date. */
+    document.head.querySelector('meta[name="robots"]')?.remove();
+
+    /* --- THE PROJECT'S OWN SOUND, IF IT HAS ONE ---------------------------
+     * A case study can bring the loop its piece was made with (`ambience` in
+     * the data: a file and a level). It takes the place of the site's loop
+     * while this page is open, under the same rules as that loop: silent until
+     * the visitor turns sound on, quiet, and ducked under any clip that
+     * speaks. Asked on every render, so a language switch asks again, and
+     * asking for the file already in use changes nothing.
+     *
+     * It also stays silent over the banner and comes in slowly as the banner
+     * scrolls away (banner-sound.js), so the loop is part of reading the page
+     * rather than something that starts on top of the picture. */
+    if (project.ambience?.src) {
+      setAmbienceSource(project.ambience.src, { volume: project.ambience.volume });
+      linkSoundToBanner(root);
+    }
+
+    /* Numbering starts over for every render, or a language switch would carry
+       on counting slots from where the last one stopped. */
+    resetSlots();
+
+    /* --- THE SECTIONS FOLLOW THE INTRO DIRECTLY ----------------------------
+     * Every project carries its case study as `chapters` in its data: the four
+     * sections by default, or a set of its own where a project has earned
+     * more (The Treasure Within). They come straight after the intro,
+     * because that is the order the page argues in: what the thing is, then
+     * the questions about it. The stylesheet relies on that adjacency for the
+     * space above the first section (.project-story + .project-chapter).
+     *
+     * THE REELS MOVED BELOW THEM. They used to sit between the intro and the
+     * chapters, which was harmless while only a long process block followed.
+     * With the sections there, a strip of social clips would have split the
+     * intro from its own first section. They are extra work made from the
+     * project, so they come after the case study rather than inside it. For
+     * the projects without reels this is a hidden section changing places with
+     * nothing visible, the same kind of hidden section craft and credits
+     * already leave behind them.
+     *
+     * The craft block stays after them as a fallback; see buildCraft for when
+     * it still has something to say. */
+    const pieces = [
       buildHero(project),
-      buildHeader(project, data),
-      buildStory(project),
+      buildHeader(project),
+      buildStory(project, data),
+      buildChapters(project),
+      buildSpecs(project, t("project.numbers", "Em números")),
       buildReels(project),
       buildCraft(project),
       buildCredits(project),
-      buildOnward(project, data)
-    );
+      buildOnward(project, data),
+    ].filter(Boolean);
 
-    // The mockup figures carry [data-reveal] and were built just now, so they
-    // have to be handed to the observer — main.js scanned the DOM before any of
-    // this existed.
+    root.replaceChildren(...pieces);
+
+    /* THE WAY OUT, KEPT IN VIEW.
+       A case study is a long page with no navigation of its own, and the only
+       route back was the browser's own button or the masthead's Work link.
+       This is a plain anchor to the gallery, pinned to the top left and
+       carried down the page by position: sticky, so leaving is never further
+       than the corner of the screen.
+
+       It goes back to work.html rather than calling history.back(): a reader
+       who arrived here from a search engine has no history to go back to, and
+       an arrow that does nothing is worse than no arrow. */
+    const back = document.createElement("a");
+    back.className = "project-back text-echo";
+    back.href = "work.html";
+    back.dataset.text = t("nav.goBack", "Voltar");
+    back.textContent = t("nav.goBack", "Voltar");
+    root.prepend(back);
+
+    /* EVERY SECTION REVEALS.
+       The reveal used to be written onto mockup figures alone — and eleven of
+       the nineteen projects have no mockups at all, so on those pages the
+       hero, the story, the craft, the credits and the onward link all arrived
+       at once and nothing on the page ever moved. That is the whole of why a
+       project reads as flat next to the gallery that led to it.
+
+       The HERO is deliberately excluded. It is above the fold on arrival, and
+       fading in something the reader is already looking at is not a reveal,
+       it is a flicker.
+
+       Marked here rather than in each builder: it is one decision about how
+       this page arrives, and it belongs in one place. */
+    /* THE REVEAL GOES ON THE CONTENT, NOT ON A SEALED SECTION.
+       [data-reveal] rests at opacity 0, and opacity multiplies EVERYTHING the
+       element paints, its own background included. A section whose whole job
+       is to lay opaque ground over the fixed 3D eye therefore had no ground at
+       all for the entire length of its reveal: measured, a sealed chapter sat
+       at opacity 0 with the eye showing straight through the black it was
+       supposed to be covering.
+
+       So anything that seals hands the reveal to its inner box. The ground
+       stays put and opaque; the words and the picture on top of it are what
+       arrive. Everything else is unchanged. */
+    /* --- AND THE CHAPTERS ARRIVE IN PARTS ---------------------------------
+     * Every section used to get exactly one [data-reveal], which meant a
+     * chapter was a single object: its kicker, its heading, its paragraphs and
+     * its picture all crossed from nothing to fully there on the same 800ms,
+     * together. At the size these blocks are, that is a slab sliding in — you
+     * see a rectangle move, not writing arriving.
+     *
+     * So a chapter hands the reveal to its pieces instead. The stylesheet
+     * already staggers revealed SIBLINGS by 90ms each (see [data-reveal]
+     * :nth-child in style.css), so marking the children is all that is needed
+     * to get the cascade — no new rule, no index to thread through, nothing
+     * per-chapter to maintain. The kicker leads, the title follows it, the
+     * text follows that, and the picture comes in on its own beat because it
+     * is a child of a different parent and counts from one again.
+     *
+     * The section itself deliberately keeps NO reveal. Chapters lay opaque
+     * ground over the fixed eye, and [data-reveal] rests at opacity 0 — an
+     * opacity that multiplies the background as surely as the words. Handing
+     * it to the contents is the same rule the sealed sections below already
+     * follow, applied one level deeper. */
+    /* ONE BOX IS DELIBERATELY OFF THIS LIST: the depth chapter's media.
+       Its child is position: sticky, and a transformed ancestor becomes the
+       containing block for a sticky descendant. The stage would then stick
+       inside a box that does not scroll, which is to say it would not stick at
+       all - measured, it slid straight past the window at every scroll step.
+       [data-reveal] rests at transform: translateY(2rem), so simply being on
+       this list was enough to break it.
+
+       Nothing loses its entrance: the clip INSIDE the stage is marked instead,
+       which is the part a reader was watching arrive anyway. */
+    const PARTS = ".project-chapter__copy > *, " +
+                  ".project-chapter__media:not(.project-chapter__media--depth), " +
+                  ".project-chapter__depth, " +
+                  ".project-chapter__head > *, .project-chapter__text";
+
+    /* .project-stage-section belongs on this list and was missing from it.
+       It is a chapter in every way that matters to a reader — a heading, a
+       strapline, a thing to look at — and leaving it off meant its heading was
+       the one on the page with no entrance at all. */
+    root.querySelectorAll(
+      ".project-head, .project-story, .project-chapter, .project-explorer, " +
+      ".project-stage-section, " +
+      ".project-specs, .project-craft, .project-credits, .project-onward"
+    ).forEach((section) => {
+      if (section.classList.contains("project-chapter")) {
+        const parts = section.querySelectorAll(PARTS);
+        // Only if there is something to hand it to. A chapter built as a bare
+        // media block has no copy, and marking nothing would leave it with no
+        // entrance at all rather than a coarse one.
+        if (parts.length) {
+          parts.forEach((part) => { part.dataset.reveal = ""; });
+
+          /* --- AND EACH COLUMN ARRIVES ON ONE CLOCK -----------------------
+           * Marking the parts gives the cascade. Watching the parts is what
+           * ruined it: a chapter's paragraphs are spread down 800px, so each
+           * crossed the line on its own and then sat out a stagger delay
+           * meant for a set arriving together. The lower the paragraph, the
+           * later it seemed to appear, for no reason a reader could see.
+           *
+           * The column is the group, so the column is what is watched. The
+           * parts are unchanged and the cascade is unchanged; what changes is
+           * that there is now ONE crossing instead of four. See reveal.js.
+           *
+           * The media stays on its own: it is a child of a different parent
+           * and is usually a long way from the words, so it genuinely does
+           * arrive as its own event. */
+          section.querySelectorAll(
+            ".project-chapter__copy, .project-chapter__head"
+          ).forEach((col) => { col.dataset.revealGroup = ""; });
+          return;
+        }
+      }
+
+      /* THE 3D CHAPTER IS MARKED BY ITS PARTS, LIKE A WRITTEN ONE.
+         Handing the reveal to a sealed section's inner box works everywhere
+         else, but here that box also holds a WebGL canvas and a reading panel,
+         and fading the whole thing in as one slab both looks wrong and starts
+         an entrance on top of a scene that is still loading. Its head is the
+         group, exactly as a chapter's column is. */
+      if (section.classList.contains("project-stage-section")) {
+        const head = section.querySelector(".project-stage-section__head");
+        if (head) {
+          head.querySelectorAll(":scope > *").forEach((part) => {
+            part.dataset.reveal = "";
+          });
+          head.dataset.revealGroup = "";
+          return;
+        }
+      }
+
+      const target = section.classList.contains("seals")
+        ? section.firstElementChild || section
+        : section;
+      target.dataset.reveal = "";
+    });
+
+    // Built just now, so the observer has to be handed all of it — main.js
+    // scanned the DOM before any of this existed.
     initReveal(root);
+
+    /* --- The headings, broken into their own lines ----------------------
+     * After initReveal and not before it: splitting rewrites the inside of a
+     * heading, and the observer only ever looks at the heading itself, so the
+     * order does not matter to it — but the split reads layout, and doing it
+     * once the page is otherwise wired means one reflow rather than one per
+     * heading interleaved with everything else.
+     *
+     * keepSplit re-splits whenever a heading changes width, which is what
+     * makes this survive a resize: the lines a heading breaks into at 1900px
+     * are not the lines it breaks into at 1200. */
+     keepSplit(root, ".project-chapter__title-inner");
+
+    /* The hero's colours, spilled down into the page. Wired after the render
+       because fillMedia decides which element the hero ends up holding. */
+    initAmbient(root.querySelector(".project-hero"));
 
     // The reels play/pause and gain sound on scroll; wire their player to the
     // clips this render just injected.
@@ -323,12 +575,20 @@ function buildReels(project) {
   return section;
 }
 
-/* --- 2 · Metadata header -------------------------------------------------
- * The title, then only the two things worth reading at a glance: the
- * discipline and the year, both large. Role moved out (it was noise), context
- * became a paragraph in the story, and collaborators went to the very end —
- * the header is now a headline, not a spec sheet. */
-function buildHeader(project, data) {
+/* --- 2 · The title, and only the title -----------------------------------
+ * CATEGORY and YEAR used to live here, under the heading. They have moved into
+ * the section below, and the reason is alignment.
+ *
+ * They were in one <section> and the team rail was in the next one, so no
+ * amount of styling could ever have brought them level: two sections stacked
+ * in normal flow cannot share a top edge. The rail therefore started wherever
+ * the introduction happened to start, which was a long way under YEAR, and the
+ * gap between the two blocks read as a mistake because it was one.
+ *
+ * Moving the pair down puts every piece of opening metadata in the same grid:
+ * the labelled facts and the prose in the left column, the credits and the
+ * toolkit in the right one, both columns beginning at the same line. */
+function buildHeader(project) {
   const header = document.createElement("header");
   header.className = "project-head";
 
@@ -339,14 +599,25 @@ function buildHeader(project, data) {
   title.className = "project-head__title";
   title.textContent = project.title;
 
+  inner.append(title);
+  header.append(inner);
+  return header;
+}
+
+/* The labelled facts: CATEGORY and YEAR, small label over large value. Built
+   here rather than inline so the pair stays one thing with one name, wherever
+   it is placed — it has already moved once. */
+function buildMeta(project, data) {
   const category = getCategory(data, project.category);
-  const meta = document.createElement("div");
-  meta.className = "project-head__meta";
 
   const pairs = [
     [t("project.category", "Category"), category ? resolveField(category.label) : project.category],
     [t("project.year", "Year"), project.year],
   ];
+
+  const meta = document.createElement("div");
+  meta.className = "project-head__meta";
+
   for (const [label, value] of pairs) {
     if (!value) continue;
     const cell = document.createElement("div");
@@ -361,35 +632,41 @@ function buildHeader(project, data) {
     meta.append(cell);
   }
 
-  inner.append(title, meta);
-  header.append(inner);
-  return header;
+  return meta.children.length ? meta : null;
 }
 
-/* --- 3 · The idea, beside the work ---------------------------------------
- * The text sits at a readable measure on one side; the renders sit LARGE on
- * the other, floating straight on the page.
+/* --- 3 · The intro: what it is, beside who made it and what with ----------
+ * Two columns from 64rem up, and they are always the same two. The words take
+ * the wide track: the category and the year, the introduction, the provenance
+ * line, and under them the way into the live project. The rail takes the
+ * narrow one, and the two start on the same line because both open with a
+ * small-caps label.
  *
- * WHY THEY FLOAT RATHER THAN SIT IN FRAMES
- * These are cut out with no background on purpose — the 3D models, the
- * illustration sets, the character sheets. Putting them in a bordered, filled
- * card would paint a box back in behind the transparency and throw away the
- * whole reason for the export. So the figures carry no fill and no radius:
- * the page's black IS the background, and the subject reads as if it were
- * sitting on the page rather than in a slot.
+ * THE RENDERS LEFT THIS SECTION, AND THAT IS THE FIX, NOT A LOSS.
+ * Mockups used to be stacked into the second column as well, which made that
+ * column mean two different things. On the seven projects that had both, the
+ * grid took the ratio meant for a picture: the prose squeezed into the narrow
+ * track, the rail stranded in the wide one halfway across the screen, and the
+ * picture pushed down into a second row under the words. A project's images
+ * now belong to the section they illustrate, as that section's
+ * media. The mockups stay in the data, untouched, until they are placed there.
  *
- * With no mockups the section is simply the text at full measure, so a project
- * that has none loses nothing. */
-function buildStory(project) {
+ * A project with no rail at all keeps a single column; `has-rail` is the one
+ * switch. */
+function buildStory(project, data) {
   const section = document.createElement("section");
   section.className = "project-story";
 
   const inner = document.createElement("div");
   inner.className = "project-story__inner";
 
-  // The words live in their own column so the renders can take the other.
+  // The words live in their own column so the rail can take the other.
   const copy = document.createElement("div");
   copy.className = "project-story__copy";
+
+  /* FIRST IN THE COLUMN, so it is the line the rail beside it starts on. */
+  const meta = buildMeta(project, data);
+  if (meta) copy.append(meta);
 
   // The quick intro — what the project is, as it reads in the portfolio.
   const description = resolveField(project.description);
@@ -409,71 +686,75 @@ function buildStory(project) {
     p.textContent = context;
     copy.append(p);
   }
+
+  /* THE WAY IN, LAST IN THE COLUMN. Right under the words a reader uses to
+     decide whether to open the live project, which is where that decision is
+     made. It used to wait below the whole case study, in the craft block. */
+  const launch = buildLaunch(project);
+  if (launch) copy.append(launch);
+
   inner.append(copy);
 
-  const mockups = project.mockups || [];
-  if (mockups.length) {
-    inner.classList.add("has-showcase");     // switches the section to 2 columns
-    // More than one render stacks down the column; `side: "left"` puts them
-    // before the text instead of after it, so consecutive projects can
-    // alternate rather than marching down the same side.
-    if (project.showcaseSide === "left") inner.classList.add("is-left");
-
-    const stack = document.createElement("div");
-    stack.className = "project-showcase";
-
-    for (const shot of mockups) {
-      const figure = document.createElement("figure");
-      figure.className = "project-showcase__item";
-      figure.dataset.reveal = "";
-      /* How big this one wants to be. The data has carried `span` since the
-         first project was written and nothing ever read it, so a render and a
-         logotype were both being blown up to the full column — which is right
-         for a voxel galleon and wrong for a mark, where filling the width
-         turns identity work into a billboard. */
-      figure.dataset.span = shot.span || "full";
-
-      const img = document.createElement("img");
-      img.className = "project-showcase__img";
-      img.src = shot.src;
-      img.alt = shot.alt || "";
-      img.loading = "lazy";
-      img.decoding = "async";
-
-      figure.append(img);
-      if (shot.caption) {
-        const cap = document.createElement("figcaption");
-        cap.className = "project-showcase__caption";
-        cap.textContent = shot.caption;
-        figure.append(cap);
-      }
-      stack.append(figure);
-    }
-    inner.append(stack);
+  /* --- THE RAIL: who made it, and what with -----------------------------
+   * It builds itself or returns null, so a project with neither a team nor a
+   * stack simply keeps the single-column measure. When there is one, the
+   * section becomes two columns and the two share a top edge. */
+  const rail = buildTeamRail(project);
+  if (rail) {
+    inner.classList.add("has-rail");
+    inner.append(rail);
   }
 
   section.append(inner);
   return section;
 }
 
-/* --- 4 · The craft -------------------------------------------------------
- * The stack on one side; the technical deep-dive on the other — a one-line
- * framing (`approach`) followed by the bullet points (`highlights`). This is
- * the block another designer or a studio actually reads. */
+/* --- The way into the live project ---------------------------------------
+ * The project's FIRST link, as the page's one primary button. Built here and
+ * only here, so it cannot turn up twice: buildOnward skips links[0] for exactly
+ * this reason and shows only the secondary ones. A project with no links
+ * builds nothing and leaves no gap behind. */
+function buildLaunch(project) {
+  const primary = (project.links || [])[0];
+  if (!primary) return null;
+
+  return actionButton(
+    { label: resolveField(primary.label), url: primary.url },
+    { className: "project-story__launch" }
+  );
+}
+
+/* --- 4 · The long process text, as a fallback -----------------------------
+ * This block used to be where every case study told its story: the stack,
+ * then the way in, then the long `body` under "The process". The stack moved
+ * up beside the team and the way in moved up under the intro, so what is left
+ * here is the writing alone.
+ *
+ * IT STANDS DOWN WHEREVER A PROJECT HAS ITS OWN PROCESS SECTION. The four
+ * sections include one with the id `process`, and a second "The process"
+ * underneath it would say the same thing twice. So a project carrying that
+ * section builds nothing here, and its `body` stays in the data as the source
+ * those sections are rewritten from.
+ *
+ * A project whose chapters are its own keeps its process writing here, in the
+ * same place it always had: The Treasure Within has no section called
+ * `process`, and there this block holds writing that appears nowhere else on
+ * the page. A project with no chapters at all still gets its process text
+ * here rather than nothing. */
 function buildCraft(project) {
-  const stack = project.techStack || [];
+  if ((project.chapters || []).some((chapter) => chapter.id === "process")) {
+    return null;
+  }
+
   const approach = resolveField(project.approach);
   const highlights = project.highlights || [];
   // The long process text, if written. An array of paragraphs, one per <p>.
   const body = resolveField(project.body);
   const bodyParas = Array.isArray(body) ? body.filter(Boolean) : (body ? [body] : []);
-  // The primary live link now lives here, right under the toolkit — one clear
-  // way in, not a floating button that repeats itself down the page.
-  const primary = (project.links || [])[0];
 
   const section = document.createElement("section");
   section.className = "project-craft";
-  if (!stack.length && !approach && !highlights.length && !bodyParas.length && !primary) {
+  if (!approach && !highlights.length && !bodyParas.length) {
     section.hidden = true;                // nothing to say yet — say nothing
     return section;
   }
@@ -481,102 +762,47 @@ function buildCraft(project) {
   const inner = document.createElement("div");
   inner.className = "project-craft__inner";
 
-  // The left column holds the toolkit and, beneath it, the way in. It exists
-  // whenever there is a stack OR a link to show, so the launch button always
-  // has a home even on a project with no listed tools.
-  if (stack.length || primary) {
-    const col = document.createElement("div");
-    col.className = "project-craft__col";
+  // No second guard: the early return above already guarantees there is
+  // something to write in this column.
+  const col = document.createElement("div");
+  col.className = "project-craft__col project-craft__col--wide";
+  const h = document.createElement("h2");
+  h.className = "project-craft__label";
+  h.textContent = t("project.process", "The process");
+  col.append(h);
 
-    if (stack.length) {
-      const h = document.createElement("h2");
-      h.className = "project-craft__label";
-      h.textContent = t("project.builtWith", "Built with");
+  if (bodyParas.length) {
+    // The full written account — the long read the visitor came for. Each
+    // entry is its own paragraph. When this exists it supersedes the short
+    // approach line and the bullet summary.
+    for (const text of bodyParas) {
+      const p = document.createElement("p");
+      p.className = "project-craft__body";
+      p.textContent = text;
+      col.append(p);
+    }
+  } else {
+    // Fallback for projects that don't have the long text yet: the one-line
+    // framing plus the bullet highlights.
+    if (approach) {
+      const p = document.createElement("p");
+      p.className = "project-craft__text";
+      p.textContent = approach;
+      col.append(p);
+    }
+    if (highlights.length) {
       const list = document.createElement("ul");
-      list.className = "tech-stack";
-      for (const tool of stack) {
+      list.className = "project-craft__list";
+      for (const point of highlights) {
         const li = document.createElement("li");
-        li.className = "tech-stack__item";
-
-        const name = document.createElement("span");
-        name.textContent = tool;
-        li.append(name);
-
-        // The icon is fetched and inlined asynchronously; the pill shows the
-        // name immediately and gains the logo when it arrives, so a slow or
-        // missing icon never blocks or breaks the list.
-        toolIcon(tool).then((inner) => {
-          if (!inner) return;
-          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          svg.setAttribute("viewBox", "0 0 24 24");
-          svg.setAttribute("aria-hidden", "true");
-          svg.setAttribute("class", "tech-stack__icon");
-          svg.innerHTML = inner;
-          li.prepend(svg);
-          li.classList.add("has-icon");
-        });
-
+        li.className = "project-craft__point";
+        li.textContent = point;
         list.append(li);
       }
-      col.append(h, list);
+      col.append(list);
     }
-
-    // The way in: the primary link as a prominent button, sitting under the
-    // toolkit. Any other links stay in the onward block at the very end.
-    if (primary) {
-      const a = document.createElement("a");
-      a.className = "btn btn--primary project-craft__launch";
-      a.href = safeUrl(primary.url) ?? "#";
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.append(echoLabel(`${resolveField(primary.label)} ↗`));
-      col.append(a);
-    }
-
-    inner.append(col);
   }
-
-  if (bodyParas.length || approach || highlights.length) {
-    const col = document.createElement("div");
-    col.className = "project-craft__col project-craft__col--wide";
-    const h = document.createElement("h2");
-    h.className = "project-craft__label";
-    h.textContent = t("project.process", "The process");
-    col.append(h);
-
-    if (bodyParas.length) {
-      // The full written account — the long read the visitor came for. Each
-      // entry is its own paragraph. When this exists it supersedes the short
-      // approach line and the bullet summary.
-      for (const text of bodyParas) {
-        const p = document.createElement("p");
-        p.className = "project-craft__body";
-        p.textContent = text;
-        col.append(p);
-      }
-    } else {
-      // Fallback for projects that don't have the long text yet: the one-line
-      // framing plus the bullet highlights.
-      if (approach) {
-        const p = document.createElement("p");
-        p.className = "project-craft__text";
-        p.textContent = approach;
-        col.append(p);
-      }
-      if (highlights.length) {
-        const list = document.createElement("ul");
-        list.className = "project-craft__list";
-        for (const point of highlights) {
-          const li = document.createElement("li");
-          li.className = "project-craft__point";
-          li.textContent = point;
-          list.append(li);
-        }
-        col.append(list);
-      }
-    }
-    inner.append(col);
-  }
+  inner.append(col);
 
   section.append(inner);
   return section;
@@ -586,13 +812,7 @@ function buildCraft(project) {
    the word that resolves on hover. This is the site's hover language — the
    green fill that used to sit on these buttons was a second accent that did
    not belong. CSS drives it from --echo-opacity / --echo-shift. */
-function echoLabel(text) {
-  const span = document.createElement("span");
-  span.className = "text-echo";
-  span.dataset.text = text;
-  span.textContent = text;
-  return span;
-}
+
 
 /* --- Credits -------------------------------------------------------------
  * Collaborators used to sit in the header. They belong at the END: the work
@@ -631,9 +851,10 @@ function buildOnward(project, data) {
   inner.className = "project-onward__inner";
 
   /* Any SECONDARY links, each a labelled button — the URL itself is never
-     shown. The primary link is the launch button up in the craft block, so it
-     is skipped here; what remains is the extras a project may carry (Abrigo has
-     a usability-test site and a Figma prototype), any with a small note. */
+     shown. The primary link is the launch button up in the intro (see
+     buildLaunch), so it is skipped here; what remains is the extras a project
+     may carry (Abrigo has a usability-test site and a Figma prototype), any
+     with a small note. */
   const links = (project.links || []).slice(1);
   if (links.length) {
     const group = document.createElement("div");

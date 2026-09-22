@@ -51,11 +51,21 @@ const fragmentShader = /* glsl */ `
   uniform vec2  uMouse;      // -1..1, eased
   uniform float uStrength;   // max UV offset
   uniform float uCentre;     // depth value treated as the screen plane
+  uniform vec2  uCrop;       // how much of the texture the frame shows (1,1 = all)
+  uniform vec2  uFocus;      // centre of that window, in texture space
 
   varying vec2 vUv;
 
   void main() {
-    float depth = texture2D(uDepth, vUv).r;
+    /* THE WINDOW INTO THE PICTURE.
+       At (1,1) and (0.5,0.5) this is the identity and the quad shows the whole
+       texture, which is what a frame cut to the photo's own aspect wants. Set
+       to anything else it crops instead of letterboxing - the same arithmetic
+       object-fit: cover does, moved into the shader so the canvas can be any
+       shape the layout asks for. See resize(). */
+    vec2 uv = (vUv - 0.5) * uCrop + uFocus;
+
+    float depth = texture2D(uDepth, uv).r;
 
     // Centring the depth means features nearer than uCentre shift one way and
     // further ones the other, so the image pivots instead of sliding bodily.
@@ -78,10 +88,10 @@ const fragmentShader = /* glsl */ `
        Alpha is the honest weight. Zero outside, so the background samples
        itself and stays put; full inside, so the parallax is untouched; and it
        ramps across the soft edge instead of stepping. */
-    float subject = texture2D(uPhoto, vUv).a;
+    float subject = texture2D(uPhoto, uv).a;
     offset *= subject;
 
-    gl_FragColor = texture2D(uPhoto, vUv + offset);
+    gl_FragColor = texture2D(uPhoto, uv + offset);
   }
 `;
 
@@ -89,13 +99,25 @@ const fragmentShader = /* glsl */ `
 export function initPhotoDepth(canvas, options = {}) {
   if (!canvas) return null;
   const {
-    photoUrl = "assets/foto.webp?v=74",
-    depthUrl = "assets/foto-depthmap.webp?v=74",
+    photoUrl = "assets/foto.webp?v=289",
+    depthUrl = "assets/foto-depthmap.webp?v=289",
     pointer,
+    /* --- WHERE THE DISPLACEMENT COMES FROM ------------------------------
+     * By default, the cursor. `input` replaces it with anything that can
+     * answer "which way, from -1 to 1" - which is what lets a phone drive the
+     * same shader from its scroll position. The easing below is applied either
+     * way, so a value that steps arrives as a glide. */
+    input,
+    /* Fill the frame and crop, instead of fitting the photo's aspect inside
+       it. See resize() and uCrop in the shader. */
+    cover = false,
+    focus = [0.5, 0.5],
     config = {},
   } = options;
 
   const s = {
+    cover,
+    focus,
     strength: config.depthStrength ?? 0.016,
     centre:   config.depthCentre   ?? 0.62,
     ease:     config.ease          ?? 0.055,
@@ -121,6 +143,8 @@ export function initPhotoDepth(canvas, options = {}) {
     uMouse:    { value: new THREE.Vector2(0, 0) },
     uStrength: { value: s.strength },
     uCentre:   { value: s.centre },
+    uCrop:     { value: new THREE.Vector2(1, 1) },
+    uFocus:    { value: new THREE.Vector2(0.5, 0.5) },
   };
 
   const mesh = new THREE.Mesh(
@@ -130,13 +154,30 @@ export function initPhotoDepth(canvas, options = {}) {
   scene.add(mesh);
 
   let aspect = 1;          // photo width / height, known once it loads
-  let ready = false;
+  /* Renamed from `ready`, which now means something else on the way out of
+     this function. This one is the internal question "are the textures on the
+     GPU, so is it safe to render and to measure"; the exported `ready` is a
+     promise for the same moment. Two names because they are two things. */
+  let painted = false;
   let running = false;
 
   const loader = new THREE.TextureLoader();
   const load = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
 
-  Promise.all([load(photoUrl), load(depthUrl)])
+  /* --- WHEN THE PHOTO ACTUALLY EXISTS, AND WHO ELSE NEEDS TO KNOW ---------
+   * Two files, and the canvas is an empty frame until both have decoded and
+   * reached the GPU. The stylesheet already covers the LOOK of that: the
+   * canvas is born at opacity 0 and .is-ready fades it in, so it never pops.
+   *
+   * What a stylesheet cannot do is stop somebody ARRIVING before then. The
+   * About link glides straight to this section, and on a first visit it landed
+   * on the empty frame. So this settles into a promise a caller can hold a
+   * scroll against - see holdScrollTarget() in smooth-scroll.js.
+   *
+   * IT RESOLVES ON FAILURE TOO, and that is deliberate rather than sloppy: a
+   * gate that a missing file could leave shut would turn a broken image into a
+   * broken link, which is a worse fault than the one this fixes. */
+  const ready = Promise.all([load(photoUrl), load(depthUrl)])
     .then(([photo, depth]) => {
       // Clamp so the cursor offset can't wrap the image around its own edges.
       for (const t of [photo, depth]) {
@@ -150,7 +191,7 @@ export function initPhotoDepth(canvas, options = {}) {
       uniforms.uPhoto.value = photo;
       uniforms.uDepth.value = depth;
       aspect = (photo.image?.width || 1) / (photo.image?.height || 1);
-      ready = true;
+      painted = true;
       resize();
       canvas.classList.add("is-ready");
     })
@@ -162,9 +203,38 @@ export function initPhotoDepth(canvas, options = {}) {
      ====================================================================== */
 
   function resize() {
-    if (!ready) return;
+    if (!painted) return;
     const parent = canvas.parentElement;
     const avail = parent ? parent.getBoundingClientRect() : { width: 0, height: 0 };
+
+    /* --- COVER: the frame decides the shape, the shader does the cropping ---
+     * The canvas simply fills whatever box it was given and the texture is
+     * cropped to suit, exactly as object-fit: cover would. Nothing is written
+     * to the element's style here - the box is the stylesheet's business, and
+     * setSize's third argument is false so only the drawing buffer changes.
+     *
+     * The crop is the same comparison object-fit makes: whichever axis has
+     * room to spare is the one that gets trimmed. A 390x701 frame holding a
+     * 1448x1086 picture shows 41.7% of its width and all of its height, which
+     * is what the <img> this replaces was already doing. */
+    if (s.cover) {
+      const w = avail.width;
+      const h = avail.height;
+      if (w <= 0 || h <= 0) return;
+
+      const molduraAspecto = w / h;
+      const cropX = molduraAspecto < aspect ? molduraAspecto / aspect : 1;
+      const cropY = molduraAspecto < aspect ? 1 : aspect / molduraAspecto;
+      uniforms.uCrop.value.set(cropX, cropY);
+
+      /* The window has to stay inside the picture: a focus of 0.3 on an axis
+         that shows 100% of the texture would sample past its edge. */
+      const dentro = (f, crop) => Math.min(Math.max(f, crop / 2), 1 - crop / 2);
+      uniforms.uFocus.value.set(dentro(s.focus[0], cropX), dentro(s.focus[1], cropY));
+
+      renderer.setSize(w, h, false);
+      return;
+    }
 
     let h = Math.min(window.innerHeight * (s.maxVh / 100), avail.height || Infinity);
     let w = h * aspect;
@@ -189,7 +259,14 @@ export function initPhotoDepth(canvas, options = {}) {
   const eased  = { x: 0, y: 0 };
 
   function updatePointer() {
-    if (pointer) {
+    /* Supplied rather than pointed at. Whatever it returns is eased below the
+       same way a cursor would be, so a scroll position that jumps between
+       frames still arrives as a glide. */
+    if (input) {
+      const v = input() || {};
+      target.x = Math.max(-1, Math.min(1, v.x ?? 0));
+      target.y = Math.max(-1, Math.min(1, v.y ?? 0));
+    } else if (pointer) {
       const r = canvas.getBoundingClientRect();
       if (r.width && r.height) {
         // Relative to the photo itself, so it stays correct wherever the
@@ -215,7 +292,7 @@ export function initPhotoDepth(canvas, options = {}) {
   function frame() {
     if (!running) return;
     updatePointer();
-    if (ready) renderer.render(scene, camera);
+    if (painted) renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
 
@@ -229,5 +306,6 @@ export function initPhotoDepth(canvas, options = {}) {
   }, { threshold: 0.05 });
   observer.observe(canvas);
 
-  return { resize, start, stop, uniforms };
+  /* `ready` is the promise, not the flag. See the block where it is built. */
+  return { resize, start, stop, uniforms, ready };
 }

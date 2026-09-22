@@ -23,14 +23,46 @@
    visitor mutes, down while a reel is speaking (audio-ducking.js), out when
    leaving the page (page-transition.js calls fadeOut so navigation stops
    cutting the sound off mid-note).
+
+   A PROJECT MAY BRING ITS OWN LOOP. A case study can name one in its data
+   (`ambience` in data/projects.*.json), and project-page.js hands it to
+   setAmbienceSource(). The same instance swaps files: the old loop fades out,
+   its queued passes are stopped at the bottom of that fade, and the new file
+   comes in under exactly the rule the first one did, fetched only once it can
+   actually be heard. The mute toggle, the ducking and the fade on leaving all
+   carry on untouched, because they all act on the one master gain.
+
+   AND A PAGE MAY SHAPE THE LEVEL. After the master sits a second gain that
+   belongs to the page rather than to the site: setAmbienceLevel(0..1). A
+   project page uses it to keep its loop silent while the banner is on screen
+   and bring it in as the banner scrolls away (banner-sound.js). The two gains
+   simply multiply, so a scroll can never undo a mute, and a mute never has to
+   know where the page is scrolled to.
    ========================================================================== */
 
-import { canPlay, onChange } from "./audio-state.js?v=74";
-import { onDuckChange } from "./audio-ducking.js?v=74";
+import { canPlay, onChange } from "./audio-state.js?v=289";
+import { onDuckChange } from "./audio-ducking.js?v=289";
+import { getAudioContext, resumeAudio } from "./audio-context.js?v=289";
 
 // The active instance, so page-transition.js can fade it on the way out
 // without having to be handed a reference through main.js.
 let active = null;
+
+// A source asked for before the loop exists. main.js builds the loop before
+// any page code runs, so this is not needed today, but a feature should not
+// depend silently on the order of two imports.
+let pending = null;
+// The same, for a level asked for before the loop exists. 1 is "all of it".
+let pendingLevel = 1;
+
+/** How much of the loop's level to let through, from 0 to 1. Independent of
+ *  every fade on the master gain (sound on or off, ducking, leaving the page),
+ *  so a page can shape it by scroll without fighting any of them. */
+export function setAmbienceLevel(fraction) {
+  const f = fraction < 0 ? 0 : fraction > 1 ? 1 : fraction;
+  if (active) active.setLevel(f);
+  else pendingLevel = f;
+}
 
 /** Fade the running ambience to silence over ms. Safe to call when there is
  *  none — page-transition.js calls it on every navigation. */
@@ -38,21 +70,42 @@ export function fadeOutAmbience(ms = 420) {
   if (active) active.fadeOut(ms);
 }
 
-export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {}) {
+/** Swap the loop for another file, such as a project's own ambience.
+ *  `volume` is a gain, not a percentage: a file mastered very quietly can need
+ *  more than 1 to sit at the same level as the site's own loop. Safe to call
+ *  before initAmbience has run, and does nothing when that file is already the
+ *  one in use. */
+export function setAmbienceSource(src, opts = {}) {
+  if (active) active.setSource(src, opts);
+  else pending = { src, opts };
+}
+
+export function initAmbience(defaultSrc = "assets/sound/ambience_sound.mp3", opts = {}) {
   const {
-    volume = 0.09,        // quiet by design: felt, not listened to
     fadeMs = 1600,        // in / out when sound is switched on or off
     duckMs = 700,         // faster, so a reel is not talked over
     crossfadeSec = 3,     // the overlap that hides the loop point
   } = opts;
 
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) return null;                 // no Web Audio: no ambience, no error
+  /* The two things a project may change, so they are variables rather than
+     constants: which file loops, and how loud it sits. A source requested
+     before this ran wins over the default. */
+  let src = pending?.src || defaultSrc;
+  let volume = pending?.opts?.volume ?? opts.volume ?? 0.09;   // quiet by design: felt, not listened to
+  pending = null;
 
-  const ctx = new AudioCtx();
+  const ctx = getAudioContext();
+  if (!ctx) return null;                      // no Web Audio: no ambience, no error
+
   const master = ctx.createGain();
   master.gain.value = 0;
-  master.connect(ctx.destination);
+
+  /* THE PAGE'S GAIN, AFTER THE MASTER. See the header: the master carries the
+     site's own fades, this one carries whatever the page asks for, and the
+     two multiply. */
+  const level = ctx.createGain();
+  level.gain.value = pendingLevel;
+  master.connect(level).connect(ctx.destination);
 
   let buffer = null;
   let ducked = false;
@@ -60,6 +113,8 @@ export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {})
   let running = false;                        // is the loop scheduled at all
   let timer = null;
   let nextStartAt = 0;                        // ctx time the next pass begins
+  const live = new Set();                     // passes queued or sounding, so a swap can stop them
+  let generation = 0;                         // bumped on every swap, so a late fetch of the old file is dropped
 
   /* --- The crossfaded loop ---------------------------------------------- */
 
@@ -91,7 +146,8 @@ export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {})
     source.connect(gain).connect(master);
     source.start(startAt);
     source.stop(startAt + buffer.duration + 0.1);
-    source.onended = () => { gain.disconnect(); };
+    live.add(source);
+    source.onended = () => { live.delete(source); gain.disconnect(); };
 
     nextStartAt = startAt + buffer.duration - xf;
   }
@@ -128,10 +184,15 @@ export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {})
   function refresh(ms = fadeMs) {
     const target = wants() ? volume : 0;
     if (target > 0) {
+      /* RESUMED FIRST, BEFORE THE EARLY RETURN. The moment sound becomes
+         wanted is a click on the speaker, and that click is the only user
+         gesture guaranteed to be on the stack — the fetch below finishes
+         later, on a promise, where a browser is entitled to refuse. Waking
+         the context here spends the gesture while it is still in hand. */
+      resumeAudio();
       // The one place that decides the sound is wanted is the one place that
       // pays for it. Returns immediately once the buffer is in hand.
       if (!buffer) { ensureBuffer(); return; }
-      if (ctx.state === "suspended") ctx.resume().catch(() => {});
       startLoop();
     }
     rampTo(target, ms);
@@ -152,10 +213,16 @@ export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {})
 
   function ensureBuffer() {
     if (buffer || fetching) return fetching;
+    const asked = generation;
     fetching = fetch(src)
       .then((r) => r.arrayBuffer())
       .then((raw) => ctx.decodeAudioData(raw))
-      .then((decoded) => { buffer = decoded; refresh(); })
+      .then((decoded) => {
+        // The file was swapped while this one was on its way: it is stale.
+        if (asked !== generation) return;
+        buffer = decoded;
+        refresh();
+      })
       .catch(() => { /* missing or undecodable file: the site is simply silent */ });
     return fetching;
   }
@@ -167,9 +234,78 @@ export function initAmbience(src = "assets/sound/ambience_sound.mp3", opts = {})
     refresh(300);                       // quick, this one is not expressive
   });
 
+  /* --- Swapping the file ------------------------------------------------
+   * Fade the loop down, stop every pass of the old file at the bottom of that
+   * fade, forget its buffer, and let refresh() bring the new file in exactly
+   * the way the first one came in: fetched only if sound is wanted, faded up
+   * from silence. The two never overlap, because the new loop cannot start
+   * until the old one has been stopped. */
+  const SWAP_MS = 600;
+
+  function setSource(nextSrc, { volume: nextVolume } = {}) {
+    if (!nextSrc) return;
+    if (nextSrc === src) {
+      // The same file again (a language switch re-renders the page): at most
+      // a new level, never a restart.
+      if (nextVolume != null && nextVolume !== volume) { volume = nextVolume; refresh(); }
+      return;
+    }
+
+    generation += 1;
+    const stopAt = ctx.currentTime + SWAP_MS / 1000;
+    rampTo(0, SWAP_MS);
+    clearInterval(timer);
+    running = false;
+    live.forEach((source) => {
+      try { source.stop(stopAt); } catch { /* already stopped */ }
+    });
+
+    src = nextSrc;
+    if (nextVolume != null) volume = nextVolume;
+    buffer = null;
+    fetching = null;
+
+    setTimeout(() => refresh(), SWAP_MS);
+  }
+
+  /* --- The page's level ---------------------------------------------------
+   * Scroll arrives in steps, and a gain that jumps with every step is audible
+   * as a zipper. setTargetAtTime glides toward each new value instead, so a
+   * quick flick of the wheel still arrives as a swell. LEVEL_GLIDE is that
+   * glide's time constant: roughly two thirds of the way there in that many
+   * seconds, and the rest settles over the next two.
+   * It was 0.35 and that was heard as the sound being cut when scrolling back
+   * up to the banner. A full second is slow enough to read as a fade and
+   * still quick enough to follow a reader who stops scrolling. */
+  const LEVEL_GLIDE = 1;
+  let levelTarget = pendingLevel;
+
+  function setLevel(f) {
+    if (Math.abs(f - levelTarget) < 0.002) return;   // a difference nobody could hear
+    levelTarget = f;
+    /* A SUSPENDED CONTEXT HAS A STOPPED CLOCK. Before the first gesture the
+       audio clock does not move, so a glide scheduled now would only start
+       once sound is switched on, and play out on top of that fade-in as a
+       brief swell to the wrong level. While nothing can be heard there is
+       nothing to glide past: the value is simply set. */
+    if (ctx.state !== "running") {
+      level.gain.cancelScheduledValues(0);
+      level.gain.value = f;
+      return;
+    }
+    const now = ctx.currentTime;
+    level.gain.cancelScheduledValues(now);
+    level.gain.setTargetAtTime(f, now, LEVEL_GLIDE);
+  }
+
   active = {
     fadeOut: (ms) => rampTo(0, ms),
-    destroy: () => { clearInterval(timer); running = false; ctx.close(); },
+    setSource,
+    setLevel,
+    /* Stops this loop and lets go of its nodes. The CONTEXT is not closed:
+       it is shared with the press tick now, and closing it here would take
+       that down too. */
+    destroy: () => { clearInterval(timer); running = false; master.disconnect(); },
   };
   return active;
 }

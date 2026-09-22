@@ -32,8 +32,10 @@
 
 /* The placeholder that ships in the markup. Anything containing this is not a
    real endpoint yet. */
-import { t } from "./i18n.js?v=74";
-import { initSelects } from "./select.js?v=74";
+import { t } from "./i18n.js?v=289";
+import { initSelects } from "./select.js?v=289";
+import { screen } from "./word-guard.js?v=289";
+import { check as verificarEmail } from "./email-check.js?v=289";
 
 const UNSET = "YOUR_FORM_ID";
 
@@ -171,8 +173,50 @@ function initConditional(form) {
  * fields are required or what shape they take is duplicated in this file, and
  * adding a field to the HTML needs no change here.
  */
+/* --- The asynchronous half of validating an address -----------------------
+ * Everything else on this form can be answered on the spot. Whether a domain
+ * accepts mail cannot: it is a question for the public DNS, and the answer
+ * arrives long after the visitor has moved to the next field.
+ *
+ * So the verdict is kept HERE, beside the input it belongs to, and messageFor
+ * simply reads it like any other rule. The address is stored with it, and a
+ * verdict whose address no longer matches what is in the box is ignored: an
+ * answer about gmial.com must never be shown over a corrected gmail.com,
+ * which is exactly what a slow reply arriving after a fast edit would do.
+ *
+ * A field that was never blurred has no verdict, and no verdict means no
+ * objection. That is deliberate, and it is the same rule as everywhere else in
+ * email-check.js: this can add certainty, it can never cost a message. */
+const veredictos = new WeakMap();
+
 function messageFor(input) {
   const v = input.validity;
+
+  /* THE WORD SCREEN RUNS FIRST, and before the browser's own verdict, because
+     the two are asking different questions. A message can satisfy every rule
+     in the markup - present, long enough, right shape - and still be something
+     nobody should have to open their inbox to. `required` cannot express that.
+
+     Which fields are screened is stated in the HTML with data-screen, exactly
+     like every other rule on this form, so adding a field needs no change
+     here. The email and the phone are deliberately not screened: an address is
+     not prose, and a false positive there would be absurd.
+
+     The offending word is NOT repeated back. Someone who typed it by accident
+     does not need it quoted at them, and someone who typed it on purpose does
+     not need the confirmation. See word-guard.js. */
+  if (input.dataset.screen !== undefined && input.value.trim() && screen(input.value)) {
+    return t("contact.errWords", "There is a word here I would rather not send. Please rewrite that part.");
+  }
+
+  /* The DNS verdict, if one has come back for the address currently typed. */
+  if (input.type === "email") {
+    const guardado = veredictos.get(input);
+    if (guardado && guardado.email === input.value.trim().toLowerCase()) {
+      if (guardado.mensagem) return guardado.mensagem;
+    }
+  }
+
   if (v.valid) return "";
 
   if (v.valueMissing) {
@@ -259,6 +303,7 @@ function initValidation(form) {
     // while they are still on the third character is both true and useless.
     input.addEventListener("blur", () => {
       if (input.value !== "" || input.required) checkField(input);
+      if (input.type === "email") perguntarSobre(input);
     });
 
     // Once a field is marked, correcting it clears the mark immediately —
@@ -270,6 +315,35 @@ function initValidation(form) {
     input.addEventListener("change", () => {
       if (fieldOf(input)?.classList.contains("is-invalid")) checkField(input);
     });
+  }
+
+  /* Asks email-check.js about the address, then re-renders the field with
+     whatever came back. Nothing awaits this: the visitor has already moved on
+     by the time it answers, and the answer simply appears when it does.
+
+     Every path is guarded so that a failure is silence rather than a refusal.
+     See the WeakMap above for why the address is stored with the verdict. */
+  async function perguntarSobre(input) {
+    const email = input.value.trim().toLowerCase();
+    if (!email || !input.validity.valid) return;      // shape first, then this
+
+    let mensagem = "";
+    try {
+      const r = await verificarEmail(email);
+      if (!r.ok) {
+        if (r.reason === "typo") {
+          mensagem = t("contact.errEmailTypo", "Did you mean {0}?").replace("{0}", r.suggestion);
+        } else if (r.reason === "disposable") {
+          mensagem = t("contact.errEmailTemp", "That is a temporary address. I need one I can actually reply to.");
+        } else if (r.reason === "nodomain") {
+          mensagem = t("contact.errEmailDomain", "That domain does not seem to receive mail. Check what comes after the @.");
+        }
+      }
+    } catch { return; }                               // never a refusal
+
+    veredictos.set(input, { email, mensagem });
+    // Only if the box still holds the address that was asked about.
+    if (input.value.trim().toLowerCase() === email) checkField(input);
   }
 
   /* Returns true when everything passes. Checks EVERY field rather than

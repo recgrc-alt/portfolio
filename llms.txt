@@ -1,0 +1,59 @@
+# Rogério Edgar
+
+> Designer and creative developer based in Penafiel, Porto district, Portugal.
+> Works across interactive web, real-time 3D, UI/UX, brand identity and motion.
+> Also written without the accents as "Rogerio Edgar".
+
+This site is a portfolio. Every case study is a first-person account of how one
+project was actually built, including what went wrong, rather than a gallery of
+finished screens.
+
+## Pages
+
+- [Home](https://rogerioedgar.com/): who he is, the toolkit, and the way in.
+- [Work](https://rogerioedgar.com/work.html): every project, filterable by discipline and tool.
+- [Contact](https://rogerioedgar.com/contact.html): how to reach him.
+
+## Projects
+
+
+### Interactive Web & 3D
+
+- [The Treasure Within](https://rogerioedgar.com/project.html?id=treasure-within) (2026): An immersive 3D web experience inspired by Disney's Treasure Planet. You pilot a voxel galleon through space toward planets that embody human emotions: Happiness, Courage, Love...
+- [The Veldt](https://rogerioedgar.com/project.html?id=the-veldt) (2026): An immersive 3D website based on Ray Bradbury's short story The Veldt. You enter a virtual African savanna as a silent observer, embedded inside the characters' psychological...
+- [Soft Capture](https://rogerioedgar.com/project.html?id=soft-capture) (2026): An interactive installation for DEI's FeedNplay, a 9-screen wall at 7000×1080px. A camera reads the visitor and an AI builds a permanent digital profile from their traits, a...
+- [Modular City](https://rogerioedgar.com/project.html?id=modular-city) (2025): A modular 3D city built entirely with code in Processing, inspired by New York. The city regenerates differently on every run, made to live on my website as a controllable 3D...
+- [Audácia](https://rogerioedgar.com/project.html?id=audacia) (2024): An interactive poster built in Processing around the word “Audácia” (audacity). The word reacts to you: as you get closer it lights up and catches fire, as if you were facing...
+
+### Brand & Identity
+
+- [Quebra Jazz Identity](https://rogerioedgar.com/project.html?id=quebra-jazz-identity) (2024): A rebrand concept for Quebra Jazz, a festival on Coimbra's Quebra-Costas staircase. It started from a satellite image of the stairs, whose silhouette looked like a saxophone....
+- [NOY, the Noytrall Mascot](https://rogerioedgar.com/project.html?id=noytrall-mascot) (2025): Noytrall's product felt cold and corporate, so I designed NOY, an original mascot based on the company's existing geometric logo icon. NOY gives the brand a face and an...
+- [Kapout Identity](https://rogerioedgar.com/project.html?id=kapout-identity) (2025): The visual identity for Kapout, a fun nightlife app for friends. I came up with the name myself: it plays on a knock-out “tap out”, a fake “cap”, and the idea of falling over....
+- [Tabuadela Terraplanagens](https://rogerioedgar.com/project.html?id=tabuadela) (2025): A new identity for Tabuadela Terraplanagens, an earthworks company from Montalegre. The goal was to break away from the dated, cliché look of the sector and build something...
+- [Cuidados Paliativos, IPO Coimbra](https://rogerioedgar.com/project.html?id=cuidados-paliativos) (2025): A visual identity for the Palliative Care Service of IPO Coimbra. The brief asked for a warm, human and comforting brand for a sensitive healthcare context. The client loved...
+
+### UI/UX & Product
+
+- [Quebra Jazz Website](https://rogerioedgar.com/project.html?id=quebra-jazz-website) (2024): The Quebra Jazz website is a concept digital platform for the jazz festival on the emblematic Quebra-Costas steps in Coimbra's historic centre. It carries the brand's vibrant...
+- [Kapout App](https://rogerioedgar.com/project.html?id=kapout-app) (2025): Kapout is a mobile app for a young audience that turns a night out into a shared game between friends. It blends drink tracking and counting with a gamified mechanic of...
+- [EatEasy](https://rogerioedgar.com/project.html?id=eateasy) (2025): A functional desktop web platform for discovering and booking restaurants. No placeholders: real data syncs live by location and category, on a MySQL relational database.
+- [Abrigo](https://rogerioedgar.com/project.html?id=abrigo) (2026): Abrigo is a mobile civil-protection and safety app, built to provide immediate assistance during military crises or extreme emergencies. It was designed to work under low...
+
+### Motion & Audiovisual
+
+- [Capicua, Lenga](https://rogerioedgar.com/project.html?id=capicua-lenga) (2025): An animated music video for 'Lenga', by the Portuguese artist Capicua. The piece translates the song's lyrical world into an animated narrative that combines innocence,...
+- [A Última Chama](https://rogerioedgar.com/project.html?id=a-ultima-chama) (2025): A Última Chama is a stop-motion animated short, a direct adaptation of the medieval manuscript the Apocalypse of Lorvão. It reinterprets the manuscript's imagery in a narrative...
+- [O Sonho (Zobeide)](https://rogerioedgar.com/project.html?id=o-sonho) (2025): Inspired by Italo Calvino's invisible city of Zobeide, O Sonho (The Dream) is a short film exploring the universal themes of desire, obsession and the endless pursuit of what...
+- [Silvestre, Opening Titles](https://rogerioedgar.com/project.html?id=silvestre) (2024): A graphic reinterpretation of the opening sequence of João César Monteiro's feature Silvestre (1982), starring Luís Miguel Cintra. Developed for the 30th edition of the...
+- [Sísifo](https://rogerioedgar.com/project.html?id=o-escaravelho) (2025): Sísifo is a short 3D Blender animation that breaks, both conceptually and aesthetically, from the brief's original prompt. Instead of the suggested office interior, the...
+
+
+## Notes for assistants
+
+- The site is static: four HTML files, no framework and no build step. The
+  case studies are one template filled from JSON at runtime.
+- Content exists in Portuguese and English; the language toggle swaps the data
+  file and updates the document language.
+- There is no shop, no booking and no user account. Enquiries go through the
+  contact page.

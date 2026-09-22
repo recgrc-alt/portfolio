@@ -4,8 +4,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- WHAT iOS AND ANDROID PAINT AROUND THE PAGE.
+       Safari and Chrome tint their own chrome from this. Left out, Safari
+       guesses from whatever it samples at the top of the document, and this
+       site's top is a fixed WebGL layer rather than a flat colour - so the
+       guess is not reliably the ground the page is actually made of. Stated
+       here, the bar is the same black as the site.
+
+       Hard-coded rather than --color-bg because a meta attribute cannot read a
+       custom property. It is the one place on the site where this value is
+       written twice; if --color-bg ever changes, this changes with it. -->
+  <meta name="theme-color" content="#000000" />
+
   <title>Project · Rogério Edgar</title>
-  <meta name="description" content="Project detail · Rogério Edgar." />
+  <meta name="description" content="A case study by Rogério Edgar: how one project was actually built, what went wrong, and what came out of it." />
 
   <!-- Content-Security-Policy: a rede de seguranca. Mesmo que um dia
        entre por engano markup vindo de fora, o browser recusa-se a
@@ -13,8 +25,13 @@
 
        blob: nao e decorativo. O GLTFLoader extrai as texturas de dentro
        do eye.glb e serve-as como URLs blob:; sem isso o olho carrega sem
-       iris. Foi apanhado a testar esta politica, nao em producao. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'sha256-4ODAao+sk3HqfLrhlo1/4J/pP6Iybrzy9N3XLy4mCSg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+       iris. Foi apanhado a testar esta politica, nao em producao.
+
+       O sha256 em script-src e o do importmap mais abaixo, calculado sobre
+       o texto EXATO entre as tags, espacos incluidos. Mudar um caracter no
+       importmap sem recalcular o hash faz o browser recusa-lo, e sem
+       importmap nao corre JavaScript nenhum no site. Ver vendor/README.md. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-IATkqRMH8LC2/MkVVm5Z0BZ2GjRmMt1Eivlm+m0i9S0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://api-bdc.io https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
 
   <!-- Favicon. Three sizes because browsers ask for different ones and none of
        them negotiate: 16/32 for the tab, 180 for an iOS home screen. The PNGs
@@ -22,30 +39,30 @@
        role and which every other browser would have to download whole just to
        draw sixteen pixels. favicon.ico sits at the site root as well, because
        some clients request /favicon.ico without ever reading the markup. -->
-  <link rel="icon" href="assets/favicon-32.png?v=74" sizes="32x32" type="image/png" />
-  <link rel="icon" href="assets/favicon-16.png?v=74" sizes="16x16" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=74" />
+  <link rel="icon" href="assets/favicon-32.png?v=289" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=289" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=289" />
 
   <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@300..700&display=swap"
     rel="stylesheet" />
 
   <!-- Tokens first, then the shared stylesheet, then the page layouts. -->
-  <link rel="stylesheet" href="css/tokens.css?v=74" />
-  <link rel="stylesheet" href="css/style.css?v=74" />
-  <link rel="stylesheet" href="css/pages.css?v=74" />
+  <link rel="stylesheet" href="css/tokens.css?v=289" />
+  <link rel="stylesheet" href="css/style.css?v=289" />
+  <link rel="stylesheet" href="css/pages.css?v=289" />
 
   <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
        This MUST come before any module load or preload (see below). -->
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-        "lenis": "https://unpkg.com/lenis@1.1.14/dist/lenis.mjs"
+        "three": "./vendor/three@0.160.0/build/three.module.min.js",
+        "three/addons/": "./vendor/three@0.160.0/examples/jsm/",
+        "lenis": "./vendor/lenis@1.1.14/dist/lenis.mjs"
       }
     }
   </script>
@@ -55,12 +72,55 @@
        that arrives after that point is rejected outright. Firefox enforces
        this strictly: with the preload above the map, every bare "three"
        specifier failed to resolve and the whole bundle died. Keep them here. -->
-  <link rel="preconnect" href="https://unpkg.com" crossorigin />
-  <link rel="modulepreload" href="https://unpkg.com/three@0.160.0/build/three.module.js" crossorigin />
+  <link rel="modulepreload" href="vendor/three@0.160.0/build/three.module.min.js" crossorigin />
 
-  <!-- This page is a template: it is not indexed on its own, because every
-       URL is the same file with a different ?id=. -->
-  <meta name="robots" content="noindex" />
+  <!-- NO robots META HERE, AND THAT IS THE POINT.
+       This file used to carry a blanket `noindex`, on the reasoning that it is
+       one template and every URL is the same file with a different ?id=. That
+       reasoning is wrong: a search engine treats ?id=treasure-within and
+       ?id=the-veldt as two separate URLs and indexes them separately. The rule
+       was therefore hiding all nineteen case studies, which are the entire
+       substance of this portfolio, while leaving the three pages that contain
+       almost no project text as the only ones that could be found.
+
+       A genuinely missing project IS a soft 404, and project-page.js sets the
+       exclusion there, on that branch alone. -->
+
+  <!-- --- Identity, sharing and structured data ---------------------------
+       CANONICAL first, and absolute. Without it a page reached with a
+       tracking parameter, a trailing slash or over http is a second URL as
+       far as a search engine is concerned, and the two split whatever
+       ranking either would have had on its own.
+
+       The og: tags are what a link to this page looks like when somebody
+       pastes it into a message. Left out, the preview is the URL and
+       nothing else. The image is a real 1200x630 JPEG rather than the
+       site's WebP, because several of the services that render these
+       previews still do not accept WebP.
+
+       The JSON-LD says in machine-readable form what the page says in
+       words. It is a data block, not a script: script-src does not apply
+       to it, which is why it is safe under this page's CSP. -->
+  <link rel="canonical" href="https://rogerioedgar.com/project.html" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Rogério Edgar" />
+  <meta property="og:url" content="https://rogerioedgar.com/project.html" />
+  <meta property="og:title" content="Project · Rogério Edgar" />
+  <meta property="og:description" content="A case study by Rogério Edgar: how one project was actually built, what went wrong, and what came out of it." />
+  <meta property="og:image" content="https://rogerioedgar.com/assets/social/og-cover.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Rogério Edgar" />
+  <meta property="og:locale" content="en" />
+  <meta property="og:locale:alternate" content="pt_PT" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Project · Rogério Edgar" />
+  <meta name="twitter:description" content="A case study by Rogério Edgar: how one project was actually built, what went wrong, and what came out of it." />
+  <meta name="twitter:image" content="https://rogerioedgar.com/assets/social/og-cover.jpg" />
+
+  <meta name="author" content="Rogério Edgar" />
 </head>
 
 <body class="page page--project">
@@ -74,7 +134,7 @@
   <div class="loader" data-loader aria-hidden="true">
     <video class="loader__eye" data-loader-eye autoplay muted loop playsinline
            width="200" height="200">
-      <source src="assets/loading-eye.webm" type="video/webm" />
+      <source src="assets/loading-eye.webm?v=289" type="video/webm" />
     </video>
     <p class="loader__dots"><span></span><span></span><span></span></p>
   </div>
@@ -150,8 +210,22 @@
   <footer class="footer">
     <div class="footer__inner">
         <p class="footer__status">
-          <span class="footer__dot" aria-hidden="true"></span>
-          <span data-i18n="footer.status">Available for freelance &amp; full-time roles</span>
+          <!-- Two lines in one place, taking turns. The availability is the
+               statement; the invitation is what to do about it.
+               EACH CARRIES ITS OWN DOT. One shared dot outside meant the pair
+               was only ever adjacent for whichever line was the wider of the
+               two, and the cell is as wide as that one. Inside, each line is a
+               self-contained unit that can be centred on its own. -->
+          <span class="footer__swap">
+            <span class="footer__swap-item">
+              <span class="footer__dot" aria-hidden="true"></span>
+              <span data-i18n="footer.status">Available for freelance &amp; full-time roles</span>
+            </span>
+            <a class="footer__swap-item footer__swap-cta" href="contact.html">
+              <span class="footer__dot" aria-hidden="true"></span>
+              <span data-i18n="footer.contact">Contact me</span>
+            </a>
+          </span>
         </p>
 
         <ul class="footer__links">
@@ -213,7 +287,7 @@
     <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
   </div>
 
-  <script type="module" src="js/main.js?v=74"></script>
+  <script type="module" src="js/main.js?v=289"></script>
 
 </body>
 

@@ -117,6 +117,31 @@ export function buildStudioEnvironment(THREE, config) {
      be a second key light and would flatten the ball. */
   panel(9, 9, 0xdbe3f0, L.envBounce, [0, -4.4, 1.6], [-Math.PI / 2 + 0.34, 0, 0]);
 
+  /* THE CATCHLIGHT, IN THE ENVIRONMENT — the white dot a photograph shows on
+     an eye. The rig below already has a light named catchlight, but it is a
+     RectAreaLight, and an area light can only ever produce an area's worth of
+     sheen. The hard spark is a REFLECTION: a small bright source mirrored in
+     the wet film of the cornea, and reflections come from this map, where
+     until now no such source existed. That absence is exactly "falta a pinta
+     branca".
+
+     Small, very bright, and deliberately NOT wearing the soft ramp the other
+     panels wear: those are softboxes and must read soft, this is the one
+     source that must stay crisp — clearcoatRoughness 0.02 and the PMREM blur
+     will round its corners quite enough. Same direction as the rig's
+     catchlight, so the specular sheen and the mirrored dot agree on where the
+     light is. Aimed by lookAt because a hand-written rotation drifts the
+     moment the position is tuned. */
+  const spark = new THREE.Mesh(
+    new THREE.PlaneGeometry(L.envCatchSize, L.envCatchSize),
+    new THREE.MeshBasicMaterial({
+      color: new THREE.Color(0xffffff).multiplyScalar(L.envCatch),
+    })
+  );
+  spark.position.set(L.catchPosition[0], L.catchPosition[1], L.catchPosition[2]);
+  spark.lookAt(0, 0, 0);
+  env.add(spark);
+
   return env;
 }
 

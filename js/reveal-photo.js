@@ -40,7 +40,7 @@
        to the 3D eye.
    ========================================================================== */
 
-import { isTouch } from "./viewport.js?v=74";
+import { isTouch } from "./viewport.js?v=289";
 
 
 /* Tunables — all the feel of the effect lives here. */

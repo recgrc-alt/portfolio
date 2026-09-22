@@ -39,7 +39,19 @@ html.lenis body { height: auto; }
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }
 
-html { -webkit-text-size-adjust: 100%; }
+/* --- Telling the browser what kind of page this is ------------------------
+ * Not decoration. It is what makes the parts of the interface this stylesheet
+ * cannot reach come out dark instead of light: the text caret, the scrollbar,
+ * the resize grip on a textarea, and the background a browser paints over an
+ * autofilled field - which on Safari and Chrome is a pale wash that lands on
+ * a black form like a stain.
+ *
+ * The site's own controls are unaffected: .field__input states its colour and
+ * its background, so nothing here can repaint them. */
+html {
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
 img, canvas { display: block; max-width: 100%; }
 
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
@@ -821,12 +833,45 @@ a, button, [role="button"], summary, input, textarea, select {
   font-weight: var(--weight-bold);
 }
 
-/* Scroll hint (fades out as you leave the hero). */
+/* Scroll hint (fades out as you leave the hero).
+ *
+ * WHY IT LOOKED OFF-CENTRE ON A NARROW PHONE, and it is not what it looks
+ * like. The BOX was always exactly centred - measured at 320px, its midpoint
+ * and the page's are both 160. What was not centred was the text inside it.
+ *
+ * An absolutely positioned element with `left` set and `right` auto is sized
+ * shrink-to-fit, and the space it may shrink into is what remains from the 50%
+ * mark to the right edge: half the screen. At 320px the caption no longer fits
+ * in 160, so it wrapped onto two lines of different lengths, and with the
+ * default `text-align: start` both of them were flush left inside a centred
+ * box. It reads as leaning left, because it is.
+ *
+ * `width: max-content` lets the box be as wide as the caption really is
+ * instead of stopping at the halfway mark, `max-width` keeps it inside the
+ * page gutters on a screen too narrow for that, and `text-align: center`
+ * centres the lines in the case where it does still have to wrap. On desktop
+ * the caption has always fitted on one line, so all three are no-ops there. */
 .scroll-hint {
   position: absolute;
   bottom: var(--space-64);
   left: 50%;
   transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - var(--page-margin) * 2);
+  text-align: center;
+  /* ABOVE THE HAND-OFF BAND, and it has to say so explicitly.
+     The band that fades the eye out before the disciplines arrive belongs to
+     the NEXT section, so it paints after this one and lands on top of it. On a
+     phone that band is 34svh tall and this caption sits 71% of the way into
+     it, under an almost solid black gradient - readable in the markup and
+     invisible on the screen.
+     A positive z-index is enough and nothing more is needed: .panel--hero is
+     position: relative with z-index auto, so it is NOT a stacking context, and
+     this jumps straight past the band's section, which is also auto. Putting
+     the z-index on the panel instead would have made it one - and that would
+     isolate the title's mix-blend-mode from the eye, which is the whole look
+     of the cover. */
+  z-index: var(--z-chrome);
   font-family: var(--font-body);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -912,13 +957,51 @@ a, button, [role="button"], summary, input, textarea, select {
        (ending at 0.9 left a visible hard line across the eye);
      · a mask fades the blur itself out towards the top, otherwise
        backdrop-filter stops dead at the element's edge. */
+/* HOW FAR THE HAND-OFF REACHES, stated once.
+   The gradient above a sealed section is drawn OUTSIDE it, so the section has
+   to be pushed down by exactly that much or the fade lands on whatever was
+   there. The band's height and that clearance both read this, which is the
+   only way the two cannot drift apart.
+
+   ON :root AND NOT ON .seals, because the section AFTER a sealed one needs to
+   read it too and is not a descendant of anything that could hand it down.
+   See the rule that gives that section its room, further below. */
+:root { --seal-reach: clamp(7rem, 20vh, 16rem); }
+
+/* --- WHAT ACTUALLY MAKES THE BAND EXIST -----------------------------------
+ * .about and .work were once listed here and were lost: a comment block was
+ * pasted into the middle of this selector list, so the three selectors above
+ * it ran on into the `--seal-reach` rule that followed and inherited its
+ * single custom-property declaration instead of this one.
+ *
+ * The variable still reached :root, so nothing looked broken in the source.
+ * But `content` never reached the pseudo-elements, and a pseudo-element with
+ * no content is never generated at all - so the gradient rules further down
+ * were styling something that did not exist. Both hand-offs on the home page,
+ * above the About section and below it, had silently not been drawn for as
+ * long as that comment has been there, on every screen size. What was left is
+ * exactly what a hard cut looks like: opaque black meeting the fixed eye on a
+ * straight line.
+ *
+ * They are listed HERE, with the class, rather than given the class in the
+ * markup. `.seals` also reserves `margin-top: var(--seal-reach)` for its band
+ * to fade over, and handing .about that margin would move the desktop layout
+ * by up to 16rem. These two sections already sit in full-height panels with
+ * room to spare above and below, so they need the band and not the clearance.
+ * (A comment inside a selector list is legal CSS; a comment BETWEEN the last
+ * selector and the brace is what broke it. Keep prose above the list.) */
 .about::before,
-.about::after {
+.about::after,
+.work::before,
+.panel--services::before,
+.panel--services::after,
+.seals::before,
+.seals::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  height: clamp(7rem, 20vh, 16rem);
+  height: var(--seal-reach);
   backdrop-filter: blur(var(--blur-seam));
   -webkit-backdrop-filter: blur(var(--blur-seam));
   pointer-events: none;
@@ -930,7 +1013,10 @@ a, button, [role="button"], summary, input, textarea, select {
    and the eye shows through undimmed as a thin bright line. The seam is full
    width, but only visible where something bright sits behind it — which is why
    it reads as a line the width of the eye. */
-.about::before {
+.about::before,
+.work::before,
+.panel--services::before,
+.seals::before {
   bottom: 100%;                       /* directly above the section's top edge */
   margin-bottom: calc(var(--seam-overlap) * -1);
   background: linear-gradient(to top, rgb(0 0 0 / 1), rgb(0 0 0 / 0));
@@ -941,13 +1027,121 @@ a, button, [role="button"], summary, input, textarea, select {
 /* Leaving it into Capabilities. Without this the section's solid black simply
    stops and the eye behind appears along a hard horizontal line; this lets it
    surface gradually instead. Mirror of ::before, pointing the other way. */
-.about::after {
+.about::after,
+.panel--services::after,
+.seals::after {
   top: 100%;                          /* directly below the section's bottom edge */
   margin-top: calc(var(--seam-overlap) * -1);
   background: linear-gradient(to bottom, rgb(0 0 0 / 1), rgb(0 0 0 / 0));
   -webkit-mask-image: linear-gradient(to bottom, #000 10%, transparent 100%);
           mask-image: linear-gradient(to bottom, #000 10%, transparent 100%);
 }
+
+/* --- The disciplines, on a phone, stand on their own ground ---------------
+ * On DESKTOP this section deliberately has no background: the service names
+ * are set in mix-blend-mode: difference and the fixed eye reads through them.
+ * That effect needs the eye, so the ground and the two bands are taken away
+ * again above the breakpoint.
+ *
+ * On a PHONE there is no room for a name to sit over an eye and still be
+ * legible, and the section reads better as a solid black panel like the ones
+ * on the work page. Sealing it also closes the hand-off to the About photo
+ * below by simply removing it: two opaque black sections that touch have
+ * nothing to fade between, which is a cleaner join than any gradient.
+ *
+ * WRITTEN THIS WAY ROUND on purpose. Adding the selectors to the shared lists
+ * above and switching them off for desktop costs five declarations; writing
+ * the seal out again inside the phone's media query would have copied ten and
+ * left two definitions of one idea to keep in step. */
+.panel--services {
+  position: relative;
+  background-color: var(--color-bg);
+}
+
+/* `not all and` is the exact complement of the phone query used everywhere
+   else in this file, so the two can never overlap or leave a gap between
+   them. */
+@media not all and (max-width: 48rem) {
+  .panel--services { background-color: transparent; }
+
+  .panel--services::before,
+  .panel--services::after { content: none; }
+}
+
+/* --- The same hand-off, as something any section can ask for --------------
+ * .about and .work each carried their own copy of the three rules above. They
+ * were identical, and a third copy for the project chapters would have made
+ * the pattern impossible to change in one place. Now the two of them and the
+ * class share one definition; adding `seals` to any section lays opaque ground
+ * over the fixed eye and fades it out above and below rather than ending it on
+ * a line.
+ *
+ * TWO SEALED SECTIONS IN A ROW DO NOT SEAM AGAINST EACH OTHER. Where they
+ * touch there is nothing to hand off to: both sides are the same black, and
+ * the only thing a seam would add there is a second backdrop-filter over the
+ * first. */
+.seals {
+  position: relative;
+  background-color: var(--color-bg);
+
+  /* --- ROOM FOR THE FADE TO HAPPEN IN ------------------------------------
+   * The ::before is a black band standing ABOVE this section, opaque at the
+   * section's edge and clear at its far end, and its whole job is to take the
+   * fixed eye out of view before the section arrives. It has always been
+   * painted over whatever happened to be up there. That was survivable while
+   * the thing above was the tail of a paragraph; it stopped being survivable
+   * the moment a sealed chapter followed a column that has to be READ.
+   * Measured on the Treasure Within page at a 900px-tall window: the band is
+   * 180px, and it sat over the bottom half of the Built with list, so Blender
+   * was gone and CSS was half gone.
+   *
+   * A margin the size of the band gives it empty ground to fade over. What
+   * shows through that gap is the eye, which is what the seal is describing
+   * in the first place: the model is visible between sections and covered by
+   * them.
+   *
+   * NOT padding. Padding is inside the box; the band is outside it. */
+  margin-top: var(--seal-reach);
+}
+
+/* --- hidden has to actually hide --------------------------------------------
+ * The HTML attribute maps to a UA rule of `[hidden] { display: none }`, and a
+ * UA rule loses to any author declaration of display. Every component here
+ * that lays something out with grid or flex therefore silently ignores it, and
+ * the failure is invisible in the markup: the attribute is set, the DevTools
+ * show it, and nothing happens.
+ *
+ * Measured on the model viewer: `poster.hidden = true` left the poster at
+ * `display: grid` covering the canvas and swallowing the drag the viewer
+ * exists for, and `modes.hidden = true` left three buttons focusable before
+ * there was any model for them to act on.
+ *
+ * One author rule, once, rather than a defensive [hidden] on every component
+ * that ever grows a display. */
+[hidden] { display: none !important; }
+
+/* Two sealed sections in a row hand off directly, so there is no band to
+   make room for. The first line drops the gradient, the second drops the
+   gap that went with it, and the pair stays as tight as it always was. */
+.seals + .seals::before { content: none; }
+.seals + .seals { margin-top: 0; }
+
+/* --- AND THE SAME ROOM ON THE WAY OUT --------------------------------------
+ * .seals already reserves margin-top so its ::before band has empty ground to
+ * fade IN over. Its ::after had no such rule and there was nothing under it
+ * but the next section's first line.
+ *
+ * Measured on the Treasure Within page: the band is 190px tall, the chapter
+ * below it opens with 85px of its own padding, and the heading then began
+ * 105px inside a gradient that is nearly opaque at that point. The type was
+ * not a different colour, it was under a black wash with a backdrop-filter on
+ * it. Three places on that page, not one.
+ *
+ * The room is given to the section BELOW rather than taken from the band,
+ * because the band is the effect and the space is what the effect needs. Only
+ * where a sealed section is followed by one that does not seal: two sealed
+ * sections in a row have no band between them at all, per the rule above. */
+.seals + :not(.seals) { padding-top: var(--seal-reach); }
 
 .about__stage {
   position: sticky;
@@ -1273,9 +1467,13 @@ a, button, [role="button"], summary, input, textarea, select {
  * The echo variables live HERE, on the entry, so a single hover reaches both
  * the icon's duplicate and the word's ::after without either knowing about
  * the other. */
+/* An <a> since build 119, not an <li>. Each mark now leads to the work made
+   with it, which also means the cursor ring answers to it: the ring looks for
+   a[href] and a list item was never going to match. */
 .skill {
   --echo-opacity: 1;
   --echo-shift: var(--skill-shift);
+  text-decoration: none;
   display: grid;
   justify-items: center;
   gap: var(--skill-stack);
@@ -1322,6 +1520,52 @@ a, button, [role="button"], summary, input, textarea, select {
   width: 100%;
   height: 100%;
   fill: currentColor;                  /* follows the entry through the hover */
+}
+
+/* --- What a tool does when it is TAPPED ------------------------------------
+ * Everything above answers to :hover, and a phone has none: the icon lit up,
+ * the ghost slid away and the word went white for a visitor with a cursor,
+ * while a finger got no acknowledgement at all. The mark is a link, so it
+ * navigates - it just did it in silence, which reads as the tap not landing.
+ *
+ * So on a touch screen the press itself is the feedback: the mark shrinks for
+ * as long as the finger is down, and the same state the cursor triggers is
+ * borrowed for it, so the icon, its ghost and the word all answer together
+ * rather than the icon moving on its own.
+ *
+ * SCALE, and nothing else. It is a compositor property, the marquee beside it
+ * is already animating a transform, and this is a phone. Anything that asked
+ * for a layout or a repaint here would be paid for on every tap.
+ *
+ * (hover: none) rather than a width, and for the reason viewport.js gives:
+ * this is a question about the pointer, not about how wide the screen is. A
+ * narrow desktop window still has a cursor and keeps the hover it had. */
+@media (hover: none) {
+  .skill__mark {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .skill:active .skill__mark { transform: scale(0.86); }
+
+  /* The same three values :hover sets, so a tap reads exactly like a hover
+     does rather than inventing a second visual language for it. */
+  .skill:active {
+    --echo-opacity: 0;
+    --echo-shift: 0;
+    color: var(--color-ink);
+  }
+
+  .skill:active .text-echo {
+    --echo-opacity: 0;
+    --echo-shift: 0;
+  }
+}
+
+/* Held still for anyone who asked for less movement. The colour change stays:
+   that is feedback, not motion. */
+@media (hover: none) and (prefers-reduced-motion: reduce) {
+  .skill__mark { transition: none; }
+  .skill:active .skill__mark { transform: none; }
 }
 
 /* The second copy: offset, inverted where it overlaps the first. */
@@ -1431,21 +1675,8 @@ a, button, [role="button"], summary, input, textarea, select {
   padding-block: clamp(var(--space-96), 14vh, var(--space-128));
 }
 
-.work::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  margin-bottom: calc(var(--seam-overlap) * -1);   /* see .about::before */
-  height: clamp(7rem, 20vh, 16rem);
-  backdrop-filter: blur(var(--blur-seam));
-  -webkit-backdrop-filter: blur(var(--blur-seam));
-  background: linear-gradient(to top, rgb(0 0 0 / 1), rgb(0 0 0 / 0));
-  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 100%);
-          mask-image: linear-gradient(to top, #000 10%, transparent 100%);
-  pointer-events: none;
-}
+/* .work seals only at the top: what follows it is already solid. Its rules
+   now live with .about's and .seals', three sections above. */
 
 /* --- The camera wall -----------------------------------------------------
    The cap is the point: past it the cards would keep stretching on an
@@ -2036,6 +2267,128 @@ a, button, [role="button"], summary, input, textarea, select {
 
 /* A breathe, not a blink — a blinking dot next to available reads as an
    alert. The glow does the work; the dot itself never fully leaves. */
+/* --- The status line and its invitation, taking turns ---------------------
+ * Two lines stacked in one grid cell, running the SAME animation half a cycle
+ * apart. One keyframe rather than two mirrored ones: mirrored keyframes drift
+ * the moment either is edited, where an offset is symmetrical by construction
+ * and cannot disagree with itself.
+ *
+ * Each half fades in, pulses three times, holds, and fades out. The pulse dips
+ * to 0.45 rather than to nothing — a status blinking to black reads as a fault
+ * indicator, and this is the opposite of a fault. */
+.footer__swap {
+  display: grid;
+  align-items: baseline;
+
+  /* CENTRED, AND SIZED TO THEMSELVES.
+     The cell is as wide as the LONGER of the two lines, and there is no way to
+     make a grid track follow whichever one happens to be showing. Stretching
+     them centred the short line inside the long one's width, 106px from its
+     dot; aligning them to the start put the dot back but left the visible text
+     sitting in the left third of a centred box.
+
+     Both readings were right about the half they saw, because the dot was
+     outside. With a dot inside each line, each line is a whole unit — mark and
+     words together — and centring the unit satisfies both at once, whichever
+     of the two is on screen. Measured against the page centre, not assumed. */
+  justify-items: center;
+}
+
+/* Each line is its own mark-and-words pair, which is what makes it centreable
+   as one thing. The gap is the same 0.6em the status row used to carry. */
+.footer__swap-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+/* ONE CLOCK, NOT TWO. The dot kept its own 3.2s breathe while the line it now
+   belongs to pulses on the 16s swap — two rhythms a few pixels apart, and the
+   mismatch was the first thing the eye caught. Inside the swap it takes the
+   line's opacity and nothing else, so mark and words dim and brighten
+   together. The glow it used to get at the top of its breathe becomes a
+   constant, so nothing is lost by stopping it. */
+.footer__swap .footer__dot {
+  animation: none;
+  box-shadow: 0 0 0.5em rgb(255 255 255 / 0.55);
+}
+
+.footer__swap-item {
+  grid-area: 1 / 1;
+  opacity: 0;
+
+  /* NOT CLICKABLE WHILE IT IS NOT THERE.
+     Both lines occupy the same cell, so for half of every cycle the invitation
+     is an invisible link lying on top of the availability text: the pointer
+     found it, the ring swelled and the hand went to click a link that could
+     not be seen. pointer-events animates discretely, so the keyframes can hand
+     it over at exactly the moment the opacity does — one timeline, no second
+     mechanism that could disagree with it. */
+  pointer-events: none;
+  animation: footer-swap var(--footer-swap) var(--ease-inout) infinite;
+}
+
+.footer__swap-item:first-child {
+  animation-delay: calc(var(--footer-swap) / -2);
+}
+
+/* NO RULE UNDER IT, in any state. The first version gave it the underline the
+   rest of the site uses on links, and under a line of uppercase micro-type it
+   read as an input's border rather than as a link. The invitation is already
+   the only thing here that arrives and leaves; it does not also need to be
+   drawn on. What it gets on hover is what the rest of the footer gets: it
+   comes forward. */
+.footer__swap-cta {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Keyboard focus still has to be visible. The site's own outline, offset off
+   the glyphs, rather than anything sitting on the baseline. */
+.footer__swap-cta:focus-visible {
+  outline: 1px solid var(--color-ink);
+  outline-offset: var(--space-4);
+}
+
+@keyframes footer-swap {
+   0%  { opacity: 0;    pointer-events: none; }
+   4%  { opacity: 1;    pointer-events: auto; }
+  10%  { opacity: 0.45; pointer-events: auto; }
+  16%  { opacity: 1;    pointer-events: auto; }
+  22%  { opacity: 0.45; pointer-events: auto; }
+  28%  { opacity: 1;    pointer-events: auto; }
+  34%  { opacity: 0.45; pointer-events: auto; }
+  40%  { opacity: 1;    pointer-events: auto; }
+  46%  { opacity: 1;    pointer-events: auto; }
+  50%  { opacity: 0;    pointer-events: none; }
+ 100%  { opacity: 0;    pointer-events: none; }
+}
+
+/* KEYBOARD, AND ANYONE WHO ASKED FOR STILLNESS. A link that spends half its
+   life at opacity 0 cannot be tabbed to honestly, and a swap is motion. Both
+   cases stop the turn-taking and lay the two out side by side instead, where
+   they are both readable and both reachable. */
+.footer__swap:focus-within {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9em;
+}
+
+.footer__swap:focus-within .footer__swap-item {
+  animation: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer__swap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9em;
+  }
+  .footer__swap-item { animation: none; opacity: 1; pointer-events: auto; }
+}
+
 @keyframes footer-breathe {
   0%, 100% { opacity: 1;    box-shadow: 0 0 0.5em rgb(255 255 255 / 0.55); }
   50%      { opacity: 0.55; box-shadow: 0 0 0 rgb(255 255 255 / 0); }
@@ -2142,8 +2495,42 @@ a, button, [role="button"], summary, input, textarea, select {
 }
 .hero-title__name { animation-delay: 160ms; }
 
+/* --- HEADINGS THAT ARRIVE A LINE AT A TIME -------------------------------
+ * pages.css already holds the resting state of a split line: the inner sits at
+ * translateY(110%), below its own mask, with a per-line delay. This is only
+ * the trigger, and it lives OUTSIDE the phone's media query on purpose.
+ *
+ * The resting rule in pages.css is unconditional, so any heading that gets
+ * split is hidden behind its mask at every width. If the trigger were
+ * phone-only, the same heading on a narrow desktop window - split because it
+ * wraps there too - would sit behind that mask with nothing to lift it. The
+ * split is decided by the text and the width, so the trigger has to be too.
+ *
+ * Where a heading fits on ONE line, split-lines.js deliberately leaves it
+ * unsplit and none of this applies. That is why "Capabilities & Toolkit"
+ * animates on a phone, where it wraps, and is untouched on a desktop, where it
+ * does not. */
+[data-lines].is-visible .project-line__inner { transform: none; }
+
 /* Scroll reveal: [data-reveal] starts hidden; .is-visible transitions it in.
-   IntersectionObserver (reveal.js) toggles the class — no scroll listeners. */
+   IntersectionObserver (reveal.js) toggles the class — no scroll listeners.
+
+   TRANSLATE AND OPACITY, AND NOTHING ELSE, EVER.
+   Both are handled entirely by the compositor: the main thread hands over a
+   layer once and the animation costs it nothing after that. Everything else
+   that looks tempting here is not.
+
+   A `scale` was tried and taken out again. It reads well on one heading, but
+   scaling TEXT means re-rasterising the glyphs at each intermediate size, and
+   this page reveals eight or nine elements at a time down twelve thousand
+   pixels of scroll. The same applies to `filter: blur()` and to `clip-path`,
+   which is not a compositor property either: a wipe on a title repaints that
+   title on every frame for the whole of its duration.
+
+   If a richer entrance is ever wanted here, it does NOT come from adding
+   properties to this rule. It comes from a wrapper with overflow:hidden and a
+   child that translates inside it — the mask is then static, nothing repaints,
+   and the cost stays where it is now, which is nowhere. */
 [data-reveal] {
   opacity: 0;
   transform: translateY(2rem);
@@ -2152,17 +2539,48 @@ a, button, [role="button"], summary, input, textarea, select {
 }
 [data-reveal].is-visible { opacity: 1; transform: none; }
 
-/* Stagger revealed siblings so a list or grid cascades in. */
+/* Shown without being animated. Used on whatever is already on screen when a
+   cover is about to lift, so the page is finished BEFORE it is uncovered
+   rather than starting to arrive afterwards. Both properties are needed: the
+   stagger below is a delay, and a delay survives transition: none being set
+   on the shorthand alone in some engines. */
+[data-reveal].is-instant {
+  transition: none;
+  transition-delay: 0s;
+}
+
+/* The heading's frame is what carries .is-instant, but the thing that moves is
+   the span inside it — so the suppression has to reach in. Without this, a
+   heading already on screen when the cover lifts still plays its rise, which
+   is the exact entrance settleInView exists to skip. */
+.is-instant .project-chapter__title-inner,
+.is-instant .project-line__inner { transition: none; }
+
+/* Stagger revealed siblings so a list or grid cascades in.
+
+   IT RUNS TO NINE NOW, because it used to run out. A chapter column is a
+   heading, a strapline and up to five paragraphs, and the seventh onwards had
+   no rule at all: they arrived with the first one, so a long chapter cascaded
+   for six items and then landed the rest in a block. The step is unchanged, so
+   nothing that already looked right has moved. */
 [data-reveal]:nth-child(2) { transition-delay:  90ms; }
 [data-reveal]:nth-child(3) { transition-delay: 180ms; }
 [data-reveal]:nth-child(4) { transition-delay: 270ms; }
 [data-reveal]:nth-child(5) { transition-delay: 360ms; }
 [data-reveal]:nth-child(6) { transition-delay: 450ms; }
+[data-reveal]:nth-child(7) { transition-delay: 540ms; }
+[data-reveal]:nth-child(8) { transition-delay: 630ms; }
+[data-reveal]:nth-child(9) { transition-delay: 720ms; }
 
 /* Respect reduced-motion: show everything, no entrance/scroll animation. */
 @media (prefers-reduced-motion: reduce) {
   .hero-title__line { opacity: 1; animation: none; }
   [data-reveal] { opacity: 1; transform: none; transition: none; }
+  /* A heading rising behind a mask is movement like any other, and a reader
+     who asked for none should find it already in place. Both shapes of it:
+     the whole heading, and the lines it may have been split into. */
+  .project-chapter__title-inner,
+  .project-line__inner { transform: none; transition: none; }
   .hero-title { transform: none; opacity: 1; }
 
   /* The capture still happens — only the travel is dropped. The feed appears
@@ -2214,10 +2632,263 @@ a, button, [role="button"], summary, input, textarea, select {
     padding-block: clamp(var(--space-64), 11vh, var(--space-96));
   }
 
-  /* The cover's type was falling to the clamp's floor (40px) and reading as a
-     caption rather than a title. Its own ceiling on a phone, not the desktop
-     one, so it fills the width without ever overflowing it. */
-  .hero-title__line { font-size: clamp(2.75rem, 13vw, 5rem); }
+  /* --- THE DISCIPLINES DO NOT NEED A WHOLE SCREEN EITHER ------------------
+   * The same arithmetic as the toolkit further down: 844 of section holding
+   * 381 of list, centred, which left 264px of black above the first number
+   * and 200 below the last. The distance from the cover to the list was a
+   * residue of that centring rather than anything anybody chose.
+   *
+   * ONLY THIS PANEL, NEVER .panel ITSELF. The hero keeps its full screen and
+   * always will: it is the cover, and a cover that does not fill the screen
+   * is not one. That is the whole reason this override sits on the modifier.
+   *
+   * The padding is the same expression the toolkit's stage uses, so the two
+   * short sections on this page breathe alike instead of each arriving at its
+   * own accident.
+   *
+   * WHAT IT COSTS, said out loud because the rule above warns about exactly
+   * this: a section shorter than the screen lets the next one show at the foot
+   * of it. Here that next one is the About stage, whose ground is the same
+   * black as this section's - so what appears early is the photograph, not two
+   * layouts colliding. Measured after the change rather than assumed. */
+  .panel--services {
+    min-height: auto;
+    padding-block: clamp(var(--space-64), 13svh, var(--space-96));
+
+    /* --- AND IT HAS TO OVERLAP THE NEXT SECTION BY A HAIR -----------------
+     * Giving this section the height of its contents also gave it a
+     * FRACTIONAL one: 572.875 rather than a whole screen, so the join with the
+     * About section lands at 1416.875 instead of on a pixel boundary.
+     *
+     * Two opaque boxes meeting at a fraction do not add up to one opaque
+     * pixel. The browser antialiases both edges - this section covers 87.5% of
+     * that row, the next covers the remaining 12.5% - and compositing two
+     * partial blacks leaves about 11% of whatever is behind them still
+     * showing. Behind them is the fixed eye, holding its last frame (paused is
+     * not cleared), so what came through was a one-pixel line, lighter than
+     * the black on either side of it.
+     *
+     * --seam-overlap is the site's existing answer to exactly this, used
+     * between the sealed sections for the same reason. One pixel of overlap
+     * and there is no row left that neither box fully paints.
+     *
+     * It only became possible when the height stopped being 100svh: at a whole
+     * screen the boundary was a whole number and there was nothing to leak. */
+    margin-bottom: calc(var(--seam-overlap) * -1);
+  }
+
+  /* --- The cover, set to fill the screen -------------------------------
+   * MEASURED, NOT GUESSED. In Space Grotesk bold, "THROUGH" is 454 units wide
+   * per 100 of type size. A 390px phone leaves 342 between the gutters, so the
+   * size at which that one word spans the screen is 342/454 x 100 = 75px, or
+   * 19.3vw. 18vw sits just inside that: the word reaches about 93% of the
+   * width at every phone size, which reads as filling it without ever being
+   * the thing that decides where the line breaks.
+   *
+   * The rest then wraps on its own - "THE EYES OF" cannot fit beside a word
+   * that wide - and that is the intended shape rather than an accident. No
+   * text-wrap: balance here on purpose: balancing would even the lines out and
+   * take the first one back off the edge, which is the whole effect.
+   *
+   * 13vw before, which left "THROUGH THE" sharing a line at half the width.
+   */
+  .hero-title__line { font-size: clamp(3.5rem, 18vw, 7.5rem); }
+
+  /* THE NAME IS THE SAME SIZE AS THE REST, and there is no rule for it here
+     because there does not need to be: it inherits the line above.
+
+     It was given its own smaller size for a while, on the reasoning that
+     "ROGÉRIO EDGAR" in Inter italic is nearly twice the width of "THROUGH" and
+     would break in two. It does break in two - and that is the intended shape,
+     not a fault: the title is one block of type at one size, wrapping wherever
+     the screen runs out. Measured at 18vw, "ROGÉRIO" comes out 253 wide inside
+     272 at the narrowest phone and 339 inside 382 at the widest, so the break
+     is always between the two words and never inside one. */
+
+  /* --- The disciplines, rebuilt for a phone ------------------------------
+   * A different shape from the desktop, which is what was asked for. There the
+   * four names are centred and equal, blending over the eye. Here the section
+   * has opaque ground (see .panel--services, outside this query), so the list
+   * can behave like a list: read down the left edge, each row led by its
+   * number.
+   *
+   * THE NUMBER CARRIES THE WEIGHT AND THE LABEL CARRIES THE WORDS. On desktop
+   * both are one size and the index is dimmed, which is a decoration. At phone
+   * width that made two competing strings of the same size on one line, and a
+   * four-word label wrapped under a number that was pretending to be part of
+   * it. Now the number is roughly two and a half times the label, in full ink,
+   * and the label sits on its baseline: one thing to look at, one thing to
+   * read.
+   *
+   * Both sizes are viewport-relative between rem bounds, so the pair keeps its
+   * proportion from the narrowest phone to the breakpoint. */
+  .services {
+    align-items: stretch;              /* rows span the column, so they align */
+    text-align: left;
+    /* Space, not rules. The separators were taken out again: with the number
+       stepping aside as each item arrives, the movement is what tells the rows
+       apart, and a line under every one of them was another horizontal edge on
+       a page that has been fighting horizontal edges. */
+    gap: clamp(var(--space-16), 2.4svh, var(--space-32));
+    /* The ground under this is opaque black now, and difference against black
+       is the identity: the blend was doing nothing but asking for a separate
+       compositing layer on every frame. */
+    mix-blend-mode: normal;
+  }
+
+  /* --- THE NUMBER ARRIVES ALONE, THEN STEPS ASIDE ------------------------
+   * Each item begins as its number, on its own, in the middle of the row. When
+   * it scrolls into view the number slides left to where it belongs and the
+   * name arrives beside it. Four of them in turn, because the reveal stagger
+   * that is already on this page delays each one after the one above.
+   *
+   * DRIVEN BY THE REVEAL THAT ALREADY EXISTS, not by a scroll listener. Each
+   * .service carries data-reveal, so reveal.js puts .is-visible on it when it
+   * comes into view and takes it off again when it leaves above - which means
+   * the move replays on the way back down for free. No new module, no second
+   * observer, nothing measured per frame.
+   *
+   * CENTRED WITHOUT KNOWING ANY WIDTH. 50cqw is half the row's content box and
+   * 50% is half the number's own, so translateX(50cqw - 50%) puts the number's
+   * centre on the row's centre whatever either of them measures. It stays a
+   * transform, so it costs the compositor and nothing else - and because a
+   * transform does not affect layout, the name's column stays exactly where it
+   * will be while the number is still sitting on top of it. */
+  .service__link {
+    container-type: inline-size;       /* what 50cqw below is half of */
+    position: relative;                /* for the wash */
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0 clamp(var(--space-16), 5vw, var(--space-32));
+    padding-block: clamp(var(--space-8), 1.6svh, var(--space-24));
+    padding-inline: var(--space-8);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  /* THE NUMBER LEADS. On desktop it is a dimmed marker beside a name of the
+     same size, which is a decoration. Here it is the thing you see first: full
+     ink, 16vw, and set on a line-height of 0.85 so the digits sit tight to
+     their own box instead of carrying a display font's generous leading into
+     a row that has to stay compact. */
+  .service__index {
+    font-size: clamp(2.75rem, 16vw, 4.5rem);
+    color: var(--color-ink);
+    font-weight: var(--weight-bold);
+    line-height: 0.85;
+    letter-spacing: var(--tracking-tight);
+    /* One column width for every number, however wide its glyphs are. */
+    font-variant-numeric: tabular-nums;
+
+    /* Waiting in the middle of the row. */
+    transform: translateX(calc(50cqw - 50%));
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .service__label {
+    font-size: clamp(0.875rem, 4.2vw, 1.25rem);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-wide);
+    color: var(--color-ink);           /* white, not a muted grey */
+
+    /* Not there yet. It comes in from the left, following the number out of
+       the middle rather than appearing where it lands. */
+    opacity: 0;
+    transform: translateX(-1.5rem);
+    transition: opacity var(--dur-slow) var(--ease-out),
+                transform var(--dur-slow) var(--ease-out);
+  }
+
+  /* Arrived. */
+  .service.is-visible .service__index { transform: translateX(0); }
+
+  .service.is-visible .service__label {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Shown without the move, for the same two cases the reveal itself covers:
+     something already on screen when the cover lifts (.is-instant), and anyone
+     who asked for less motion. Both need the END state, not the waiting one. */
+  .service.is-instant .service__index,
+  .service.is-instant .service__label { transition: none; }
+
+  /* --- WHAT A ROW DOES WHEN IT IS PRESSED --------------------------------
+   * A wash of ink wipes in from the left, the row leans after it, the label
+   * comes up to full brightness and the rule under it lights. Four changes,
+   * one gesture, and all four are compositor or paint properties: a transform,
+   * an opacity and two colours. Nothing here can cost a layout.
+   *
+   * The wash is a pseudo-element scaled from its left edge rather than a
+   * width that animates, for the same reason: scaling is free and animating a
+   * width is not. transform-origin is what makes it a wipe instead of a
+   * growth from the middle. */
+  .service__link::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: color-mix(in srgb, var(--color-ink) 7%, transparent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .service__link:active::before { transform: scaleX(1); }
+  .service__link:active { transform: translateX(var(--space-8)); }
+
+  /* --- THE HAND-OFF, WITHOUT THE TWO THINGS THAT CAN GO WRONG -------------
+   * On desktop these bands blur what is behind them as well as darkening it,
+   * and a mask fades that blur out so it does not stop dead at the element's
+   * edge. Two properties, and the pairing of them is the most fragile thing in
+   * this stylesheet: `backdrop-filter` together with `mask-image` is where
+   * engines disagree most, and iOS Safari has rendered exactly this
+   * combination with a hard edge for years. Measured symptom: the eye stayed
+   * at full brightness right up to the section's top and then stopped on a
+   * line, which is the fade not happening at all.
+   *
+   * It is also the most expensive thing on the page for the device least able
+   * to afford it - a 20px blur sampling a full-width strip of a live WebGL
+   * canvas, every frame of every scroll.
+   *
+   * So the phone keeps the part that does the actual work and drops the part
+   * that is decoration. A linear-gradient from opaque to transparent is the
+   * most portable thing in CSS: it cannot render as a hard edge anywhere. With
+   * no blur to fade out, the mask has nothing left to do either.
+   *
+   * AND THE RUNWAY GETS LONGER. --seal-reach is 20vh, which is 168px on a
+   * 844-tall phone: a short distance in which to take a bright sphere that
+   * fills the screen down to black, and a short fade over a large bright shape
+   * still reads as an edge. 34vh gives it 287px. Nothing else on a phone reads
+   * this token - no element here carries the .seals class - so the band height
+   * is all that changes. */
+  :root { --seal-reach: clamp(9rem, 34vh, 20rem); }
+
+  .about::before,
+  .about::after,
+  .panel--services::before,
+  .panel--services::after,
+  .seals::before,
+  .seals::after {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+
+  /* --- Where two black sections meet, nothing has to fade -----------------
+   * .panel--services now seals, and .about has always sealed. Between them
+   * there is opaque black on both sides, so the band below the first and the
+   * band above the second would each be a blurred black gradient drawn over
+   * black. Invisible, and two backdrop-filters for it. The join is already
+   * seamless without them.
+   *
+   * The OUTER two stay: the band above the disciplines still has the hero and
+   * the eye to fade over, and the one below the photo still hands off to
+   * Capabilities. Those are the two joins that were reading as hard cuts. */
+  .panel--services::after,
+  .about::before { content: none; }
 
   /* --- Capabilities ------------------------------------------------------
    * 180svh of section exists so the eye has runway to sink into place as you
@@ -2226,7 +2897,22 @@ a, button, [role="button"], summary, input, textarea, select {
    * to its content and the sticky stage stops being sticky. */
   .skills {
     height: auto;
-    min-height: 100svh;                /* same reason as .panel above */
+    /* --- IT NO LONGER RESERVES A WHOLE SCREEN --------------------------
+     * It used to be min-height: 100svh, borrowed from .panel, and the
+     * arithmetic of that on a phone is stark: 844 of section holding 278 of
+     * content - a title, a strip of tool names and one link. align-content
+     * centred that in the middle, which left 256px of black above the title
+     * and as much below it. The heading read as belonging to nothing, a long
+     * way from the photograph it follows.
+     *
+     * The rule .panel carries it for is about sections that would otherwise
+     * SHARE a screen with the one before. Nothing shares a screen with this
+     * one: the section above it is 200svh with a pinned stage, so it has
+     * finished leaving before this arrives.
+     *
+     * So the height is the content's, and the space around it is stated
+     * rather than being whatever a centring calculation left over. */
+    min-height: auto;
     /* The tools were bottoming out at 1.5rem — the same size as the title
        above them — because the clamp's floor was chosen so the marquee would
        not break a wide layout, not so it could be read at arm's length. */
@@ -2236,9 +2922,16 @@ a, button, [role="button"], summary, input, textarea, select {
   .skills__stage {
     position: static;
     height: auto;
-    min-height: 100svh;
-    align-content: center;             /* centred in its screen, not stuck top */
-    padding-block: clamp(var(--space-48), 8vh, var(--space-80));
+    min-height: auto;                  /* see .skills above */
+    /* Nothing left over to centre in: the box is the content's own height, so
+       this only says where the rows start. */
+    align-content: start;
+    /* THE GAP IS THIS NUMBER NOW, and that is the point of the change. It used
+       to be 67px of padding plus 256px of leftover space from centring 278px
+       of content inside 844; the distance from the photograph to the heading
+       was a residue rather than a decision. 13svh is 110px on a 844 phone and
+       scales with the screen between its two bounds. */
+    padding-block: clamp(var(--space-64), 13svh, var(--space-96));
     gap: clamp(var(--space-32), 5vh, var(--space-48));
   }
 
@@ -2288,6 +2981,17 @@ a, button, [role="button"], summary, input, textarea, select {
     overflow: hidden;
     padding-block: 0;
 
+    /* OPAQUE GROUND, EVEN THOUGH THE SECTION BEHIND IT IS ALREADY BLACK.
+       This is sticky AND it clips, which is enough for a browser to give it a
+       compositor layer of its own, and a composited layer's edges land on
+       whole DEVICE pixels while the layout box does not. Where the two
+       disagree by a fraction, nothing paints - and what shows through is the
+       fixed eye, undimmed, as a bright hairline across the screen. It is the
+       same failure --seam-overlap exists to prevent between sections.
+       Painting the ground here changes nothing that is visible and closes the
+       gap: a fraction of a pixel of black over black is not a seam. */
+    background-color: var(--color-bg);
+
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;   /* title, deck, dots */
@@ -2312,11 +3016,26 @@ a, button, [role="button"], summary, input, textarea, select {
 
   .reveal {
     position: absolute;                /* out of the row flow entirely */
-    /* Stops short of the bottom edge. The source is landscape and the frame is
-       portrait, so cover is already at maximum zoom: a SHORTER frame crops less
-       of the width, which is what makes the face read slightly smaller. It also
-       leaves the foot of the stage free for the scroll hint. */
-    inset: 0 0 9svh 0;
+    /* --- HOW BIG THE PICTURE READS, AND WHY THE BOTTOM SETS IT ------------
+     * The source is landscape (1448x1086) and the frame is portrait, so
+     * object-fit: cover is already at maximum zoom and only about a third of
+     * the picture's width is on screen. Nothing about the IMAGE can make the
+     * person smaller in that situation - but the FRAME can: a shorter frame
+     * needs less scaling to cover, so everything inside it comes down with it.
+     *
+     * 9svh at the foot became 17svh: the frame goes from 768 tall to 701 on a
+     * 844 phone, and the person reads about 9% smaller. Slight, which is what
+     * was asked for.
+     *
+     * THE SIDES ARE LEFT ALONE ON PURPOSE. Insetting them would make the
+     * picture a rectangle with its own visible left and right edges, cut
+     * straight through the middle of the image by the crop. Full-bleed, those
+     * two cuts land past the edge of the screen where nobody sees them. Only
+     * the height is negotiable here.
+     *
+     * The clamp keeps it proportional between a short phone and a tall one,
+     * and the extra room at the foot is also what the scroll hint sits in. */
+    inset: 0 0 clamp(7rem, 17svh, 11rem) 0;
     z-index: 0;
   }
 
@@ -2325,10 +3044,49 @@ a, button, [role="button"], summary, input, textarea, select {
     height: 100%;
     perspective: none;                 /* no 3D tilt without a cursor */
     overflow: hidden;
+    /* Same reason as .about__stage above: this one clips too, and its bottom
+       edge is the fractional one (9svh). */
+    background-color: var(--color-bg);
   }
 
   .reveal__canvas { display: none; }   /* the two painted statement layers */
-  .reveal__photo  { display: none; }   /* the WebGL render; the <img> stands in */
+
+  /* --- THE DEPTH RENDER, ON A PHONE TOO ---------------------------------
+   * This used to be display:none here and the flat <img> below took its
+   * place, for two reasons that have both been answered: the displacement was
+   * driven by a cursor that a phone does not have, and the canvas sized itself
+   * to the picture's landscape aspect, which in a portrait frame resolved to a
+   * letterbox stranded in the middle of the block.
+   *
+   * The shader now crops instead of fitting (see cover in photo-depth.js), so
+   * the canvas simply fills the frame - the same crop object-fit: cover was
+   * doing - and the displacement follows the scroll instead of a pointer.
+   *
+   * No width or height in pixels is written by the script in this mode; the
+   * box is stated here and only the drawing buffer follows it. */
+  .reveal__photo {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    transform: none;                   /* the desktop grow is not this layout */
+    opacity: 0;                        /* until the textures reach the GPU */
+  }
+
+  .reveal__photo.is-ready {
+    /* Recedes as the cards come forward, exactly as the <img> did. */
+    opacity: calc(1 - var(--m-cards-in) * 0.45);
+  }
+
+  /* THE <img> IS THE FLOOR, NOT THE PICTURE. It is what shows while the two
+     textures are still arriving, and what shows for ever if WebGL is refused
+     or the files never come. The canvas takes over the moment it can actually
+     draw - which is the same class photo-depth.js already sets - and not a
+     frame before it, so there is never a gap with nothing in it. */
+  .reveal__stage:has(.reveal__photo.is-ready) .reveal__still { display: none; }
 
   /* A plain <img>, because the source is landscape: at phone width the WebGL
      canvas resolved to a letterbox stranded in the middle of the block, while
@@ -2345,6 +3103,16 @@ a, button, [role="button"], summary, input, textarea, select {
     /* Recedes as the cards come forward — the phone's version of the desktop
        --p-fade, so the photo stops competing with the text on top of it. */
     opacity: calc(1 - var(--m-cards-in) * 0.45);
+
+    /* --- NO TRANSFORM HERE ANY MORE -------------------------------------
+     * This element carried a scale-and-slide that stood in for a parallax: the
+     * whole flat picture drifting sideways behind the type. It read as the
+     * picture sliding, because that is what it was - every pixel moving by the
+     * same amount, which is a pan and not depth.
+     *
+     * The depth render above does the real thing now, displacing each pixel by
+     * its own distance so the near of the face travels further than the far of
+     * it. This is the fallback underneath it and should simply hold still. */
   }
 
   /* A scrim under the type: the photo is light around the face and the
@@ -2386,6 +3154,26 @@ a, button, [role="button"], summary, input, textarea, select {
 
     opacity: calc(1 - var(--m-statement-out));
   }
+
+  /* --- AND IT ARRIVES A LINE AT A TIME -----------------------------------
+   * split-lines.js has wrapped each visual line in a .project-line mask with a
+   * .project-line__inner inside it, and pages.css already holds that pair's
+   * resting state: the inner sits at translateY(110%), below its own mask,
+   * with a transition and a per-line delay off --line. Every value that
+   * matters is therefore already stated once, next to the other headings that
+   * use it.
+   *
+   * This is the trigger and nothing else. reveal.js puts .is-visible on the
+   * heading when it crosses into view and takes it off when it leaves above,
+   * so the lines rise as you scroll down to them and are armed again for the
+   * next time.
+   *
+   * A mask that never moves and a child that only translates: no glyph is
+   * re-rasterised and nothing repaints, which is the whole reason this shape
+   * exists rather than a scale or a clip-path. */
+  /* One grid item, and normal flow inside it - which is what makes the line
+     detection above possible at all. */
+  .about__statement-line { display: block; }
 
   /* --- The column: title, deck, dots ----------------------------------- */
 
@@ -2503,7 +3291,43 @@ a, button, [role="button"], summary, input, textarea, select {
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     color: var(--color-ink-faint);
+    /* Centred for the same reason as .scroll-hint above: nowrap holds it to
+       one line today, and if the string ever grows past the screen this is
+       what stops the overflow from also being lopsided. */
+    text-align: center;
+    max-width: calc(100% - var(--page-margin) * 2);
     white-space: nowrap;
+  }
+}
+
+/* The drift above is movement nobody asked for, and some people ask for none.
+   The scale stays - taking it away would jump the framing - and only the
+   travel is removed. Written as its own combined query rather than inside the
+   phone block, because a media query cannot contain another one. */
+@media (max-width: 48rem) and (prefers-reduced-motion: reduce) {
+
+  /* The index steps aside for everyone else; for a reader who asked for no
+     motion it is simply already aside. The global reduced-motion block
+     neutralises [data-reveal] itself, but these live on its CHILDREN and would
+     have kept their own transitions and their own waiting state - so the one
+     thing that block exists to prevent would have happened here anyway. */
+  .service__index {
+    transform: none;
+    transition: none;
+  }
+
+  .service__label {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* Already up. Same reasoning as the index above: the global reduced-motion
+     rule neutralises [data-reveal], and these lines are not that - they would
+     have kept rising. */
+  [data-lines] .project-line__inner {
+    transform: none;
+    transition: none;
   }
 }
 
@@ -2721,3 +3545,233 @@ a, button, [role="button"], summary, input, textarea, select {
   .marquee:hover .marquee__track { animation-play-state: running; }
 }
 
+
+
+/* ==========================================================================
+   CURSOR  ·  the ring that replaces the pointer
+   --------------------------------------------------------------------------
+   Built and driven by js/cursor.js. Nothing here applies until that module
+   adds .has-cursor to <html> — so hiding the native pointer is conditional on
+   the replacement actually existing. A touch screen, reduced motion, or a
+   script that failed to load all keep the arrow the system gave them.
+
+   THE RING IS A DIFFERENCE BLEND, like every other hover mark on this site.
+   It has to stay legible over a black page, over a white mockup and over the
+   grey of the eye, and inverting whatever is behind it is the one treatment
+   that manages all three without a second colour.
+
+   ONLY transform AND opacity ANIMATE. The position is written as a transform
+   by script once per frame; the size and the label are transitions on the
+   ring itself, so a state change costs no layout.
+   ========================================================================== */
+/* EVERYTHING, and with !important — neither is carelessness.
+
+   A list of element types was the first attempt and it leaked: eight places
+   in this project set `cursor: pointer` of their own, and a table row, the
+   local time and the hour picker are none of a, button or [role=button]. The
+   ring is the cursor now, so the rule has to be "no native cursor anywhere"
+   rather than a list somebody has to remember to extend.
+
+   And a component's own `cursor: pointer` is frequently more specific than
+   any sane selector here — `.meta--time.is-pressable` already is — so
+   specificity cannot win this on merit. `!important` is the right instrument
+   for a global override that must beat every local one, and it is safe
+   precisely because .has-cursor only exists while the replacement is running.
+
+   TEXT FIELDS KEEP THEIR CARET. A ring says "you can press this"; an I-beam
+   says "you can type here", and they are not the same message. Losing the
+   second one in a contact form costs more than the consistency is worth. */
+.has-cursor,
+.has-cursor * { cursor: none !important; }
+
+.has-cursor :is(textarea,
+                input[type="text"],
+                input[type="email"],
+                input[type="tel"]) { cursor: text !important; }
+
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-cursor);
+  display: grid;
+  place-items: center;
+  pointer-events: none;                /* never intercepts what it points at */
+  mix-blend-mode: difference;
+  /* NO will-change. It promotes this to its own composited layer, and a
+     blended layer gets rasterised once and then reused — which is the other
+     half of why the ring looked rough. The transform is rewritten every frame
+     anyway, so the browser promotes it when it actually needs to and keeps
+     the raster honest. */
+}
+
+/* BACK TO A WHOLE PIXEL. The 1.25 was my attempt to give the rasteriser room
+   and it was the wrong diagnosis: a fractional border on a curve is drawn as
+   one solid pixel plus a quarter-covered one, which is a second, blurrier
+   edge — it made the thing softer, not cleaner. The layer was the problem,
+   not the stroke. */
+/* GONE, NOT PARKED. Leaving the window used to leave the ring wherever the
+   pointer last was; now it fades out and stops being rendered at all.
+
+   visibility, not display: display cannot be transitioned, so the fade would
+   never play. The trick is the delay, and it is asymmetric on purpose. Going
+   away, visibility flips only AFTER the fade has finished, so the ring is
+   still painted while it dims. Coming back it flips immediately — the base
+   rule carries no delay — so the ring is there for the first frame of the
+   fade in rather than appearing a fifth of a second late. */
+.cursor {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--dur-base) var(--ease-out),
+              visibility 0s;
+}
+
+.cursor.is-gone {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur-base) var(--ease-out),
+              visibility 0s var(--dur-base);
+}
+
+/* The ring. A FIXED BOX, always the size of the largest state — nothing here
+   ever resizes, so nothing here ever triggers layout. The circle inside is
+   centred in it and grows by its radius alone.
+
+   overflow: visible is not laziness: at the eye's size the stroke reaches the
+   edge of the box, and clipping it would flatten the circle against its own
+   frame. */
+.cursor__ring {
+  display: block;
+  width: var(--cursor-box, 8rem);
+  height: var(--cursor-box, 8rem);
+  margin: calc(var(--cursor-box, 8rem) / -2);
+  overflow: visible;
+}
+
+/* THE RADIUS IS THE ANIMATION. `r` is a genuine CSS property on an SVG
+   circle, so it transitions like any other — and because the box, the scale
+   and the stroke never move, every frame is a true circle drawn at one pixel
+   rather than a cached curve stretched to a new size. */
+.cursor__disc {
+  /* Not 50%. A stroke is drawn centred on its path, so its edges land at
+     centre +/- width/2 — and where dead centre puts those edges on the seam
+     between two device pixels, the line splits across both instead of filling
+     either. The offset that avoids it depends entirely on the width: none for
+     an even number of device pixels, half of one for an odd number. cursor.js
+     works it out, because only script knows the pixel ratio. */
+  cx: calc(50% + var(--cursor-nudge, 0px));
+  cy: calc(50% + var(--cursor-nudge, 0px));
+  r: var(--cursor-r, 0.75rem);
+  fill: none;
+  stroke: var(--color-ink);
+  /* The intent is --cursor-stroke in tokens.css; what is drawn is that value
+     rounded to whole device pixels by cursor.js. The fallback is the
+     unrounded token, so a script failure gives a slightly softer ring rather
+     than none at all. */
+  stroke-width: var(--cursor-stroke-px, var(--cursor-stroke, 0.1125rem));
+
+  /* Ask the rasteriser for precision over speed. `auto` lets it trade
+     geometric accuracy for throughput, which on a one-pixel curve is the only
+     thing there is to trade away. It costs nothing on a shape this small and
+     it is the one hint that genuinely applies here.
+     NOT vector-effect: non-scaling-stroke — that keeps a stroke constant
+     UNDER SCALING, and nothing scales this circle. The only transform in the
+     chain is a translate on the parent, so the effect would be inert. */
+  shape-rendering: geometricPrecision;
+  transition: r var(--dur-base) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out);
+}
+
+/* Over something pressable: bigger, so the ring reads as having caught on it. */
+.cursor.is-hot { --cursor-r: 1.5rem; }
+
+/* Over the eye, and over a project card: bigger still, and it opens into a
+   word. Same size for both — they are the same kind of invitation, one to
+   look and one to open, and giving them different radii would imply a
+   difference in weight that is not there. */
+.cursor.is-eye,
+.cursor.is-view { --cursor-r: 2.75rem; }
+
+/* A LITTLE WIDER FOR THE THINGS THE HAND CAN MOVE. The two states above are
+   over flat page: a photograph that watches you, a card that opens. These two
+   are over a scene that answers to dragging, and the extra quarter reads as
+   the ring having caught on something with give in it. */
+.cursor.is-stage,
+.cursor.is-inspect { --cursor-r: 3rem; }
+
+/* Pressed. A small collapse, on the same curve as everything else. */
+.cursor.is-down { --cursor-r: 0.5rem; }
+
+/* --- WHILE THE PAGE IS BEING DRAGGED ---------------------------------------
+ * Pressing collapses the ring to a dot (above). Dragging is a different thing
+ * and should not look like the same thing for longer: the ring opens back up
+ * and fills, so the pointer reads as HOLDING the page rather than as having
+ * clicked something. It beats .is-down because both classes are on at once
+ * during a drag and this rule comes after.
+ *
+ * Set on the root element by drag-scroll.js, not on the cursor, because the
+ * same state also has to reach the body rule below. */
+.is-dragging .cursor.is-down,
+.is-dragging .cursor { --cursor-r: 1.125rem; }
+
+.is-dragging .cursor__disc {
+  fill: var(--color-ink);
+  fill-opacity: 0.16;
+}
+
+/* Nothing under the pointer should highlight while the page is being pulled
+   past it. drag-scroll.js also clears the selection at the moment it claims
+   the gesture; this stops a new one starting for as long as it lasts. */
+.is-dragging,
+.is-dragging * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* The native fallback, and it is only ever reached as one. While the custom
+   ring is running, `.has-cursor * { cursor: none !important }` wins over this
+   and the ring itself is the signal. Where the ring is NOT running - reduced
+   motion, or the module bailing out - this is what tells the visitor the page
+   is being held. Only while it is held: a permanent grab cursor would fight
+   every link on the page. */
+.is-dragging { cursor: grabbing; }
+.cursor.is-hot.is-down { --cursor-r: 1.25rem; }
+.cursor.is-eye.is-down,
+.cursor.is-view.is-down { --cursor-r: 2.5rem; }
+.cursor.is-stage.is-down,
+.cursor.is-inspect.is-down { --cursor-r: 2.75rem; }
+
+.cursor__label {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-ink);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.cursor.is-eye .cursor__label,
+.cursor.is-view .cursor__label,
+/* Over a crew member. Same radius and same opacity as the other two open
+   states: it is the same kind of invitation, and a third size would imply a
+   difference in weight that is not there. */
+.cursor.is-inspect .cursor__label,
+.cursor.is-stage .cursor__label { opacity: 1; }
+
+/* Belt and braces: if the media query that gates the module were ever to
+   disagree with the module itself, these two make sure a screen without a
+   pointer is never left with no cursor at all. */
+@media (hover: none), (pointer: coarse) {
+  .has-cursor,
+  .has-cursor * { cursor: auto !important; }
+  .cursor { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .has-cursor,
+  .has-cursor * { cursor: auto !important; }
+  .cursor { display: none; }
+}

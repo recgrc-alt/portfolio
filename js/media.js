@@ -20,7 +20,8 @@
    No fixed sizes: every element fills the host box the caller passes in.
    ========================================================================== */
 
-import { createSlideshow } from "./slideshow.js?v=74";
+import { createSlideshow } from "./slideshow.js?v=289";
+import { applyMediaCrop } from "./media-crop.js?v=289";
 
 /* Fill `host` with the best media `project` offers, wiring the fallback
    cascade. `opts` lets each caller keep its own class names (the card and the
@@ -122,6 +123,12 @@ function videoNode(project, className, lazy, videoAttr, onFail) {
   if (project.videoHasAudio) video.dataset.hasAudio = "";
 
   video.src = project.heroVideo;
+
+  /* Footage exported with black bars baked into the frame gets enlarged past
+     them, so the card fills. A no-op for every clip that was cut correctly.
+     See media-crop.js — including why object-fit could never have fixed it. */
+  applyMediaCrop(video, project.heroVideo);
+
   video.addEventListener("error", () => { video.remove(); onFail(); }, { once: true });
   return video;
 }
@@ -135,6 +142,11 @@ export function stillImage(src, className, onFail) {
   img.className = className;
   img.src = src;
   img.alt = "";
+
+  /* A still cut from a barred clip carries the same bars. Correcting one and
+     not the other would show the card jumping the moment the video took over
+     from its poster. */
+  applyMediaCrop(img, src);
   img.loading = "lazy";
   img.decoding = "async";
   img.addEventListener("error", () => {

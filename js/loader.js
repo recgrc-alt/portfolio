@@ -20,8 +20,9 @@
    anyone stuck behind it.
    ========================================================================== */
 
-import { i18nReady } from "./i18n.js?v=74";
-import { pageReady } from "./page-ready.js?v=74";
+import { i18nReady } from "./i18n.js?v=289";
+import { pageReady } from "./page-ready.js?v=289";
+import { settleInView, replayEntrances } from "./reveal.js?v=289";
 
 const SEEN_KEY = "re.loaded";
 /* A floor, so a cached second visit does not flash the screen for 80ms and
@@ -52,6 +53,16 @@ export function initLoader(el) {
   function finish() {
     if (finished) return;
     finished = true;
+
+    /* THE LAST THING BEFORE THE COVER MOVES, and the order is the whole point.
+       Everything in the first screen is put into its final state here, while
+       the black is still over it, so what the fade uncovers is a finished
+       page. Before this the cover came away onto elements still sitting at
+       opacity 0, and the site appeared to load a second time in front of the
+       visitor. */
+    settleInView();
+    replayEntrances();
+
     el.classList.add("is-done");
     // Taken out of the DOM once the fade has played, rather than left as an
     // invisible full-screen layer over the page.
@@ -105,7 +116,7 @@ export function initLoader(el) {
    files every time the render changes and quietly letting them drift apart.
    When the video cannot play, the dots underneath still count — so the screen
    is visibly alive without the eye having to move. */
-const FALLBACK = "assets/loading-eye-still.webp";
+const FALLBACK = "assets/loading-eye-still.webp?v=289";
 
 function keepEyeAlive(root) {
   const video = root.querySelector("[data-loader-eye]");

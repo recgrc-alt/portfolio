@@ -21,6 +21,18 @@
   --color-bg:          #000000;                     /* page background — pure black */
   --color-ink:         #ffffff;                     /* primary text / UI            */
   --color-ink-dim:     rgba(255, 255, 255, 0.55);   /* secondary / meta labels      */
+
+  /* RUNNING TEXT IS NOT SECONDARY, and calling it that is how it ended up
+     grey. Every paragraph on a case study was painted --color-ink-dim, the
+     same value as a nav label or a field hint, because both are "not the
+     heading". Measured on black: 0.55 composites to rgb(140,140,140) and
+     6.27:1, which passes AA and still reads like something switched off.
+     Prose that somebody is expected to read for four paragraphs needs to be
+     nearer the top of the range, not the middle of it.
+
+     0.72 composites to rgb(184,184,184) and 10.5:1. Deliberately not pure
+     white: the headings keep that, so the hierarchy survives the change. */
+  --color-ink-body:    rgba(255, 255, 255, 0.72);   /* prose, paragraphs, leads     */
   --color-ink-faint:   rgba(255, 255, 255, 0.30);   /* hints / disabled             */
   --color-hairline:    rgba(255, 255, 255, 0.14);   /* thin separators              */
 
@@ -34,6 +46,14 @@
      the colour of the form's failure line — now it is named, so the field
      errors and the status line cannot drift apart. */
   --color-error:       #d98a7a;
+
+  /* NOT PART OF THE PALETTE, AND DELIBERATELY NOT. Everything above is a
+     colour the site wears; this one is an instrument reading, drawn over the
+     galleon when the reader asks to see the boxes the code collides against.
+     It lives here rather than inside a rule because a colour with no token is
+     a colour nobody can find again - and it is fenced off with its own comment
+     so it never drifts into the page's own voice. */
+  --color-collision:   #39ff88;
 
   /* ------------------------------------------------------------------ *
    * 2. TYPOGRAPHY                                                       *
@@ -94,6 +114,21 @@
    * 4. LAYOUT                                                           *
    * ------------------------------------------------------------------ */
   --page-margin: clamp(1.5rem, 4vw, 3rem);  /* outer gutter — 24px … 48px */
+
+  /* THE MEASURE, WRITTEN ONCE.
+     `width: min(100% - var(--page-margin) * 2, var(--work-maxw))` was typed out
+     thirteen times across pages.css. Thirteen copies is thirteen chances to
+     change twelve of them, and it had already happened: three blocks had
+     drifted to a different max-width and broke the page's spine by 465px.
+
+     The 100% inside resolves at the USE site, against each element's own
+     containing block, which is exactly right here: every one of the thirteen
+     is a top-level box inside a full-width section.
+
+     --gutter is the knob. Sections that want more air change that one value
+     rather than their own width. */
+  --gutter:  var(--page-margin);
+  --measure: min(100% - var(--gutter) * 2, var(--work-maxw));
   --page-maxw:   120rem;                    /* 1920px — cap on ultra-wide  */
 
   /* About → A Quick Look. Percentages, not pixels, so the composition holds
@@ -185,6 +220,13 @@
   --footer-icon:    clamp(2.5rem, 3.6vw, 3.25rem);
   --footer-radius:  0.5rem;
   --footer-gap:     clamp(var(--space-16), 1.8vw, var(--space-24));
+  /* How long the availability line and its invitation each hold the floor
+     before handing over. One full cycle covers BOTH, so each is shown for half
+     of it — long enough to be read twice over without the corner of the page
+     turning into something that flickers at you while you are reading
+     elsewhere. Three soft pulses fit inside each half. */
+  --footer-swap:    16s;
+
   --footer-pulse:   3.2s;        /* slower than the CCTV dot: a status, not a
                                     recording light                          */
 
@@ -194,6 +236,12 @@
      --text-xs at --leading-normal), not guessed. */
   --hud-reserve:    calc(var(--page-margin) * 2 + var(--text-xs) * var(--leading-normal));
 
+  /* The masthead's own height, derived rather than guessed: its padding on both
+     sides plus one line of the wordmark. The work page's pinned category
+     headings park exactly under it, and work-gallery.js measures the real bar
+     for its anchor jumps — this is the CSS-side answer to the same question. */
+  --masthead-height: calc(var(--page-margin) * 2 + var(--text-sm) * var(--leading-snug));
+
   /* z-index scale — keep every layer here, never invent magic numbers.
      The eye sits at -1 (behind normal-flow content) ON PURPOSE: it keeps the
      eye and the blended text in the SAME root stacking context, so
@@ -202,6 +250,7 @@
   --z-chrome:  2;  /* header / footer (always on top)  */
   --z-veil:    9;  /* the black wipe between pages     */
   --z-loader: 10;  /* the first-paint loading screen   */
+  --z-cursor: 11;  /* the ring — above everything, always */
 
   /* ------------------------------------------------------------------ *
    * 5. MOTION                                                          *
@@ -209,6 +258,33 @@
   --dur-fast:   200ms;
   --dur-base:   400ms;
   --dur-slow:   800ms;
+
+  /* ONE FRAME BECOMING ANOTHER, which is a slower thing than a hover. The
+     gallery cards cycle three views of one subject and --dur-slow suits them:
+     the frames are near-identical, so a quick hand-over reads as the same
+     picture settling. A chapter carousel is five different pictures, and at
+     800ms each change announces itself as a change. Half again as long, and
+     the set reads as one thing turning over. Named here rather than typed into
+     the rule for the reason every other duration is: slideshow.js reads this
+     value back out of the stylesheet to know when the outgoing frame may be
+     put away, so there must be exactly one of it. */
+  --dur-crossfade: 1200ms;
+
+  /* The hover zoom on a work card, and only that.
+     LONGER THAN --dur-slow, BUT NOT ON THE SYMMETRIC CURVE. The first version
+     of this was 1400ms of --ease-inout, on the reasoning that a symmetric
+     curve starts gently and gentleness was the point. It was wrong, and wrong
+     in a way that read as a fault rather than as a style: --ease-inout holds
+     near zero for its first third, so for roughly 400ms after the pointer
+     arrived nothing measurably moved. A hover that does not answer is not
+     soft, it is broken — and on a quick pass across a card the whole zoom
+     happened after the pointer had already left, which is why it seemed to
+     work only sometimes.
+     So it goes back on --ease-out, which leaves immediately and spends its
+     time arriving: the card answers on the first frame and then takes a full
+     second to settle. That is the softness that was wanted; the delay never
+     was. */
+  --dur-card-zoom: 1000ms;
 
   /* How long the black veil takes to cover the page on the way out.
      page-transition.js waits exactly this long before navigating, so the two
@@ -230,6 +306,22 @@
   /* And how long it takes to get out of the way once it is done. */
   --loader-out: 450ms;
   --dur-reveal: 1200ms;   /* hero title entrance          */
+
+  /* ONE LINE OF A HEADING BEHIND THE ONE ABOVE IT. Named here rather than
+     typed into the rule because it is the same kind of decision as the 90ms
+     between revealed siblings, and the two should be able to be compared and
+     retuned side by side. Shorter than that one on purpose: siblings are
+     separate blocks and can afford to arrive apart, whereas the lines of a
+     single sentence have to still read as one sentence arriving. */
+  --dur-line-step: 70ms;
+
+  /* THE HINT UNDER THE 3D MODEL, BREATHING. Long on purpose and by a wide
+     margin: everything else on this site that moves is answering something the
+     reader just did, and is measured in hundreds of milliseconds. This one is
+     asking, unprompted, while they read. At two and a half seconds a cycle it
+     reads as a slow breath rather than as a blinking light, which is the
+     difference between an invitation and an alarm. */
+  --dur-hint: 2600ms;
 
   --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);    /* soft settle   */
   --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
@@ -254,6 +346,37 @@
      One of the few places a device pixel is the honest unit: this exists to
      defeat rasterisation rounding, which happens in device pixels. */
   --seam-overlap: 1px;
+
+  /* RULES AND HAIRLINES. Written as a height and two alphas rather than as a
+     border, because a border cannot have rounded ends: the corner radius of a
+     one-pixel edge is not something anyone can see. Every rule on this site is
+     a BAR instead, a pseudo-element tall enough for a radius that closes both
+     caps. Thicker than a hairline by necessity, so the alpha comes down to
+     keep the same weight on the page.
+
+     These lived on .page--work, which was right when only the list used them
+     and wrong the moment the project pages did. Scoped to a page, every border
+     drawn with them elsewhere silently computed to zero. */
+  --rule-h:      0.125rem;
+  --rule-strong: rgb(255 255 255 / 0.10);
+  --rule-soft:   rgb(255 255 255 / 0.05);
+
+  /* THE CURSOR RING'S LINE, as intent rather than as pixels.
+     How heavy the ring should read, in rem so it follows the root size like
+     everything else. What this value CANNOT say is how it lands on a given
+     screen: a stylesheet has no access to the device pixel ratio, and a line
+     this thin is decided entirely by whether it fills whole device pixels or
+     spills a fraction into the next one.
+
+     So cursor.js rounds this to a whole number of device pixels before it is
+     drawn, and derives the circle's half-pixel offset from the result. Change
+     the weight here; the arithmetic that keeps it sharp is not a design
+     decision and does not belong in this file.
+
+     0.1125rem is 1.8px at the 16px root. On a 1x display that resolves to two
+     device pixels, because on a 1x display there is no such thing as 1.8 of
+     them — the choice is one or two, and one was the original serration. */
+  --cursor-stroke: 0.1125rem;
 
   /* Nav hover: how far the duplicated word slides. In `em` ON PURPOSE — it is
      relative to the font size, so the offset stays proportional to the type on

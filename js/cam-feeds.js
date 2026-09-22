@@ -26,7 +26,10 @@
 
 export function initCamFeeds(section, options = {}) {
   if (!section) return null;
-  const feeds = [...section.querySelectorAll("[data-work-video]")];
+  /* Both markers, one observer. [data-play-once] behaves differently once it
+     is on screen, but "is it on screen" is the same question for both and
+     should not be answered twice by two files. */
+  const feeds = [...section.querySelectorAll("[data-work-video], [data-play-once]")];
   if (!feeds.length) return null;
 
   // Start slightly before the wall scrolls in, so the first frame is never
@@ -48,16 +51,33 @@ export function initCamFeeds(section, options = {}) {
     if (!video.paused) video.pause();
   }
 
+  /* --- A CLIP THAT RUNS ONCE, AND RUNS AGAIN ------------------------------
+   * It is rewound on the way OUT rather than on the way in, and that ordering
+   * is the whole behaviour. Rewinding on entry would mean the reader who
+   * scrolls a little and comes back finds the animation restarting under them
+   * mid-view; rewinding on exit leaves the finished frame standing for as long
+   * as it is visible, and quietly arms it for the next approach.
+   *
+   * `loop` is already false on these, so play() simply stops at the last frame
+   * and stays there. Nothing has to pause it at the end. */
+  function leave(video) {
+    pause(video);
+    if (video.dataset.playOnce !== undefined) video.currentTime = 0;
+  }
+
   const watcher = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (entry.isIntersecting) play(entry.target);
-      else pause(entry.target);
+      else leave(entry.target);
     }
   }, { rootMargin });
 
   feeds.forEach((video) => watcher.observe(video));
 
   document.addEventListener("visibilitychange", () => {
+    /* pause, not leave: a tab coming back should carry on where it was, and a
+       once-through clip that had finished should still be showing its last
+       frame rather than its first. */
     if (document.hidden) feeds.forEach(pause);
     else feeds.forEach((video) => {
       // Only wake the ones still on screen — the observer holds the rest.
@@ -69,5 +89,6 @@ export function initCamFeeds(section, options = {}) {
   return {
     pauseAll: () => feeds.forEach(pause),
     destroy: () => watcher.disconnect(),
+    count: feeds.length,
   };
 }

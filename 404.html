@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- WHAT iOS AND ANDROID PAINT AROUND THE PAGE.
+       Safari and Chrome tint their own chrome from this. Left out, Safari
+       guesses from whatever it samples at the top of the document, and this
+       site's top is a fixed WebGL layer rather than a flat colour - so the
+       guess is not reliably the ground the page is actually made of. Stated
+       here, the bar is the same black as the site.
+
+       Hard-coded rather than --color-bg because a meta attribute cannot read a
+       custom property. It is the one place on the site where this value is
+       written twice; if --color-bg ever changes, this changes with it. -->
+  <meta name="theme-color" content="#000000" />
+
+  <title>Page not found · Rogério Edgar</title>
+  <meta name="description" content="That page does not exist. Everything Rogério Edgar has published is one link away." />
+
+  <!-- NOINDEX, AND THIS IS THE ONE PAGE ON THE SITE THAT DESERVES IT.
+       A 404 has nothing worth finding, and a search engine that indexes one
+       ends up offering it as a result for the very thing it failed to find. -->
+  <meta name="robots" content="noindex, follow" />
+
+  <!-- Same policy as every other page. A 404 is served to anybody who mistypes
+       a URL, which makes it as reachable as the front page and no less worth
+       protecting. -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'self'; object-src 'none'; form-action 'none'" />
+
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@300..700&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- --- Why this page carries its own few rules ---------------------------
+       NO SCRIPT AT ALL, deliberately. Everything else on this site is built by
+       modules, and a 404 is the one page a visitor can reach when something is
+       already wrong: a bad deploy, a half-uploaded folder, a blocked CDN. It
+       has to work when the rest does not, so it depends on nothing but two
+       stylesheets, and would still read as plain text without those.
+
+       It also means the fixed 3D eye is absent here, which is why the ground
+       is stated rather than inherited. -->
+  <style>
+    .lost {
+      min-height: 100svh;
+      display: grid;
+      align-content: center;
+      gap: var(--space-24);
+      width: var(--measure);
+      margin-inline: auto;
+      background-color: var(--color-bg);
+    }
+
+    .lost__code {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-wider);
+      text-transform: uppercase;
+      color: var(--color-ink-faint);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lost__title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: var(--weight-bold);
+      font-size: clamp(2rem, min(6vw, 10svh), 5rem);
+      line-height: var(--leading-tight);
+      letter-spacing: var(--tracking-tight);
+      color: var(--color-ink);
+      text-wrap: balance;
+      max-width: 16ch;
+    }
+
+    .lost__text {
+      margin: 0;
+      max-width: 46ch;
+      font-size: var(--text-base);
+      line-height: var(--leading-relaxed, 1.7);
+      color: var(--color-ink-body);
+    }
+
+    /* The ways on. A dead end with no exit is the actual failure; the missing
+       page is just an inconvenience. */
+    .lost__ways {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-16) var(--space-32);
+      margin-top: var(--space-16);
+      padding: 0;
+      list-style: none;
+    }
+
+    .lost__way {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--color-ink);
+      text-decoration: none;
+      padding-bottom: var(--space-4);
+      border-bottom: var(--rule-h, 1px) solid var(--color-hairline);
+      transition: border-color var(--dur-fast) var(--ease-out);
+    }
+
+    .lost__way:hover,
+    .lost__way:focus-visible { border-color: var(--color-ink); }
+  </style>
+</head>
+
+<body class="page">
+  <main class="lost">
+    <p class="lost__code">Error 404</p>
+
+    <!-- One h1, and it says what happened rather than shouting a number. -->
+    <h1 class="lost__title">This page went overboard.</h1>
+
+    <p class="lost__text">
+      There is nothing at this address. It may have been renamed, or the link
+      that brought you here may have been typed by hand. Everything published
+      is still one step away.
+    </p>
+
+    <ul class="lost__ways">
+      <li><a class="lost__way" href="/">Home</a></li>
+      <li><a class="lost__way" href="/work.html">All work</a></li>
+      <li><a class="lost__way" href="/contact.html">Contact</a></li>
+    </ul>
+  </main>
+</body>
+
+</html>

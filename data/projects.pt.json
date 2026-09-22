@@ -42,11 +42,10 @@
       "techStack": [
         "Three.js",
         "JavaScript",
+        "HTML",
+        "CSS",
         "Blender",
-        "Mixamo",
-        "Web Audio API",
-        "MediaPipe",
-        "JSON"
+        "MagicaVoxel"
       ],
       "links": [
         {
@@ -54,24 +53,298 @@
           "url": "https://student.dei.uc.pt/~recgrc/Projeto/The_Treasure_Within/"
         }
       ],
-      "mockups": [
+      "videoHasAudio": true,
+      "chapters": [
         {
-          "src": "assets/mockups/treasure-within/barco-portfolio.webp",
-          "alt": "O galeão Etherium em voxel, a nave que o jogador comanda",
-          "span": "full",
-          "caption": "Modelo voxel em MagicaVoxel"
+          "id": "concept",
+          "title": "Conceito e Visão",
+          "body": [
+            "O ponto de partida foi o Planeta do Tesouro (2002), da Disney, um filme onde um galeão de velas do século XIX navega pelo espaço à procura do tesouro do Capitão Flint. Quando o revimos, percebemos que a parte do ouro é a menos interessante de todas.",
+            "O filme é sobre o Jim Hawkins a crescer, a ganhar confiança e a encontrar uma figura paterna onde não estava à espera. Foi essa leitura que levámos até ao fim: aqui o tesouro é interno.",
+            "Construímos o Etherium, um mar de estrelas com quatro planetas, e cada planeta é uma emoção: Coragem, Felicidade, Amor e Esperança. O visitante não vê um Capitão no ecrã, o visitante é o Capitão.",
+            "O céu acompanha o relógio local do computador, por isso quem entra às três da manhã não vê o mesmo Etherium que quem entra ao meio-dia."
+          ],
+          "layout": "split",
+          "seal": true,
+          "sub": "Reinterpretar a Nostalgia Sci-Fi",
+          "carousel": {
+            "ratio": "16 / 9",
+            "sources": [
+              {
+                "src": "assets/projects/treasure-within/reference/treasure-planet-jim-rigging.webp",
+                "alt": "O Jim Hawkins no cordame de um galeão solar, a ver passar uma nebulosa. Um fotograma do Planeta do Tesouro da Disney, o filme de onde este projeto partiu."
+              },
+              {
+                "src": "assets/projects/treasure-within/reference/treasure-planet-star-map.webp",
+                "alt": "O mapa estelar holográfico verde do Planeta do Tesouro, a esfera de glifos que deu ao terminal o seu aspeto de fósforo."
+              },
+              {
+                "src": "assets/projects/treasure-within/reference/etherium-ref-night-shore.webp",
+                "alt": "Uma costa noturna sob um planeta com anéis, um dos estudos de atmosfera para a cor do Etherium."
+              },
+              {
+                "src": "assets/projects/treasure-within/reference/etherium-ref-ringed-planet.webp",
+                "alt": "Um planeta com anéis iluminado por trás, com asteroides em primeiro plano. Um estudo de como um planeta deve ler-se à distância."
+              },
+              {
+                "src": "assets/projects/treasure-within/reference/etherium-ref-fire-planets.webp",
+                "alt": "Dois planetas contra uma parede de fogo e ouro, um estudo para o lado mais quente do céu do Etherium."
+              }
+            ],
+            "credit": "Imagens de referência. Planeta do Tesouro (2002) © Disney; os restantes estudos espaciais são wallpapers de terceiros, aqui apenas como referência de atmosfera."
+          }
+        },
+        {
+          "id": "explorer",
+          "layout": "stage",
+          "seal": true,
+          "title": "Dá a volta ao Legacy",
+          "sub": "O galeão que pilotas, de todos os ângulos.",
+          "stage": {
+            "src": "assets/projects/treasure-within/models/ship.glb",
+            "caption": "rode e arrasta para interagir",
+            "label": "O galeão Legacy em voxel, modelável e rodável",
+            "weightNote": "1,2 MB · só desce quando chegas aqui",
+            "mobileNote": "O galeão em 3D, no computador",
+            "crew": [
+              {
+                "src": "assets/projects/treasure-within/models/silver.glb",
+                "label": "John Silver",
+                "title": "John Silver",
+                "sub": "2 620 vértices · rig do Mixamo",
+                "body": [
+                  "O mentor pirata ciborgue, ambíguo até ao fim. Esculpido em voxel com assimetria deliberada, para o braço mecânico se ler de qualquer ângulo sem precisar de textura a explicá-lo.",
+                  "O rigging veio do Mixamo e foi onde mais tempo se perdeu: o braço dobrava para o lado errado e foi preciso muita tentativa e erro até as animações de andar e parar ficarem suaves."
+                ]
+              },
+              {
+                "src": "assets/projects/treasure-within/models/jim.glb",
+                "label": "Jim Hawkins",
+                "title": "Jim Hawkins",
+                "sub": "1 524 vértices · o mais leve dos três",
+                "body": [
+                  "O jovem viajante, e o modelo mais leve da tripulação. Retopologizado no Blender para manter a contagem de polígonos baixa e as arestas limpas, que é o que faz a animação de caminhada correr fluida dentro do browser.",
+                  "As animações dele saíram do Mixamo com outros nomes, Idle_Pura e Walk_Pura, por isso o código procura os dois conjuntos de nomes em vez de assumir um."
+                ]
+              },
+              {
+                "src": "assets/projects/treasure-within/models/ben.glb",
+                "label": "B.E.N.",
+                "title": "B.E.N.",
+                "sub": "1 650 vértices · navegação por waypoints",
+                "body": [
+                  "O robô de navegação, com a cara feita de estruturas pixelizadas para as expressões se lerem mesmo a poucos polígonos.",
+                  "Usa a mesma navegação por pontos que os outros: escolhe um destino, calcula a rota, e passa a estado parado quando deteta outro tripulante no caminho."
+                ]
+              }
+            ],
+            "captionIcon": "cube"
+          },
+          "scene": {
+            "ship": "assets/projects/treasure-within/models/ship.glb",
+            "weightNote": "1,8 MB · só desce quando pedires",
+            "hint": "Carrega nos personagens para interagir e explorar as características",
+            "label": "O galeão Legacy com a tripulação no convés",
+            "intro": {
+              "title": "A tripulação anda sozinha",
+              "sub": "A mesma lógica que corre no jogo",
+              "body": [
+                "Isto não é uma gravação. É o código do jogo a correr aqui: cada tripulante escolhe um destino ao acaso dentro dos limites do convés, vira-se para lá, caminha, e pára quando chega ou quando outro lhe aparece à frente.",
+                "Os limites são um retângulo de 6 por 9 unidades a 2,1 de altura no espaço do barco, com dois mastros marcados como obstáculos. A deteção de colisão só trava quem vai NA DIREÇÃO do obstáculo, e não quem simplesmente passa perto, senão dois tripulantes que se cruzam param os dois para sempre.",
+                "Carrega num deles. Pára, vira-se para ti, e este texto passa a ser sobre ele."
+              ]
+            },
+            "crew": [
+              {
+                "src": "assets/projects/treasure-within/models/silver.glb",
+                "label": "John Silver",
+                "title": "John Silver",
+                "sub": "2 620 vértices · rig do Mixamo",
+                "body": [
+                  "O mentor pirata ciborgue, ambíguo até ao fim. Esculpido em voxel com assimetria deliberada, para o braço mecânico se ler de qualquer ângulo sem precisar de textura a explicá-lo.",
+                  "O rigging veio do Mixamo e foi onde mais tempo se perdeu: o braço dobrava para o lado errado e foi preciso muita tentativa e erro até as animações de andar e parar ficarem suaves."
+                ]
+              },
+              {
+                "src": "assets/projects/treasure-within/models/jim.glb",
+                "label": "Jim Hawkins",
+                "title": "Jim Hawkins",
+                "sub": "1 524 vértices · o mais leve dos três",
+                "body": [
+                  "O jovem viajante, e o modelo mais leve da tripulação. Retopologizado no Blender para manter a contagem de polígonos baixa e as arestas limpas, que é o que faz a animação de caminhada correr fluida dentro do browser.",
+                  "As animações dele saíram do Mixamo com outros nomes, Idle_Pura e Walk_Pura, por isso o código procura os dois conjuntos de nomes em vez de assumir um."
+                ]
+              },
+              {
+                "src": "assets/projects/treasure-within/models/ben.glb",
+                "label": "B.E.N.",
+                "title": "B.E.N.",
+                "sub": "1 650 vértices · navegação por waypoints",
+                "body": [
+                  "O robô de navegação, com a cara feita de estruturas pixelizadas para as expressões se lerem mesmo a poucos polígonos.",
+                  "Usa a mesma navegação por pontos que os outros: escolhe um destino, calcula a rota, e passa a estado parado quando deteta outro tripulante no caminho."
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "art",
+          "title": "Voxel e Cyber-Sailpunk",
+          "body": [
+            "Modelámos o mundo inteiro em blocos, no MagicaVoxel. É uma linguagem que se lê bem a qualquer distância: um planeta a duzentas unidades continua a ter silhueta, e um cubo custa muito pouco à GPU.",
+            "Por cima disso pusemos um terminal CRT de fósforo verde. Chamámos-lhe cyber-sailpunk: madeira, cordame e velas do século XIX a conviver com interfaces de computador e propulsores. É a lógica do próprio filme, passada para o lado do software.",
+            "O mesmo bloco serviu de regra para tudo. Navio, tripulação e planetas saíram da mesma grelha, e os planetas tiveram de ser desmontados em malhas separadas no Blender para os anéis e os satélites poderem rodar sozinhos.",
+            "A tripulação alterna entre parado e a andar, e cada um tem a sua caixa de colisão para não atravessar o casco. O Morph é a exceção: não tem esqueleto nenhum, é animado por código com senos e cossenos, e para uma bola de geleia isso funcionou melhor do que qualquer rig."
+          ],
+          "layout": "ask",
+          "question": "Porquê voxel e cyber-sailpunk?",
+          "video": {
+            "src": "assets/projects/treasure-within/video/voxel-cubes.webm",
+            "ratio": "800 / 1000",
+            "alt": "Três cubos de voxel a montarem-se num único bloco, a unidade de que todos os modelos do jogo são feitos.",
+            "playOnce": true,
+            "cutout": true
+          }
+        },
+        {
+          "id": "ship",
+          "title": "Nenhuma Bala Sai a Direito",
+          "body": [
+            "Cada bala parte com uma velocidade inicial e fica sujeita a uma aceleração constante para baixo, o que desenha um arco. Como no Etherium não há chão, a bala nunca embate em nada: continua a cair e afasta-se até desaparecer.",
+            "Mantivemos a queda infinita porque vende melhor a escala do vazio do que venderia qualquer explosão. A cada bala está agarrado um rasto que se dissipa atrás dela, e é isso que mantém a trajetória legível quando a bala já vai longe.",
+            "Os propulsores seguem a mesma lógica: o número e o tamanho das partículas escalam com a velocidade da nave, por isso ao acelerar vê-se o motor a puxar. O som acompanha, sobe e desce com a aceleração, e percebe-se a velocidade pelo ouvido antes de olhar para o ecrã."
+          ],
+          "layout": "full",
+          "seal": true,
+          "sub": "Balística, rastos e propulsores",
+          "media": {
+            "src": "assets/projects/treasure-within/renders/ship-firing.webp",
+            "srcset": "assets/projects/treasure-within/renders/ship-firing-1600.webp 1600w, assets/projects/treasure-within/renders/ship-firing.webp 2400w",
+            "sizes": "(max-width: 64rem) 92vw, 78vw",
+            "ratio": "4851 / 3545",
+            "cutout": true,
+            "alt": "O galeão do Etherium a disparar os canhões, com o rasto das balas a descrever um arco para a direita até se perder no vazio."
+          }
+        },
+        {
+          "id": "terminal",
+          "title": "Um Terminal Que Repara Em Ti",
+          "body": [
+            "Não há menus em lado nenhum. O terminal de arranque encolhe quando o jogo começa e passa a viver num canto do ecrã. É ele que te pergunta o nome e que o usa a partir daí: tudo o que noutro jogo seria um painel de pausa é aqui o terminal a falar contigo.",
+            "O tutorial vive no mesmo sítio e é implícito. O jogo bloqueia até carregares em W e acenderes os propulsores, e só depois pede que dispares os canhões. Não há ecrã de instruções: aprende-se a mexer mexendo.",
+            "É também ele que escreve o Diário de Bordo enquanto jogas. Ao fim de uma sessão existe um documento que não existia antes, diferente do de qualquer outra pessoa, e que levas contigo. É a única coisa do Etherium que continua a existir depois de fechares o separador.",
+            "Como quem visita escreve no Diário e deixa mensagens no Mural dos Viajantes, esse texto é tratado como não confiável: passa por um escapeHTML() antes de chegar ao DOM, e por um filtro de palavras por cima. É trabalho aborrecido, mas a partir do momento em que alguém escreve no ecrã de outra pessoa deixa de ser opcional."
+          ],
+          "layout": "ask",
+          "seal": true,
+          "question": "Como se ensina alguém a jogar sem um único menu?",
+          "video": {
+            "src": "assets/projects/treasure-within/video/implicit-tutorial.webm",
+            "poster": "assets/projects/treasure-within/video/implicit-tutorial-poster.webp",
+            "ratio": "16 / 9",
+            "alt": "O terminal de arranque, em fósforo verde, a escrever o diagnóstico e a pedir o nome do Capitão antes de libertar os controlos.",
+            "hasAudio": true,
+            "volume": 0.35
+          }
+        },
+        {
+          "id": "emotions",
+          "title": "Quatro Emoções, Quatro Canais de Entrada",
+          "body": [
+            "Cada planeta é uma emoção e cada emoção tem a sua mecânica. A ambição era usar todos os canais de entrada que o browser dá, o microfone, a câmara, o tempo entre teclas e a ausência de ação, para o código ler o mundo real em vez de contar cliques. Um clique é sempre o mesmo clique. Um grito não é.",
+            "Na Coragem, o microfone alimenta um analisador da Web Audio API que lê o volume em tempo real, e é preciso aguentar três segundos acima do limiar. A coragem raramente tem a ver com espadas, tem a ver com ter força para quebrar o silêncio, e quem joga em silêncio não passa daqui.",
+            "Na Felicidade abrimos a câmara e corremos o FaceLandmarker do MediaPipe à procura de um sorriso. No Amor ouve-se um batimento cardíaco e é preciso carregar em sincronia com ele: se martelares a tecla, o progresso recua, porque o amor precisa de tempo e de nos alinharmos com o ritmo de outra pessoa.",
+            "A última é a Esperança, e é não fazer nada. O terminal começa a falhar e parece ter ido abaixo, e a única forma de passar é não carregar em coisa nenhuma e esperar que estabilize sozinho. Vai contra o instinto, porque quando um ecrã falha a reação normal é carregar em tudo."
+          ],
+          "layout": "flank",
+          "seal": true,
+          "flank": {
+            "start": {
+              "src": "assets/projects/treasure-within/renders/planets-happiness-hope.webp",
+              "alt": "Dois planetas em voxel, a Esperança em verde e a Felicidade em dourado, cada um com o seu anel de blocos.",
+              "ratio": "1100 / 1472",
+              "srcset": "assets/projects/treasure-within/renders/planets-happiness-hope.webp 1100w, assets/projects/treasure-within/renders/planets-happiness-hope@2x.webp 2200w",
+              "sizes": "(max-width: 64rem) 46vw, 55vw"
+            },
+            "end": {
+              "src": "assets/projects/treasure-within/renders/planets-love-courage.webp",
+              "alt": "Dois planetas em voxel, a Coragem em azul e o Amor em rosa com um coração recortado na superfície.",
+              "ratio": "1100 / 1134",
+              "srcset": "assets/projects/treasure-within/renders/planets-love-courage.webp 1100w, assets/projects/treasure-within/renders/planets-love-courage@2x.webp 2200w",
+              "sizes": "(max-width: 64rem) 46vw, 55vw"
+            }
+          },
+          "video": {
+            "src": "assets/projects/treasure-within/video/four-emotions.webm",
+            "poster": "assets/projects/treasure-within/video/four-emotions-poster.webp",
+            "ratio": "16 / 9",
+            "alt": "Os quatro planetas, cada um desbloqueado por um sensor diferente: gritar para o microfone, sorrir para a câmara, carregar ao ritmo de um batimento, e esperar.",
+            "hasAudio": true,
+            "volume": 0.5
+          }
+        },
+        {
+          "id": "wrong",
+          "title": "Os Jogadores Parados e o Planeta Que Rebentou",
+          "body": [
+            "Nos testes, as pessoas entravam no jogo e ficavam paradas a olhar para o barco. Tínhamos construído um mundo com liberdade total de voo e ninguém percebia que podia voar. Foi daí que veio a decisão de ser o terminal a ensinar, em vez de haver instruções.",
+            "Depois veio o problema oposto. Com liberdade total, os jogadores voavam para o vazio e perdiam-se, sem referência nenhuma para voltar. O terminal passou a reparar que saíste da rota e a oferecer recalcular, com um som de sonar a apontar o caminho. Continua a ser uma oferta, não uma correção forçada.",
+            "Do lado dos modelos, os ficheiros do MagicaVoxel traziam milhares de vértices escondidos que ninguém via no visualizador. O primeiro planeta que metemos no código fez o jogo ir abaixo, e todos tiveram de ser limpos à mão no Blender, um a um.",
+            "O rigging no Mixamo foi outro pesadelo: esqueletos de borracha, o braço do Silver a dobrar ao contrário, o Jim a não aceitar o rig. E pedimos ajuda a IAs para a matemática das colisões e da câmara, o que partiu ainda mais o código e pôs o barco de pernas para o ar. O difícil tivemos de o resolver no papel."
+          ],
+          "slot": {
+            "kind": "process",
+            "ratio": "1 / 1",
+            "what": "Um esboço em papel, tal como está. Feio é a prova.",
+            "note": "fotografia direita · 1200x1200 · .webp"
+          },
+          "layout": "split"
+        },
+        {
+          "id": "handheld",
+          "title": "Isto Corre no Telemóvel",
+          "body": [
+            "Isto corre num telemóvel, e não é uma versão reduzida. Foi um desafio que pusemos a nós próprios logo no início: a mesma experiência, inteira, em vertical e em horizontal, para o projeto ter de resolver dois formatos em vez de um.",
+            "As quatro mecânicas não mudaram. O grito, o sorriso, o batimento e a espera funcionam exatamente da mesma maneira, porque o microfone e a câmara de um telemóvel são os mesmos sensores que o browser já estava a usar.",
+            "O que mudou foi o que não se vê. As partículas foram reduzidas, e o céu, que no computador roda sempre, no telemóvel só roda com o barco parado. Não vale a pena gastar processamento em movimento que ninguém repara enquanto está a navegar.",
+            "Os controlos são a única coisa desenhada de raiz. Um comando circular para conduzir o barco, e um botão de disparo que aparece quando há alguma coisa para disparar."
+          ],
+          "layout": "depth",
+          "seal": true,
+          "sub": "Vertical e horizontal, e as mesmas quatro mecânicas",
+          "depth": {
+            "src": "assets/projects/treasure-within/video/phone-on-moss.webm",
+            "map": "assets/projects/treasure-within/video/phone-on-moss-depthmap.webp",
+            "ratio": "1200 / 900",
+            "alt": "Um iPhone pousado num monte de musgo, contra fundo preto, com o terminal do jogo em fósforo verde a escrever uma entrada do Diário de Bordo."
+          }
+        },
+        {
+          "id": "credits",
+          "title": "Quem Fez o Quê",
+          "body": [
+            "Eu, Rogério Correia, fui o programador principal. Fiz toda a estrutura em Three.js, as câmaras, as luzes, o game loop, a integração do MediaPipe, a Web Audio API, a lógica de ritmo do mecanismo do Amor e a documentação do projeto. O Daniel Costa modelou ativos 3D em MagicaVoxel. Daí para a frente os modelos ficaram comigo: a limpeza no Blender, o rigging e a animação no Mixamo, o cenário construído à volta deles, e a maior parte do conceito em que o jogo assenta.",
+            "A divisão não foi neutra nem foi sorteada. Escolhemo-la porque um dos elementos do grupo estava menos à vontade com programação, e dar-lhe uma parte definida da modelação era a forma de ambos produzirmos trabalho aproveitável dentro do prazo. Dizê-lo assim é mais honesto do que fingir que foi uma repartição equilibrada de tarefas."
+          ],
+          "layout": "prose"
         }
       ],
-      "videoHasAudio": true
+      "team": [
+        {
+          "name": "Daniel Costa",
+          "role": "Assets 3D em MagicaVoxel"
+        }
+      ]
     },
     {
       "id": "the-veldt",
       "title": "The Veldt",
       "category": "interactive",
-      "year": "2026",
+      "year": "2025",
       "role": "Programação & Integração 3D Web",
       "partners": "Afonso Almeida · Tiago Gomes",
-      "contextText": "Este projeto foi desenvolvido para a cadeira de Comunicação e Multimédia, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
+      "contextText": "Este projeto foi desenvolvido para a cadeira de Projeto 3, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/the-veldt.webm",
       "heroEmbed": "",
       "poster": "assets/banners/the-veldt.webp",
@@ -83,10 +356,12 @@
       ],
       "techStack": [
         "Three.js",
+        "JavaScript",
+        "HTML",
+        "CSS",
         "Blender",
-        "WebGL",
-        "AI Voice",
-        "JavaScript"
+        "Photoshop",
+        "ElevenLabs"
       ],
       "links": [
         {
@@ -95,7 +370,102 @@
         }
       ],
       "mockups": [],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Entrar dentro do conto",
+          "sub": "Com uma tecnologia que nenhum de nós conhecia",
+          "body": [
+            "O The Veldt foi desenvolvido na cadeira de Projeto 3 e parte do conto de Ray Bradbury com o mesmo nome. Na história, uma família vive numa casa automática onde existe uma sala especial, a Nursery, que projeta nas paredes aquilo que as crianças imaginam. Neste caso, uma savana africana cheia de leões.",
+            "O objetivo era transformar o conto num objeto multimédia interativo que funcionasse no browser. Queríamos que quem visita não se limitasse a ler a história e pudesse estar dentro da Nursery, a explorá-la na primeira pessoa.",
+            "A maior dificuldade foi a tecnologia. Nenhum de nós tinha trabalhado com Three.js, por isso passámos muito tempo a pesquisar como o usar bem e sem pesar demasiado. Também tivemos de pensar desde o início se a experiência ia correr no telemóvel."
+          ],
+          "layout": "split",
+          "video": {
+            "src": "assets/projects/the-veldt/video/nursery-entrance.webm",
+            "poster": "assets/projects/the-veldt/video/nursery-entrance-poster.webp",
+            "ratio": "16 / 9",
+            "alt": "O ecrã inicial, START SIMULATION, a dar lugar à savana da nursery: areia laranja, acácias e um céu azul forte."
+          }
+        },
+        {
+          "id": "concept",
+          "title": "Uma história sem ordem",
+          "sub": "Cada objeto guarda uma parte do conto",
+          "body": [
+            "Em vez de contar a história do início ao fim, espalhámo-la pela sala. Não há objetivos nem setas a indicar o caminho. É quem entra que decide para onde vai.",
+            "Pelo espaço há seis pontos de interesse tirados do conto: os leões, o abutre, o veado, a carteira do George, o cachecol da Lydia e a porta da Nursery. Quando alguém se aproxima e interage com um deles, aparece no ecrã um excerto do livro, lido em voz alta. Como a ordem é livre, cada pessoa monta a história à sua maneira.",
+            "A interface inspira-se nos computadores dos anos 50, a década em que o conto foi escrito, com uma grelha simples e a fonte JetBrains Mono. As cores quentes vêm da savana, e a luz é sempre igual para lembrar que aquela paisagem não é real."
+          ],
+          "layout": "split",
+          "carousel": {
+            "ratio": "16 / 9",
+            "sources": [
+              {
+                "src": "assets/projects/the-veldt/renders/lions.webp",
+                "alt": "Dois leões na savana. Um está a rugir para quem joga, o outro está por cima do que resta de um cachecol na areia."
+              },
+              {
+                "src": "assets/projects/the-veldt/renders/vulture.webp",
+                "alt": "Um abutre sozinho no céu azul, com o aviso para o analisar a meio do ecrã."
+              },
+              {
+                "src": "assets/projects/the-veldt/renders/scarf.webp",
+                "alt": "O cachecol da Lydia caído no chão debaixo de uma árvore, azul escuro e com vermelho."
+              },
+              {
+                "src": "assets/projects/the-veldt/renders/wallet.webp",
+                "alt": "A carteira do George deixada na erva ao lado de duas rochas, pequena o suficiente para se passar ao lado."
+              },
+              {
+                "src": "assets/projects/the-veldt/renders/door.webp",
+                "alt": "Uma porta sozinha no meio da areia, fechada, com a sombra ao lado."
+              }
+            ]
+          }
+        },
+        {
+          "id": "process",
+          "title": "Como construímos a sala",
+          "sub": "Perto é 3D, longe é uma imagem",
+          "body": [
+            "Os modelos foram feitos em Blender, em low poly com shade smooth, e as texturas foram tratadas em Photoshop. Para a experiência ser leve no browser e no telemóvel, só modelámos em 3D o que está perto de quem explora. O horizonte e os elementos mais distantes são imagens planas.",
+            "As animações foram feitas no Blender com ossos, o que facilitou muito levá-las para o Three.js. Os leões e o abutre repetem-se em loop e, logo ao entrar, o cachecol da Lydia mexe-se para chamar a atenção e convidar a pessoa a aproximar-se. Para ninguém atravessar árvores nem sair do mapa, criámos hitboxes invisíveis nas árvores, nas rochas e nos limites da sala.",
+            "As vozes do George, da Lydia e do narrador foram geradas no ElevenLabs, com indicações de emoção em cada fala. Os sons de ambiente vêm do Freesound e foram editados para acertar com as animações. Quando uma narração começa, o som de fundo baixa para a voz se ouvir bem.",
+            "No computador anda-se com o teclado e olha-se à volta com o rato. No telemóvel há um joystick no ecrã e a experiência pede o telemóvel na horizontal."
+          ],
+          "layout": "split",
+          "video": {
+            "src": "assets/projects/the-veldt/video/blender-scene.webm",
+            "poster": "assets/projects/the-veldt/video/blender-scene-poster.webp",
+            "ratio": "16 / 9",
+            "alt": "A cena a rodar no Blender: as rochas, árvores e ervas em low poly à frente e, atrás delas, os planos pintados que fazem o horizonte."
+          }
+        },
+        {
+          "id": "result",
+          "title": "O teste final",
+          "sub": "Um QR code e a sala inteira a explorar",
+          "body": [
+            "Na apresentação final mostrámos um QR code e as pessoas na sala, incluindo os professores, experimentaram logo no telemóvel. Correu muito bem e acabou por ser um momento divertido para todos.",
+            "O projeto continua online e pode ser explorado no computador ou no telemóvel. Aconselhamos o uso de auscultadores."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Afonso Almeida"
+        },
+        {
+          "name": "Tiago Gomes"
+        }
+      ],
+      "ambience": {
+        "src": "assets/sound/the-veldt-ambience.mp3",
+        "volume": 0.8
+      }
     },
     {
       "id": "soft-capture",
@@ -104,11 +474,11 @@
       "year": "2026",
       "role": "Programação · Modelação 3D · Animação WebGL",
       "partners": "Carolina Seixas · Maria Alice Neves",
-      "contextText": "Este projeto foi desenvolvido para a cadeira de Multimédia Interativa IV, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
+      "contextText": "Este projeto foi desenvolvido para a cadeira de Projeto 4, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/soft-capture.webm",
       "heroEmbed": "",
       "poster": "assets/banners/soft-capture.webp",
-      "description": "Soft Capture é uma instalação interativa e experimento social concebido para o ecrã gigante FeedNplay do DEI da Universidade de Coimbra, uma parede de 9 ecrãs em resolução ultra-wide. O projeto explora a vigilância biométrica, o consentimento digital e os preconceitos algorítmicos: através de uma câmara, o sistema capta a imagem do visitante e recorre a uma IA para gerar um avatar 3D permanente com um perfil social e psicológico inferido. Ao tentar apagar estes dados, o utilizador descobre que é impossível.",
+      "description": "Soft Capture é uma instalação interativa e uma experiência social criada para o FeedNPlay do DEI da Universidade de Coimbra, uma parede de 9 ecrãs com 7000×1080 píxeis. O projeto explora a vigilância biométrica, o consentimento digital e os preconceitos dos algoritmos. Uma câmara capta a imagem de quem se aproxima e uma IA gera um avatar 3D com um perfil social e psicológico inventado. Quando a pessoa tenta apagar esses dados, descobre que não consegue.",
       "body": [
         "Desenvolvido na cadeira de Multimédia Interativa IV (Projeto 4, 3º ano) com a Carolina Seixas e a Maria Alice Neves, o projeto parte da reflexão sobre a facilidade com que cedemos os nossos dados. Cobri toda a vertente técnica e de interface: arquitetura de código em Three.js e JavaScript, modelação 3D, design de UI/UX no Figma, animações WebGL e integração do ecossistema.",
         "Mover uma aplicação 3D para uma parede de 9 ecrãs (7000×1080px) exigiu muitos testes no local. Foi preciso calibrar a câmara ortográfica no Three.js, os ângulos de visão e as proporções de projeção para que os avatares e a interface não distorcessem nas junções dos monitores. No Blender modelaram-se os elementos modulares dos avatares (cabelos, óculos, estruturas físicas) e criou-se uma pipeline em código que monta a personagem em tempo real via GLTFLoader e SkeletonUtils, a partir do JSON gerado pela API do Gemini 2.5-Flash.",
@@ -116,13 +486,15 @@
       ],
       "techStack": [
         "Three.js",
-        "WebGL",
+        "JavaScript",
+        "HTML",
+        "CSS",
+        "MediaPipe",
+        "Gemini",
+        "PHP",
         "Blender",
         "Mixamo",
-        "MediaPipe",
-        "Gemini 2.5-Flash",
-        "PHP",
-        "JSON"
+        "Figma"
       ],
       "links": [
         {
@@ -138,7 +510,94 @@
           "caption": "Modelos 3D"
         }
       ],
-      "videoHasAudio": false
+      "videoHasAudio": false,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Uma parede com 9 ecrãs",
+          "sub": "E nenhum rato ou teclado à vista",
+          "body": [
+            "O Soft Capture foi o projeto de grupo da cadeira de Projeto 4. O enunciado pedia um objeto multimédia interativo construído a partir de um tema atual e pensado para ser usado sem rato nem teclado.",
+            "O projeto foi pensado para o FeedNPlay do DEI, uma parede de 9 ecrãs com 7000 por 1080 píxeis. Isso trouxe um desafio próprio, porque quase nada do que funciona num ecrã normal funciona numa parede tão larga, vista à distância."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "concept",
+          "title": "O que a máquina acha que tu és",
+          "sub": "Uma fotografia chega para te julgar",
+          "body": [
+            "Partimos da facilidade com que entregamos os nossos dados. Queríamos mostrar como a aparência de alguém pode ser transformada num perfil e num julgamento, e como é difícil voltar atrás depois de aceitar entrar num sistema.",
+            "A instalação capta a imagem de quem se aproxima e usa uma IA para criar um avatar com um perfil. Além de dados visíveis, como a cor do cabelo ou a roupa, o perfil inclui suposições sobre a profissão, a classe social, o rendimento ou a orientação política. São inventadas, e é precisamente isso que expõe os preconceitos que estes sistemas carregam.",
+            "Os avatares ficam todos no mesmo mundo, à vista de quem passa. Algumas das nossas referências foram os Miis da Nintendo Wii, The Sims, Black Mirror e o Take This Lollipop."
+          ],
+          "layout": "split",
+          "carousel": {
+            "ratio": "16 / 9",
+            "sources": [
+              {
+                "src": "assets/projects/soft-capture/renders/inspection-avatar.webp",
+                "alt": "O avatar sozinho num ecrã branco por baixo da palavra INSPECTION, à espera de ser lido."
+              },
+              {
+                "src": "assets/projects/soft-capture/renders/inspection-panel.webp",
+                "alt": "A ficha completa de um avatar. Altura, peso e cabelo à esquerda; à direita uma profissão, uma classe social, um rendimento e uma posição política, cada um com uma percentagem de confiança por baixo."
+              }
+            ]
+          }
+        },
+        {
+          "id": "experience",
+          "title": "Como se entra no sistema",
+          "sub": "Levantar a mão é dizer que sim",
+          "body": [
+            "Quando não está ninguém à frente da parede, os avatares andam pelo mundo e uma mensagem convida a participar. Quem se aproxima é detetado pela câmara e o sistema pede-lhe que levante a mão acima da cabeça durante dois segundos. Ao fim desse tempo é tirada uma fotografia.",
+            "A fotografia é analisada em três passos: primeiro o aspeto físico, depois um perfil inventado e, por fim, alguns detalhes que dependem do género. Com esses dados, o avatar é vestido com a roupa, as cores e o cabelo da pessoa, e ganha uma forma de andar ligada à personalidade que a IA lhe atribuiu.",
+            "Antes de o novo avatar chegar, todos os outros olham para cima. Depois ele cai do céu e junta-se ao grupo. A partir daí, a mão serve de cursor: basta mantê-la sobre um avatar para abrir o perfil, acenar para o fechar e bater palmas para agrupar todos por temas como a política, a classe social ou o humor."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "consent",
+          "title": "O botão que não apaga",
+          "sub": "Deste consentimento, os teus dados são nossos",
+          "body": [
+            "Cada perfil tem um botão para apagar o avatar. Quando a mão passa por cima dele, o círculo de progresso nunca chega a encher e, em vez disso, aparece a mensagem «You gave consent, your data is ours».",
+            "É aqui que a ideia do projeto fica mais clara. A pessoa aceitou participar com um gesto e, quando quer voltar atrás, já não consegue. Nem nos bastidores alguma coisa desaparece. O mundo mostra os 30 avatares mais recentes e os mais antigos passam para um histórico em vez de serem apagados."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "process",
+          "title": "Levar tudo para a parede",
+          "sub": "Com 7000 píxeis de largura, nada é simples",
+          "body": [
+            "Os avatares foram modelados em Blender a partir de duas bases, uma masculina e uma feminina, com peças de roupa e texturas de pele e cabelo ajustadas para parecerem naturais. As animações de andar e de estar parado vêm do Mixamo e mudam consoante a personalidade. No código, cada avatar é clonado e vestido em tempo real a partir dos dados da IA.",
+            "Para a análise começámos com um modelo a correr localmente, através do Ollama, e mais tarde passámos para o Gemini. Cada fotografia dá origem a três pedidos, e o perfil inventado é sempre tratado como ficção, nunca como uma avaliação real da pessoa.",
+            "A parte mais difícil foi a própria parede. Com 7000 píxeis de largura, a câmara ortográfica do Three.js, a área por onde os avatares andam e o tamanho do texto tiveram de ser calculados a partir das dimensões do ecrã, e o painel do perfil foi redesenhado para não se perder no meio da imagem. Isto só se percebe a testar no local, por isso passei muito tempo no FeedNPlay.",
+            "Os gestos deram ainda mais trabalho. A distância à parede, a profundidade da sala e a luz tornavam a deteção instável. Acabei por trocar o HandLandmarker, que pesava muito e quase não detetava nada, pelos pulsos do PoseLandmarker do MediaPipe, e suavizei o cursor com um filtro e uma zona morta, porque numa parede daquele tamanho um pequeno tremor da mão vira um salto enorme. O cursor segue sempre a mão que está mais levantada."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Um mundo cheio de avatares",
+          "sub": "Até os professores quiseram entrar",
+          "body": [
+            "Na apresentação final, o Soft Capture ficou instalado no FeedNPlay. Houve momentos muito engraçados, com pessoas a criar o seu avatar, a descobrir o perfil que a IA lhes inventou e a explorar os avatares dos outros. Os professores também quiseram criar o seu e gostaram muito da experiência.",
+            "O projeto está online e pode ser aberto no browser, mas foi pensado para aquela parede e é lá que faz mais sentido."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Carolina Seixas"
+        },
+        {
+          "name": "Maria Alice Neves"
+        }
+      ]
     },
     {
       "id": "modular-city",
@@ -148,18 +607,18 @@
       "role": "Desenvolvimento Criativo & Design 3D",
       "partners": "",
       "contextText": "Este projeto foi desenvolvido para a cadeira de Computação Gráfica, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
-      "heroVideo": "videos/3dcity.mp4",
+      "heroVideo": "videos/3dcity.webm",
       "heroEmbed": "https://modular-city.onrender.com/",
       "poster": "assets/banners/modular-city.webp",
-      "description": "Modular City é uma exploração de computação gráfica e arquitetura generativa desenvolvida em código Processing/P3D. Consiste numa simulação 3D de uma metrópole inspirada em Nova Iorque, com zonas habitacionais, edifícios comerciais, parque central e lago, onde a disposição e a volumetria urbana se regeneram de forma procedimental e única a cada execução.",
+      "description": "Modular City é uma exploração de computação gráfica e arquitetura generativa desenvolvida em código Processing. É uma simulação 3D de uma cidade inspirada em Nova Iorque, com zonas habitacionais, parque central e lago, onde as alturas, as fachadas e os telhados voltam a ser gerados, sempre diferentes, a cada execução.",
       "body": [
         "Desenvolvido individualmente na cadeira de Computação Gráfica (2º ano), o trabalho focou-se no estudo de algoritmos de geração, matemática espacial e otimização de rendering em tempo real. A cena foi concetualizada de raiz para ser robusta e interativa, pensada para vir a ser integrada na web como peça de destaque do portfólio.",
         "O núcleo assenta numa grelha de 20×20 células lida a partir de ficheiros numéricos, onde cada valor define a tipologia do solo (estrada, prédio, parque ou água). A matemática generativa determina a altura dos edifícios sob uma distribuição probabilística ajustada por regras, contrariando a tendência natural de gerar valores médios repetitivos para forçar perfis urbanos visualmente dinâmicos. Regras condicionais atribuem texturas UV (feitas à mão no Photoshop) e formatos de telhado distintos consoante a altura.",
         "Para o lago, dividi as células de água por dois para adensar a malha e liguei os vértices intermédios com uma equação oscilatória combinada com Perlin Noise, criando ondulação realista. Contornei a limitação nativa do Processing no número de luzes ativas usando materiais com emission para simular pontos de luz, e modelei candeeiros na grelha aos quais o algoritmo atribui luzes reais aleatoriamente a cada geração. A cena fecha com um avião em sobrevoo, com cálculos vetoriais de translação, bank turns e desvio de colisões."
       ],
       "techStack": [
+        "p5.js",
         "Processing",
-        "3D Code",
         "Photoshop"
       ],
       "links": [
@@ -169,7 +628,95 @@
         }
       ],
       "mockups": [],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Uma cidade feita só de código",
+          "sub": "Sem modelos, só vértices",
+          "body": [
+            "O Modular City foi o projeto individual da cadeira de Computação Gráfica, no 2.º ano. O enunciado era simples: construir uma cidade em Processing, com pelo menos três tipos de objeto e um objeto composto.",
+            "A regra principal era que nada podia vir de um programa de modelação. Todos os objetos tinham de ser feitos por vértices, dentro do código, e a cidade tinha de ter movimento: alguma coisa a deslocar-se e alguma coisa a rodar. Numa segunda fase juntavam-se as texturas, duas fontes de luz e materiais com brilho."
+          ],
+          "layout": "split",
+          "media": {
+            "src": "assets/projects/modular-city/renders/city-diagonal.webp",
+            "ratio": "1600 / 762",
+            "alt": "A cidade inteira vista de cima, sobre preto: os quarteirões na grelha e o avião a passar por cima."
+          }
+        },
+        {
+          "id": "concept",
+          "title": "Uma grelha que nunca sai igual",
+          "sub": "A cidade muda a cada arranque",
+          "body": [
+            "A cidade é lida de um ficheiro de texto com uma grelha de 19 por 19. Cada número diz o que existe naquela célula: estrada, prédio, parque ou água. A planta é sempre a mesma, com a ideia das ruas direitas de Nova Iorque, mas a cidade que nasce dela nunca é igual.",
+            "Sempre que o programa arranca, cada prédio recebe uma altura nova entre 70 e 180. É a altura que decide o resto: a textura da fachada e o tipo de telhado saem de regras ligadas a essa medida, com algumas combinações reservadas aos prédios mais altos. A silhueta fica diferente de cada vez, sem nunca deixar de parecer a mesma cidade."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "process",
+          "title": "Construir tudo à mão",
+          "sub": "Do cubo ao avião, ponto por ponto",
+          "body": [
+            "Todos os sólidos são feitos à mão, ponto por ponto: cubo, prisma, pirâmide, trapézio, cilindro, cone e esfera, cada um também numa versão preparada para receber textura. A cidade inteira é feita destas peças.",
+            "As texturas dos prédios e dos telhados foram feitas por mim no Photoshop, muitas vezes a juntar e a misturar várias ilustrações até a fachada ficar credível à distância a que é vista.",
+            "O lago não usa a grelha da cidade. É uma malha própria, de 40 por 40 e bem mais densa, onde cada vértice sobe e desce com ruído de Perlin. As margens ficam fixas, senão a água descolava do terreno.",
+            "O avião foi a parte que deu mais trabalho. Além de ser modelado peça a peça, voa com vetores: aponta para onde segue, inclina-se para dentro da curva, endireita-se devagar e inverte a direção quando chega ao limite do mapa. Cheguei a fazer esboços num caderno para perceber como as peças ficavam umas em relação às outras no espaço. No lago anda também um barco, com o mesmo tipo de movimento."
+          ],
+          "layout": "split",
+          "side": "end",
+          "stack": {
+            "ratio": "16 / 9",
+            "sources": [
+              {
+                "src": "assets/projects/modular-city/process/notebook-plane-1.webp",
+                "alt": "A primeira página do caderno, a lápis: o avião esboçado como um conjunto de caixas, com os eixos desenhados ao lado."
+              },
+              {
+                "src": "assets/projects/modular-city/process/notebook-plane-2.webp",
+                "alt": "A página seguinte: as mesmas formas com cada canto identificado por uma letra, que foi como cada vértice ganhou as suas coordenadas no código."
+              }
+            ]
+          }
+        },
+        {
+          "id": "night",
+          "title": "Quando a cidade escurece",
+          "sub": "Só sete luzes a sério",
+          "body": [
+            "A cidade tem dia e noite. De noite a luz geral baixa e ficam os candeeiros, que estão modelados na grelha, junto aos prédios.",
+            "O Processing não aguenta muitas luzes reais ao mesmo tempo, por isso só sete candeeiros é que acendem mesmo. São sorteados, mas a partir de uma semente fixa, para serem sempre os mesmos e não andarem a saltar de um lado para o outro. Os restantes pontos de luz são fingidos com material emissivo, que brilha sem iluminar nada à volta.",
+            "Há ainda luzes que piscam sozinhas no topo de alguns prédios e na asa do avião, com intervalos de tempo aleatórios."
+          ],
+          "layout": "split",
+          "side": "start",
+          "video": {
+            "src": "assets/projects/modular-city/video/city-night.webm",
+            "poster": "assets/projects/modular-city/video/city-night-poster.webp",
+            "ratio": "1280 / 698",
+            "alt": "A cidade a passar de dia para noite: o céu escurece, os candeeiros acendem e as luzes começam a piscar nas torres e na asa do avião."
+          }
+        },
+        {
+          "id": "result",
+          "title": "Mais do que o enunciado pedia",
+          "sub": "E depois foi parar ao browser",
+          "body": [
+            "O professor gostou muito e a nota foi das melhores que tive. O que o surpreendeu foi a parte técnica: as ondas do lago, o movimento do avião e a forma como ele foi modelado.",
+            "Fiz bastante coisa que o enunciado não pedia, como o modo de noite, o barco, os candeeiros e uma exportação da cidade para um ficheiro 3D, além de uma captura a dar a volta à cidade.",
+            "Mais tarde quis pôr a cidade a correr no browser e, como o Processing não vai para a web, o código foi refeito em p5.js. É essa versão que se vê aqui."
+          ],
+          "layout": "split",
+          "side": "end",
+          "media": {
+            "src": "assets/projects/modular-city/renders/city-park.webp",
+            "ratio": "1600 / 762",
+            "alt": "Mais perto: o parque central com as árvores, o lago com o barco e os prédios de todas as alturas à volta."
+          }
+        }
+      ]
     },
     {
       "id": "audacia",
@@ -182,20 +729,61 @@
       "heroVideo": "videos/audacia.webm",
       "heroEmbed": "",
       "poster": "assets/banners/audacia.webp",
-      "description": "Audácia é um poster tipográfico interativo desenvolvido em Processing que explora a metáfora de encarar os medos de frente. O sistema reage em tempo real à presença do observador: à medida que o utilizador se aproxima do ecrã, a palavra ganha dimensão, ilumina-se e incendeia-se progressivamente, criando um confronto direto entre o espectador e a tipografia.",
-      "body": [
-        "Desenvolvido individualmente na cadeira de Tipografia em Meios Digitais (2º ano, 1º semestre), o projeto cruzou animação digital, visão computacional e interação em tempo real. O objetivo era uma peça esteticamente limpa e impactante, onde a complexidade técnica estivesse inteiramente ao serviço da expressão da palavra «Audácia».",
-        "A sequência de fogo foi desenhada e animada de origem no After Effects e depois exportada frame a frame como sequência de imagens, para ser manipulada por código. A interação é alimentada pela biblioteca OpenCV em Processing, através de uma câmara: o algoritmo identifica o rosto do utilizador, desenha uma bounding box em redor da face e usa a área desse retângulo como métrica de distância.",
-        "A escala do retângulo detetado é mapeada para controlar o índice exato do frame a renderizar. Como o corpo humano nunca se mantém totalmente imóvel, a dimensão da bounding box oscila ligeiramente a cada instante, e aproveitei essa variação para manter os frames em constante micro-deslocação para a frente e para trás, garantindo uma transição fluida do fogo e da tipografia, sem congelamentos nem sensação de glitch estático."
-      ],
+      "description": "Um poster interativo à volta da palavra Audácia. A palavra arde, e o fogo cresce à medida que quem está a ver se aproxima do ecrã.",
       "techStack": [
         "Processing",
         "OpenCV",
-        "Typography"
+        "After Effects"
       ],
       "links": [],
       "mockups": [],
-      "videoHasAudio": false
+      "videoHasAudio": false,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Uma palavra que não escolhi",
+          "sub": "Só tipografia, e tinha de reagir",
+          "body": [
+            "O enunciado deu uma palavra diferente a cada aluno da turma e a minha foi Audácia. O trabalho era transformá-la num poster para um ecrã grande num espaço público, ao alto, e fazer esse poster reagir a quem passasse à frente dele.",
+            "Duas regras marcaram tudo o resto. O poster só podia usar tipografia e letras, ou seja, nada de fotografias nem de ilustração. E a interação tinha de assentar na posição, na proximidade ou no movimento de quem está a ver, porque é só isso que a parede de ecrãs para que foi pensado consegue ler."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "concept",
+          "title": "Chega mais perto e arde",
+          "sub": "A distância é a interação toda",
+          "body": [
+            "Audácia é a coragem de enfrentar aquilo de que se preferia fugir, por isso fiz da própria palavra a coisa a enfrentar. Está sobre preto, pequena e quase fria, e arde mais quanto mais perto se está.",
+            "Ficar longe é seguro e o fogo apaga-se quase por completo. Aproximar-se do ecrã faz a palavra crescer e pegar fogo, até encher o enquadramento e custar a olhar de frente. É preciso mesmo dar os passos, o que faz com que a interação não seja um enfeite por cima da palavra. É a palavra a acontecer."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "process",
+          "title": "Duas respostas em vez de uma",
+          "sub": "O fogo num programa, a vida noutro",
+          "body": [
+            "O enunciado deixava escolher: ou uma simulação em vídeo feita em software de animação, ou um protótipo funcional escrito em código. Não quis escolher, porque a cada um faltava aquilo que o outro tinha, por isso fiz os dois e juntei-os.",
+            "O fogo foi animado no After Effects, onde a palavra podia ganhar a qualidade de que precisava, e depois exportado frame a frame. Foram 604 imagens para a pasta data da sketch, desde a palavra apenas a brilhar até à palavra completamente em chamas.",
+            "O Processing reproduz essa sequência, mas nunca por ordem. O OpenCV encontra a cara na câmara com um cascade frontal, e a largura da caixa que desenha à volta dela, algures entre 50 e 300 pixéis, é mapeada diretamente para o número do frame. A distância não define uma velocidade, define que frame está no ecrã, por isso andar para a frente faz a animação avançar e recuar faz voltar atrás.",
+            "A deteção de caras nunca é perfeitamente estável, e um número de frame que a seguisse tal e qual andaria aos saltos e pareceria avariado. Por isso o frame que está a ser mostrado persegue aquele em que devia estar, em vez de saltar logo para lá, fechando cinco por cento da diferença de cada vez que o ecrã é desenhado. É esse pequeno atraso que faz o fogo parecer que respira em vez de tremer.",
+            "Enquanto testava, a imagem da câmara e o retângulo verde da deteção ficavam à vista para eu perceber o que o algoritmo estava a ler. O poster em si mostra só a palavra. A câmara lê, nunca aparece."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Fazer os dois é que foi a resposta",
+          "sub": "Original, e funcionava mesmo",
+          "body": [
+            "Foi bem recebido. Os professores avaliaram bem e o que destacaram foi que a ideia era original e que funcionava, que num poster interativo são duas coisas diferentes e as duas tinham de ser verdade.",
+            "O que fez a diferença foi recusar escolher entre as duas opções. Entregar só o vídeo ficava bem e não fazia nada. Entregar só o código fazia alguma coisa e ficava tosco. Pôr a animação do After Effects dentro da sketch de Processing deu ao poster o acabamento de um e o comportamento do outro.",
+            "Ficou como protótipo, apresentado na aula em dois minutos. Foi feito para a parede de ecrãs do departamento, mas nunca chegou a estar lá."
+          ],
+          "layout": "split"
+        }
+      ]
     },
     {
       "id": "quebra-jazz-identity",
@@ -207,16 +795,9 @@
       "contextText": "Este projeto foi desenvolvido para a cadeira de Identidade Web, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "",
       "heroEmbed": "",
-      "description": "Rebranding concetual para o Quebra Jazz, um festival de música independente que decorre nas emblemáticas Escadas do Quebra-Costas, em Coimbra. A nova identidade funde a arquitetura singular da escadaria com a linguagem improvisada do jazz, resultando num sistema gráfico dinâmico, adaptável e de forte impacto visual.",
-      "body": [
-        "Desenvolvido na cadeira de Identidade Web (2º ano, 1º semestre) com o Afonso Almeida, a Laura Freire e o Tiago Gomes, o projeto partiu da análise geográfica e fotográfica do local. Numa imagem de satélite das Escadas do Quebra-Costas descobrimos uma silhueta orgânica que remetia diretamente para a forma de um saxofone.",
-        "A transposição desse achado deu origem a um ícone central construído por blocos geométricos desalinhados, que representam em simultâneo os degraus de pedra e a desconstrução rítmica do jazz. Para o logótipo textual desenhou-se uma tipografia personalizada com cortes e espaços negativos inspirados no ícone, criando coesão entre palavra e símbolo. Em aplicações institucionais, a identidade apoia-se nas fontes Gotham Black e Montserrat.",
-        "A paleta assenta no preto e no branco, pontuada por laranja (#E98002), roxo (#3B2051) e amarelo (#FFD402). O sistema estende-se a uma versão simplificada do ícone para escalas pequenas e a um manual de marca completo, aplicado em cartazes de artistas (Luís Figueiredo, Mário Laginha, Marta Pereira), sinalética, tote bags, vestuário e publicações para redes sociais."
-      ],
+      "description": "Uma nova identidade para o Quebra Jazz, o festival gratuito ao ar livre nas Escadas do Quebra-Costas, em Coimbra. A marca saiu de uma fotografia de satélite da escadaria, que vista de cima parece um saxofone.",
       "techStack": [
-        "Brand Identity",
-        "Logotype",
-        "Type Design"
+        "Illustrator"
       ],
       "links": [],
       "mockups": [
@@ -232,6 +813,95 @@
         "assets/banners/quebra-jazz-identity/parede.webp",
         "assets/banners/quebra-jazz-identity/quebrajazz.webp",
         "assets/banners/quebra-jazz-identity/saco.webp"
+      ],
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Um festival que já existe",
+          "sub": "Pegámos num a sério em vez de inventar um",
+          "body": [
+            "O enunciado era uma identidade visual completa para um cliente fictício, à escolha entre três opções. Ficámos com o festival de música e depois não inventámos nenhum.",
+            "O Quebra Jazz existe mesmo. É um festival de jazz gratuito, ao ar livre, que acontece nas Escadas do Quebra-Costas, na parte velha de Coimbra, que é a cidade onde estudamos. Assenta na ideia de que a cultura não se paga à porta, põe músicos emergentes na mesma programação que os já feitos, e acontece numa escadaria por onde as pessoas sobem todos os dias.",
+            "Escolher uma coisa real quis dizer que não podíamos decidir o que a marca representava. Ela já representava alguma coisa, e o nosso trabalho era descobrir o quê e depois olhar para isso."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "discard",
+          "title": "A primeira ideia era um cliché",
+          "sub": "E fomos nós a dizê-lo",
+          "body": [
+            "O primeiro caminho foi uma tipografia construída a partir de instrumentos, saxofones e flautas metidos dentro das letras. O segundo foi desmontar as palavras, a jogar com tipografia e fragmentos para dizer a palavra quebra.",
+            "Os dois foram deitados fora, e a razão está escrita no nosso próprio documento da altura. Os instrumentos eram a resposta óbvia, aquilo a que toda a gente que desenha para jazz vai buscar primeiro. Os fragmentos davam composições interessantes de ver e impossíveis de ler depressa ou de guardar na memória, que são as duas coisas que uma marca tem de fazer. Nenhum dos dois tinha a sofisticação que tínhamos posto no centro do trabalho.",
+            "Escrevemos isso e começámos outra vez. Perder três semanas com uma ideia sai mais barato do que levar uma má até ao fim só por ter sido a primeira."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "icon",
+          "title": "A escadaria vista de satélite",
+          "sub": "De cima, parece um saxofone",
+          "body": [
+            "A forma de voltar a entrar foi parar de desenhar jazz e olhar para o sítio. Fomos buscar as Escadas do Quebra-Costas ao Google Maps, vistas de cima, e o contorno da escadaria estava com a forma de um saxofone: um corpo comprido a curvar até uma campânula larga, onde a rua se abre.",
+            "O contorno real era irregular demais para ser um logótipo. Foi endireitado e simplificado até aguentar tamanhos pequenos, sem perder a curva que era o que fazia alguém reconhecê-lo à primeira.",
+            "Depois fomos ao sítio, e a visita mudou a marca. A escadaria deixou de ser a origem da forma e passou a ser o assunto dela: os degraus estão recortados no saxofone em espaço negativo, portanto o instrumento é feito de escadas. Pequenos desvios entre os degraus impedem-nos de ficar todos alinhados, que é como a escadaria verdadeira é e é o assunto da própria música."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "type",
+          "title": "Letras cortadas como degraus",
+          "sub": "Direitas o suficiente para ser um edifício, partidas o suficiente para ser jazz",
+          "body": [
+            "O logótipo tinha de pertencer ao ícone e não estar apenas ao lado dele, por isso os mesmos cortes foram para dentro das letras. QUEBRA JAZZ é pesado e esquadriado, e cada letra é atravessada por uma diagonal que lhe tira um pedaço.",
+            "As formas são direitas, e essa foi uma decisão tomada contra uma anterior. Primeiro experimentaram-se letras redondas, à procura de fluidez, e estavam erradas: o festival acontece numa escadaria de uma cidade de pedra, e a identidade queria a modularidade e a estrutura que vêm com isso. O que a impede de ficar rígida são os cortes, que caem em sítios diferentes em cada letra e nunca se repetem.",
+            "Os vazios lêem-se de duas maneiras, conforme o tempo que se olha para eles. Blocos empilhados e desencontrados, que é outra vez a escadaria, e linhas finas e claras a atravessar um campo escuro, que são cordas."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "colour",
+          "title": "Duas paletas, de propósito",
+          "sub": "Uma para a marca, outra para tudo o que grita na rua",
+          "body": [
+            "Não há um conjunto de cores, há dois, e têm trabalhos diferentes. A marca vive num conjunto pequeno e sossegado, para sobreviver em todo o lado: preto, branco, e um amarelo com um roxo escuro contra ele. Esse par aguenta com a coisa toda num cartaz do tamanho de um postal ou num crachá.",
+            "Tudo o que está a disputar atenção na rua fica com o segundo. Os cartazes e os ecrãs andam mais quentes, em laranjas, magenta, vermelho e um ciano, porque um programa pregado numa parede em Coimbra está a competir com outros cem papéis, e não é a marca que tem de fazer esse trabalho.",
+            "O manual final arruma tudo em cinco: preto, branco, um amarelo, um laranja e um roxo escuro, cada um com os valores escritos em quatro sistemas de cor, para aguentar tão bem a impressão como um ecrã."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "manual",
+          "title": "Um manual, não um logótipo",
+          "sub": "O que acontece depois de o desenho estar feito",
+          "body": [
+            "O que foi entregue é um manual de normas, e a maior parte dele é sobre a marca sobreviver ao contacto com o mundo, e não sobre a maneira como foi desenhada.",
+            "Duas versões do logótipo: uma em camadas, para espaços estreitos, e uma horizontal, para sítios largos como um cabeçalho. Uma regra de margem de segurança, para nada se encostar. Uma versão negativa para fundos escuros. Um tamanho mínimo declarado, que o ícone aguenta até cerca de onze milímetros por catorze. E abaixo disso, um ícone simplificado com o detalhe fino retirado, porque uma marca que vira uma nódoa ao tamanho de um selo precisa de uma versão que não vire.",
+            "O manual entrega também a marca a quem construir com ela a seguir: Gotham Black para os títulos e Montserrat para os textos, para o desenho de letra do logótipo continuar a ser especial por não lhe pedirem que faça tudo."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Ficou no papel, para já",
+          "sub": "O festival não sabe que isto existe",
+          "body": [
+            "O trabalho correu bem e os professores gostaram. Foi um exercício académico do princípio ao fim: o festival nunca o encomendou, nunca o viu, e nada disto foi posto no mundo em nome deles.",
+            "É essa a parte que eu gostava de mudar. A ideia é levá-la, um dia, a quem organiza mesmo o Quebra Jazz, e perceber o que acham de um estranho ter andado a desenhar a escadaria deles."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Afonso Almeida"
+        },
+        {
+          "name": "Laura Freire"
+        },
+        {
+          "name": "Tiago Gomes"
+        }
       ]
     },
     {
@@ -245,15 +915,12 @@
       "heroVideo": "videos/noytrall-social.webm",
       "heroEmbed": "",
       "poster": "assets/banners/noytrall.webp",
-      "description": "NOY é a mascote oficial desenvolvida para a Noytrall no âmbito do trabalho na jeKnowledge. Criada para aproximar a marca do seu público através de uma linguagem gamificada, a personagem funciona como elemento dinâmico de comunicação, trazendo leveza e uma identidade marcante às redes sociais e plataformas digitais da empresa.",
-      "body": [
-        "O processo criativo nasceu da análise do logótipo existente da Noytrall: a silhueta da marca sugeriu de imediato a forma da personagem, que comecei por rascunhar em papel. Depois do esboço, fiz a vetorização e defini a personalidade e as características da mascote em sessões de brainstorming, chegando a uma personagem vibrante, de paleta viva e chamativa.",
-        "Ao contrário de uma abordagem 3D tradicional, a personagem foi desenvolvida integralmente em 2D. A ilustração base foi articulada e animada no After Effects, com técnicas de animação frame a frame no Photoshop para acrescentar expressividade. O ecossistema visual de NOY foi pensado para reforçar a presença digital da empresa através de conteúdo dinâmico, incluindo vídeos em formato Reel desenhados à medida para as redes sociais."
-      ],
+      "description": "A Noytrall faz tecnologia de sustentabilidade para hotéis: quem lá fica vê a água e a energia que gasta e é recompensado por gastar menos. O produto estava certo e estava frio, por isso dei-lhe uma cara. A NOY saiu do próprio logótipo da empresa.",
       "techStack": [
-        "Character Design",
-        "Vector Illustration",
-        "Art Direction"
+        "Illustrator",
+        "Photoshop",
+        "After Effects",
+        "Premiere Pro"
       ],
       "links": [],
       "mockups": [],
@@ -295,7 +962,74 @@
           }
         ]
       },
-      "videoHasAudio": false
+      "videoHasAudio": false,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Um produto sem nada de que gostar",
+          "sub": "Um cliente a sério, e uma marca sem cara",
+          "body": [
+            "A Noytrall faz tecnologia de sustentabilidade para hotelaria. O produto está num hotel e mostra a quem lá fica quanta água e quanta eletricidade a estadia está a gastar, e depois recompensa-o por baixar isso. Chegou à jeKnowledge como cliente real, e foi lá que trabalhei nele.",
+            "A ideia é boa e o problema era o tom. Estava tudo correto, medido e um bocado frio: números, gráficos, um logótipo geométrico. Estava a pedir às pessoas que mudassem a maneira como se comportam num quarto de hotel, que é uma coisa pessoal de se pedir, e estava a pedi-lo com a voz de uma fatura da luz.",
+            "Por isso o trabalho não era redesenhar a marca. Era dar-lhe alguém que a dissesse."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "origin",
+          "title": "A mascote já estava dentro do logótipo",
+          "sub": "Não inventei uma personagem, encontrei uma",
+          "body": [
+            "Uma mascote pregada a uma marca parece pregada, por isso esta tinha de vir de alguma coisa que já lá estava. O ícone da Noytrall é uma marca geométrica, e a silhueta dele já tinha uma cabeça lá dentro, com uma forma a sair por um dos lados como uma cauda.",
+            "Desenhei-a primeiro em papel, depois vetorizei e trabalhei quem era a NOY, o que faz e o que nunca faz. O resultado é uma personagem que se pode pôr ao lado do logótipo sem nenhum dos dois parecer emprestado, porque um deles é feito do outro.",
+            "É simples de propósito. Uma cabeça redonda, azul-turquesa, dois olhos, uma boca, e uma cauda que a transforma num cometa quando precisa de se mexer. O simples aguenta ser impresso pequeno, estar num ecrã a um braço de distância, e ser animado por uma pessoa só."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "cast",
+          "title": "Não é um desenho, é um elenco de caras",
+          "sub": "Uma marca tem mais do que uma coisa para dizer",
+          "body": [
+            "Uma pose só teria sido um logótipo com olhos. A NOY é um conjunto: a piscar o olho, a pensar, encantada, a dormir, chocada, desiludida, de capacete, de coroa, a levantar um telemóvel, a passar a correr como um cometa, e uma de Natal para dezembro.",
+            "É esse leque que interessa. Um produto que na segunda dá os parabéns, na terça avisa e na quarta explica não consegue fazer as três coisas com a mesma expressão, e uma marca que está sempre a sorrir deixa de ser lida.",
+            "Foram desenhadas como stickers, que é também a forma como se usam: largadas dentro de um ecrã, de uma publicação ou de uma story, sem nada à volta ter de mudar de sítio."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "rewards",
+          "title": "Feita para entregar os prémios",
+          "sub": "Alguém tem de dar os parabéns",
+          "body": [
+            "O produto todo assenta em recompensar quem gasta menos, o que quer dizer que os momentos interessantes são aqueles em que ele diz que correu bem. São momentos que um número não aguenta sozinho.",
+            "É para isso que a NOY existe. A coroa e a medalha do conjunto não são enfeite, são o sistema de recompensas com uma cara em cima. Ser uma personagem a dizer que fizeste bem é uma sensação diferente de ver um número mudar de cor, e essa diferença é a razão inteira de a mascote existir."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "motion",
+          "title": "Duas dimensões, e um esqueleto",
+          "sub": "Preparada uma vez, movida muitas",
+          "body": [
+            "O caminho óbvio para uma mascote que tem de se mexer muito é o 3D. Esta ficou plana de propósito: a marca é plana, a app é plana, e uma personagem em 3D dentro de um produto em 2D parece sempre uma visita.",
+            "Por isso a ilustração vetorial levou um rig no After Effects, um conjunto de articulações e controlos feito uma vez, para o mesmo desenho poder virar-se, inclinar-se, saltar e gesticular sem ser desenhado outra vez. Onde o rig não chega para ser expressivo, os frames são feitos à mão no Photoshop e entram por cima.",
+            "É essa decisão que torna possível haver uma série de reels. Uma pessoa sozinha não anima uma personagem de raiz todas as semanas; uma pessoa sozinha com um rig anima."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "where",
+          "title": "Onde a NOY está, e onde ainda não pode estar",
+          "sub": "As redes já saíram, o produto ainda não",
+          "body": [
+            "Os reels aqui em baixo estão no ar, nas redes da própria Noytrall, e são a parte que se pode mesmo ir ver. A NOY a apresentar-se, a desejar boas festas, a baixar o ar condicionado num quarto de hotel, a passear pelo produto.",
+            "Há mais do que isso. A NOY anda também dentro da app, incluindo nos momentos em que ninguém pensa como design, como o ecrã que se olha enquanto uma coisa carrega e o que dá as boas-vindas da primeira vez.",
+            "O produto ainda não foi lançado, por isso nada disso pode aparecer aqui para já. Quando for, esta página recebe o resto."
+          ],
+          "layout": "split"
+        }
+      ]
     },
     {
       "id": "kapout-identity",
@@ -304,19 +1038,14 @@
       "year": "2025",
       "role": "Design de Marca",
       "partners": "",
-      "contextText": "Um projeto desenvolvido na jeKnowledge, a Júnior Empresa da UC, para um briefing real de cliente.",
+      "contextText": "Projeto interno na jeKnowledge, a júnior empresa da Universidade de Coimbra. Sem cliente e sem enunciado.",
       "heroVideo": "videos/kapout-identity.webm",
       "heroEmbed": "",
       "poster": "assets/banners/kapout-identity.webp",
-      "description": "Kapout é uma aplicação mobile concebida para o público jovem, desenhada para dinamizar saídas à noite através do convívio, da gamificação e do entretenimento. A plataforma combina a contagem de bebidas com um sistema interativo de desafios entre amigos, incentivando a participação e a diversão em tempo real.",
-      "body": [
-        "Desenvolvido no âmbito da jeKnowledge, o projeto exigiu a liderança integral da vertente de design. Além de toda a direção de arte e identidade visual, assumi a conceção da estrutura, do funcionamento e do design da aplicação mobile (UI/UX).",
-        "O naming e o logótipo nasceram da cultura e das expressões do público jovem: a palavra funde o trocadilho com «cap» (da expressão «no cap»), «tap out» e a ideia de «cair para o lado» num contexto de festa. Visualmente, o símbolo resulta de uma síntese geométrica que combina a silhueta icónica de um Pac-Man com a forma de uma garrafa. A paleta e o ecossistema gráfico foram otimizados para ecrãs de telemóvel, criando uma experiência fluida, intuitiva e pensada exclusivamente para o digital."
-      ],
+      "description": "A identidade do Kapout, uma app de noite. A marca parece um Pac-Man e lê-se como uma cara que bebeu a mais: um X num olho e uma garrafa onde devia estar a boca, a néon sobre preto.",
       "techStack": [
-        "Logotype",
-        "Visual Identity",
-        "Art Direction"
+        "Illustrator",
+        "After Effects"
       ],
       "links": [],
       "mockups": [
@@ -327,28 +1056,98 @@
           "caption": "Símbolo e logótipo"
         }
       ],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "beer",
+          "title": "Primeiro foi um copo de cerveja",
+          "sub": "A primeira marca foi minha, e estava errada",
+          "body": [
+            "Antes de tudo isto se chamar Kapout chamava-se Beer Kapital, e tinha um logótipo a condizer: um copo de cerveja, espuma em cima, o nome escrito dentro do copo, em laranja e castanho.",
+            "Fui eu que o desenhei, e estava bem feito e não ia dar a lado nenhum. Era um desenho da coisa e não uma ideia sobre a coisa, pertencia a uma bebida só numa altura em que o produto já tinha deixado de ser sobre uma bebida só, e o laranja com castanho são as cores de uma tasca às quatro da tarde, não de uma noite fora.",
+            "Uma coisa dessa primeira página sobreviveu a tudo o resto. Lá em baixo, a um canto, havia cinco caras redondas em magenta: de óculos escuros, a sorrir, sem expressão, meio a dormir, e uma com duas cruzes nos olhos. Ainda ninguém sabia, mas a última era o logótipo."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "search",
+          "title": "Bandeiras, luas e um olho",
+          "sub": "O que se desenhou antes de acertar",
+          "body": [
+            "A página seguinte é uma página de tentativas. Uma bandeira espetada num monte, vinda da ideia de conquistar terreno que estava nas primeiras notas do produto. Uma meia abóbada com estrelas por cima. Luas em quarto crescente, para a noite, em cerca de seis versões.",
+            "Havia também um segundo nome na corrida, o Wiseout, com uma marca construída à volta de um olho. Foi desenhado o suficiente para poder ser julgado e perdeu: explicava-se menos depressa e não tinha nada do humor de que o produto precisava.",
+            "Nenhuma das imagens de noite funcionou, e pela mesma razão que o copo de cerveja não tinha funcionado. Uma lua diz noite a toda a gente e não diz nada sobre esta coisa em concreto. O que faltava não era um símbolo para a noite, era um símbolo para aquilo que a noite faz a uma pessoa."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "mark",
+          "title": "É uma cara, não é um Pac-Man",
+          "sub": "Um X num olho e uma garrafa por boca",
+          "body": [
+            "A marca é um disco cheio com uma fatia tirada, e é por isso que toda a gente lê Pac-Man primeiro. Olha-se mais um segundo e a fatia é uma garrafa, inclinada e a despejar, e por cima dela há um X pequeno onde devia estar um olho.",
+            "Esse X é a piada toda e veio da primeira página. É a cara desmaiada do canto dos esboços da cerveja, promovida a logótipo. Portanto a marca não é uma referência a um jogo com uma garrafa lá dentro, é uma cara no fim da noite, e a garrafa é a razão de ela estar naquele estado.",
+            "E monta-se sozinha. Há uma animação de quatro segundos em que a garrafa entra e o disco se fecha à volta dela, para a piada acontecer por ordem em vez de toda ao mesmo tempo, que é a versão que vai para um ecrã."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "faces",
+          "title": "A mesma cabeça, noites diferentes",
+          "sub": "Uma marca, e um conjunto de estados à volta dela",
+          "body": [
+            "A partir do momento em que o logótipo é uma cara, pode fazer outras caras, e desenhou-se um conjunto delas: de óculos escuros, com corações nos olhos, de boca aberta em surpresa, de olhos fechados e contente, e outra vez as duas cruzes, para o estado que dá nome à app.",
+            "Partilham todas a mesma cabeça e a mesma boca aberta, por isso lêem-se como a mesma personagem e não como um saco de emojis. Dá à marca sítio para onde ir para além do logótipo: uma reação num ecrã, um sticker numa conversa, um estado que a app pode vestir quando alguma coisa acontece."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "colour",
+          "title": "Três cores no volume máximo",
+          "sub": "Magenta, roxo e ciano, e nunca sobre branco",
+          "body": [
+            "A paleta é curta e alta: um magenta, um violeta e um ciano, os três no máximo de saturação, sobre preto. Preto porque a app é usada de noite e porque estas três só cantam contra ele. Sobre branco são apenas berrantes; sobre preto estão acesas.",
+            "A marca usa-as em versões chapadas, uma cor de cada vez, e num gradiente que corre as três ao longo do disco, que é a versão que mais se parece com o interior de um bar.",
+            "E há uma propositadamente estragada. O logótipo é duplicado em ciano e magenta e desencontrado ligeiramente de si próprio, como uma impressão barata que sai fora de registo e como um ecrã visto quando os olhos já deixaram de colaborar. É a mesma ideia do X, dita com cor em vez de desenho."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "trophies",
+          "title": "Prémios recortados da mesma forma",
+          "sub": "O logótipo, transformado em coisa para ganhar",
+          "body": [
+            "A app distribui recompensas, e recompensas desenhadas como taças genéricas teriam sido uma segunda linguagem visual metida dentro da primeira. Por isso os troféus são a própria marca, em cima de bases.",
+            "Há um conjunto deles, todos ilustrados no Illustrator: o disco em cores diferentes da paleta, um com o X, um a largar faíscas, um emoldurado por uma coroa de louros, um talhado como se fosse cristal. Quem os junta está a juntar o logótipo, vezes sem conta, que é a forma mais barata que existe de uma marca ficar na memória."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "O desenho durou mais do que o produto",
+          "sub": "Nunca saiu de casa",
+          "body": [
+            "O Kapout ficou por dentro. Foi uma ideia que a jeKnowledge teve por sua conta, nunca teve cliente, e parou quando as pessoas que lá estavam fizeram falta em trabalho que contava mais. Nada disto foi alguma vez publicado com este nome.",
+            "A identidade foi acabada à mesma: a marca, as suas variantes, as caras, a paleta, os troféus e a animação. É a parte do projeto que ainda se aguenta sozinha, e é a razão de a coisa toda merecer uma página."
+          ],
+          "layout": "split"
+        }
+      ]
     },
     {
       "id": "tabuadela",
       "title": "Tabuadela Terraplanagens",
       "category": "branding",
-      "year": "2025",
+      "year": "2024",
       "role": "Design de Marca",
       "partners": "",
       "contextText": "Um projeto freelance realizado para um cliente externo.",
       "heroVideo": "",
       "heroEmbed": "",
-      "description": "Redesign completo da identidade visual da Tabuadela Terraplanagens, uma empresa de Montalegre especializada em preparação de terrenos, demolições, terraplanagens e serviços florestais. O projeto afastou a marca das soluções genéricas do setor, criando um sistema gráfico moderno, robusto e memorável que comunica precisão e versatilidade.",
-      "body": [
-        "Desenvolvido num contexto real, para um cliente externo, o processo começou pela definição das palavras-chave da empresa: maquinaria pesada, Montalegre, robustez, versatilidade e força. Depois de descartar uma exploração inicial baseada nos estereótipos do setor, por parecer demasiado cliché, procurei uma síntese concetual mais forte e contemporânea.",
-        "A solução para o logótipo funde as iniciais «T» (Tabuadela e Terraplanagens) com o dinamismo do braço de uma escavadora. O espaço negativo na secção inferior do símbolo desenha a silhueta de um pinheiro, ligando a marca à paisagem montanhosa de Montalegre e à atividade florestal. As formas afiadas e as diagonais pronunciadas transmitem impacto e estabilidade industrial.",
-        "A paleta combina o preto (durabilidade, terra, peso do equipamento) com o amarelo/laranja industrial (#F9B233), comum na maquinaria pesada e na sinalética de obra. O ecossistema estendeu-se a padrões geométricos, tipografia institucional, papelaria, cartões de visita e mockups para a decoração da frota de veículos."
-      ],
+      "description": "Uma identidade para uma empresa de terraplanagens em Montalegre. A marca é um T que acaba num balde de escavadora, e os pinheiros da serra onde ela trabalha estão guardados nos vazios entre as formas pretas.",
       "techStack": [
-        "Logotype",
-        "Visual Identity",
-        "Art Direction"
+        "Illustrator",
+        "Desenho Manual"
       ],
       "links": [],
       "mockups": [
@@ -364,6 +1163,84 @@
         "assets/banners/tabuadela/impressao-em-papel.webp",
         "assets/banners/tabuadela/mailer_box.webp",
         "assets/banners/tabuadela/tabuadela.webp"
+      ],
+      "chapters": [
+        {
+          "id": "client",
+          "title": "Um cliente a sério, com máquinas a sério",
+          "sub": "Terraplanagens, demolições e floresta, em Montalegre",
+          "body": [
+            "A Tabuadela Terraplanagens prepara o chão em que os outros constroem. Preparação de terrenos, demolições, movimentação de terras, paredes de contenção, drenagens, calcetamentos, e também trabalho florestal. A sede é em Montalegre, na serra, e a empresa existe desde 2015.",
+            "O que pediram não era só um logótipo. Queriam que a marca parecesse moderna e profissional, que dissesse versatilidade sem ter de listar dezasseis serviços, que merecesse confiança tanto a uma família que está a construir uma casa como a uma empresa que contrata um empreiteiro, e que aguentasse ir para uma carrinha, um polo, uma lona de obra e um site sem se desfazer.",
+            "Por isso a coisa toda foi desenhada contra os sítios onde ia acabar, e não contra o aspeto que teria num diapositivo."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "cliche",
+          "title": "O primeiro caminho era o do costume",
+          "sub": "E o costume é o problema deste setor",
+          "body": [
+            "A primeira tentativa seguiu as referências que o setor já tem, e ficou exatamente igual a elas: datada, segura, a mesma coisa que toda a gente. É precisamente disso que a empresa se queria afastar, por isso foi para o lixo.",
+            "O segundo desvio foi o erro contrário. Tentar representar a variedade de serviços de uma vez deu marcas com setas, árvores e ferramentas empilhadas umas nas outras, e cada uma dizia menos do que a anterior. Tentar dizer tudo é a maneira de uma marca acabar sem dizer nada.",
+            "A saída foi voltar às cinco palavras escritas no início e parar de somar: máquina, força, Montalegre, robustez, versatilidade."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "mark",
+          "title": "Um balde, um braço e um T",
+          "sub": "Parte da máquina, e não a máquina",
+          "body": [
+            "A máquina tinha de lá estar, mas um desenho de uma escavadora inteira é uma ilustração e não uma marca. Por isso ficaram só as duas partes que toda a gente reconhece: o braço e o balde.",
+            "Simplificadas o suficiente, essas duas formas transformam-se num T, que é a inicial da empresa duas vezes, Tabuadela e Terraplanagens. A vertical da letra é o braço, o pé dela é o balde, e o balde mantém os dentes numa fila de serrilhas ao longo de um dos lados. Uma cunha laranja por trás é a lança, e um meio círculo em cima é onde fica a cabina.",
+            "Funciona como letra para quem nunca olha duas vezes e como máquina para quem olha, que é o trabalho inteiro de um monograma num ramo destes."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "pines",
+          "title": "Os pinheiros estão no que falta",
+          "sub": "Montalegre, guardada nos vazios",
+          "body": [
+            "A empresa não é de uma zona industrial qualquer, é de uma serra em concreto, e a identidade tinha de carregar isso sem ter uma paisagem lá dentro.",
+            "Está no espaço negativo. Os vazios recortados entre as formas pretas lêem-se como pinheiros, os que cobrem os montes onde a empresa trabalha e a parte florestal do negócio de que também vive. Ninguém é obrigado a reparar, e a marca não perde nada se não repararem.",
+            "Tudo à volta é afiado de propósito. Diagonais duras, contraste alto, nenhum canto redondo em lado nenhum. O trabalho é pesado e a marca não tem de pedir desculpa por isso."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "colour",
+          "title": "Preto e laranja, como as máquinas",
+          "sub": "As cores que já estão numa obra",
+          "body": [
+            "A paleta são duas cores: preto, e um laranja em #F9B233. Nenhuma foi escolhida de um painel de inspiração. São as cores que já estão no equipamento: o preto pelo peso e pela durabilidade das próprias máquinas, o laranja pelas partes que existem para ser vistas, a sinalização de segurança e visibilidade em qualquer coisa que trabalhe ao pé de pessoas.",
+            "A tipografia segue a mesma lógica. Uma sem serifas pesada e condensada, esquadriada e estável, e o nome dividido em dois pela cor, para TABUADELA se ler primeiro em laranja e TERRAPLANAGENS ficar por baixo em preto, que é a ordem por que alguém diz o nome da empresa em voz alta.",
+            "O T do logótipo leva as mesmas serrilhas do balde, para o logótipo e o ícone pertencerem um ao outro mesmo quando estão separados."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "system",
+          "title": "Feita para ir na lateral de uma carrinha",
+          "sub": "Todas as versões de que o trabalho precisa mesmo",
+          "body": [
+            "Uma marca para uma empresa destas vive na rua, em andamento, com mau tempo e vista do ângulo errado. Por isso foi entregue como um conjunto e não como uma imagem.",
+            "Uma versão horizontal e uma vertical, para caber na porta de uma carrinha e num capacete. Versões a cores e a branco, para o que quer que seja onde for impressa. O ícone sozinho, para tudo o que é pequeno demais para levar o nome. Uma regra de margem de segurança. E um padrão, a preto, a branco e a cores, para as superfícies que é preciso preencher e não assinar.",
+            "Foi mostrada nos sítios onde ia parar: uma lona num prédio em construção, um contentor, um polo de trabalho, um boné, cartões e papel de carta, e a carrinha."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Já anda por aí",
+          "sub": "A melhor coisa que pode acontecer a uma marca é ser usada",
+          "body": [
+            "O cliente levou-a, e há pouco tempo começou a pô-la a trabalhar: está a aparecer na publicidade deles e nas coisas que lhes pertencem.",
+            "É este o fim que me interessa neste. Todos os outros projetos deste site foram avaliados, apresentados ou arrumados. Este está numa carrinha em Montalegre, a fazer aquilo para que foi desenhado."
+          ],
+          "layout": "split"
+        }
       ]
     },
     {
@@ -377,20 +1254,88 @@
       "heroVideo": "videos/cuidados-paliativos.webm",
       "heroEmbed": "",
       "poster": "assets/banners/cuidados-paliativos.webp",
-      "description": "Identidade visual para o Serviço de Cuidados Paliativos do Instituto Português de Oncologia de Coimbra (IPO Coimbra). O projeto redefiniu a imagem de um serviço clínico delicado, construindo uma linguagem profundamente humana, acolhedora e empática, que transmite serenidade, compaixão e dignidade a doentes e famílias.",
-      "body": [
-        "Elaborado em parceria com a Carolina Seixas, num contexto de projeto real, o trabalho partiu do estudo do papel dos cuidados paliativos e das palavras que regem a equipa médica: compaixão, respeito e dignidade. A borboleta, símbolo pedido pelo cliente por representar a transformação e o ciclo da vida, serviu de ponto de partida.",
-        "O ícone foi simplificado e adaptado, combinando de forma fluida a silhueta da borboleta com a forma orgânica de um coração. A sobreposição e a transparência dos elementos traduzem a ligação contínua entre utente, família e profissionais de saúde. Para a tipografia escolheu-se a Rubik Light, cujas formas arredondadas transmitem suavidade e proximidade.",
-        "A paleta foi pensada para trazer calma e serenidade: tons suaves de rosa, azul-bebé e roxo que se entrelaçam em transparência. O sistema inclui variações vertical e simplificada do logótipo, um padrão visual para suporte institucional e a aplicação da marca em materiais de identificação, cartões e documentação do serviço."
-      ],
+      "description": "Uma identidade visual para o serviço de cuidados paliativos do IPO de Coimbra. A marca é uma borboleta que também é um coração, desenhada em três cores transparentes para que as sobreposições criem outras.",
       "techStack": [
-        "Logotype",
-        "Visual Identity",
-        "Pattern Design"
+        "Illustrator",
+        "After Effects",
+        "Premiere Pro"
       ],
       "links": [],
       "mockups": [],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "context",
+          "title": "Três palavras, dadas pela equipa",
+          "sub": "Compaixão, respeito, dignidade",
+          "body": [
+            "O serviço de cuidados paliativos do IPO de Coimbra acompanha pessoas com doença oncológica incurável, e as suas famílias e cuidadores. O trabalho é prevenir e aliviar o sofrimento, o físico e também o psicológico e o espiritual, e apoiar as famílias no luto depois.",
+            "Não é um serviço que precise de ser vendido, por isso isto nunca foi uma marca no sentido comercial. Precisava de ser reconhecível dentro de um hospital, de se parecer com as pessoas que lá trabalham, e de não se parecer com tudo o resto que há num hospital.",
+            "A equipa deu-nos três palavras para construir em cima: compaixão, respeito e dignidade. Tudo na identidade foi medido contra essas três, a par de pesquisa sobre como os cuidados paliativos funcionam mesmo, que é uma coisa diferente de como se imagina que funcionam."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "butterfly",
+          "title": "Uma borboleta que também é um coração",
+          "sub": "Dois símbolos dobrados na mesma forma",
+          "body": [
+            "A borboleta veio do cliente. É um símbolo que a área já usa, para o ciclo da vida e para a transformação, e eles queriam-no. Desenhar apenas uma borboleta seria fazer o que foi pedido e mais nada.",
+            "Por isso o ícone leva uma segunda coisa dentro da primeira. As asas estão desenhadas de forma a que a figura inteira se leia também como um coração, pela compaixão e pelo cuidado. Nenhuma das duas leituras tem de ganhar; a maior parte das pessoas vê uma delas e a outra fica lá para quando olharem outra vez.",
+            "É desenhado com curvas suaves e não tem nada afiado em lado nenhum, porque a forma vai ser vista por pessoas a atravessar a pior semana das suas vidas.",
+            "Ao lado dele, Rubik Light. Um tipo de letra redondo, aberto e discreto, escolhido exatamente pela mesma razão por que as curvas são curvas."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "overlap",
+          "title": "A transparência é o argumento",
+          "sub": "Onde duas formas se cruzam nasce uma terceira cor",
+          "body": [
+            "As partes da marca não são chapadas. São transparentes e ficam umas por cima das outras, e onde se cruzam aparece uma cor nova que não pertence a nenhuma delas.",
+            "É essa a ideia, e não um efeito. Os cuidados paliativos são três partes separadas, o doente, a família e os profissionais, e o cuidado acontece nos sítios onde elas se sobrepõem. A marca diz isso sem precisar de um diagrama.",
+            "A paleta está construída para isso funcionar. São três cores a carregar a identidade, um rosa, um azul e um lilás, e cada uma existe duas vezes: uma forte e usada a trinta por cento de opacidade, que é o que permite as sobreposições, e outra como tom claro e chapado para os sítios onde nada se cruza com nada."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "pattern",
+          "title": "Uma asa, repetida",
+          "sub": "Um padrão que tinha de funcionar também a preto e branco",
+          "body": [
+            "Tirou-se um traço da asa da borboleta e pôs-se numa grelha, a mudar de direção linha a linha, para a identidade ter uma superfície e não só uma marca. Preenche a capa de uma pasta, uma fita de pescoço, as costas de um cartão, tudo aquilo onde o logótipo seria a mais.",
+            "O manual mostra como é construído, sobre a grelha, para quem o refizer mais tarde chegar aos mesmos espaçamentos.",
+            "E existe a preto e branco, além de a cores. Num hospital isso não é uma formalidade: muito do que um serviço destes imprime sai de uma fotocopiadora, e um padrão que só resultasse em três cores transparentes teria desaparecido em silêncio de metade das coisas para que foi feito."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "manual",
+          "title": "Entregue como manual",
+          "sub": "Regras, para aguentar sem nós",
+          "body": [
+            "O que foi entregue é um manual de identidade, porque quem ia usar isto são enfermeiros, médicos e pessoal administrativo, não designers, e a identidade tinha de continuar a funcionar depois de nós já não estarmos na sala.",
+            "Tem um logótipo principal, um secundário e um vertical, para caber num cabeçalho largo e num crachá estreito. Define a margem de segurança geometricamente, em múltiplos de uma medida tirada da própria marca, e não como um número que deixa de fazer sentido quando alguma coisa é redimensionada. Tem versões a preto e branco, a paleta escrita em quatro sistemas de cor, o logótipo mostrado contra cada cor da sua própria paleta, e o padrão nas três formas.",
+            "A marca foi também animada, para o serviço ter uma coisa que se mexe para um ecrã. E foi mostrada nos sítios onde ia viver: um cartão de identificação, uma fita de pescoço, uma caneca, um cartão de visita."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Adoraram, e nunca foi usada",
+          "sub": "O fim honesto",
+          "body": [
+            "O cliente gostou do conceito e disse-o. Nunca chegou a ser aplicada.",
+            "Não há uma versão melhor desta frase. O trabalho para instituições pára por razões que não têm nada a ver com o trabalho, e este parou. O manual está acabado, o sistema aguenta-se de pé, e o serviço continua com o aspeto que tinha antes."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Carolina Seixas"
+        }
+      ]
     },
     {
       "id": "quebra-jazz-website",
@@ -398,17 +1343,11 @@
       "category": "uiux",
       "year": "2024",
       "role": "UI/UX & Desenvolvimento Front-end",
-      "partners": "Afonso Almeida · Laura Freire · Tiago Gomes",
+      "partners": "Afonso Almeida",
       "contextText": "Este projeto foi desenvolvido para a cadeira de Identidade Web, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/quebra-jazz.webm",
       "heroEmbed": "",
-      "description": "O website do Quebra Jazz é uma plataforma digital concetual para o festival de jazz das emblemáticas Escadas do Quebra-Costas, no coração histórico de Coimbra. Traduz a identidade visual vibrante da marca para a web, com uma experiência interativa, responsiva e focada na cultura, na programação e na vertente comercial do festival.",
-      "body": [
-        "Desenvolvido em equipa com o Afonso Almeida na cadeira de Projeto 1: Identidade Web (Licenciatura em Design e Multimédia da Universidade de Coimbra), o trabalho focou-se em levar uma identidade gráfica já construída para um sistema digital completo, responsivo e funcional.",
-        "A linguagem visual bebeu diretamente da marca do festival: o conceito geométrico do logótipo (moldado a partir da silhueta em forma de saxofone obtida por satélite das próprias escadas) e a estrutura em blocos e espaço negativo que alude às cordas, teclas e degraus do local. Adotou-se uma estética de alto contraste a preto e branco, pontuada por um acento amarelo vibrante, para garantir legibilidade e uma atmosfera urbana e sofisticada.",
-        "Fiquei encarregue do design geral da interface (UI/UX) no Figma e da implementação da maioria dos componentes e áreas. A plataforma organiza-se em quatro páginas com header e footer unificados: a Homepage, com cards do alinhamento de artistas e um mapa de tema escuro; a Loja, com navegação sticky por categorias, grelha de produtos e banner de scroll automático; a Inscrição de bandas, com fundo dinâmico em crossfading; e os Contactos.",
-        "No front-end, o ecossistema foi programado de raiz apenas com HTML, CSS e JavaScript puros, sem frameworks. Um dos maiores desafios foi a animação do banner inicial da homepage, peça em que se destaca o trabalho do Afonso Almeida. O resultado é uma navegação leve, personalizada e totalmente adaptada a mobile, tablet e desktop."
-      ],
+      "description": "Um site para o Quebra Jazz, o festival de jazz gratuito ao ar livre nas Escadas do Quebra-Costas, em Coimbra. Quatro páginas, uma loja com carrinho a funcionar e uma capa onde o nome do festival nunca chega a ficar montado.",
       "techStack": [
         "HTML",
         "CSS",
@@ -425,7 +1364,81 @@
         "assets/banners/quebra-jazz-website/img1.webp",
         "assets/banners/quebra-jazz-website/img2.webp"
       ],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "O enunciado pedia um wireframe",
+          "sub": "Fizemos o site a sério",
+          "body": [
+            "O trabalho era uma identidade visual completa para um cliente fictício, à escolha entre três opções. Ficámos com o festival de música e, em vez de inventar um, escolhemos um que já conhecíamos: o Quebra Jazz, o festival de jazz gratuito ao ar livre que acontece nas Escadas do Quebra-Costas, na parte velha de Coimbra, a cidade onde estudamos.",
+            "Para o website, o enunciado pedia um wireframe ou um protótipo em Figma ou coisa parecida, com as páginas principais. Saltámos esse passo. Não houve protótipo nem mockup: o desenho foi feito diretamente no browser e o que foi entregue foram quatro páginas a funcionar, em HTML, CSS e JavaScript."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "concept",
+          "title": "Uma capa que nunca assenta",
+          "sub": "O nome nunca está montado",
+          "body": [
+            "À esquerda, QUEBRA desce a página uma letra por linha, empilhada como os degraus que dão nome ao festival. Por cima andam seis pedaços do nome, A, EBRA, BRA, RA, ZZ e JAZZ, cada um a deslizar de um lado ao outro no seu próprio tempo: cinco segundos, seis, seis, quatro, três e três e meio.",
+            "Estes números não têm um compasso comum, por isso as peças cruzam-se e afastam-se sem nunca voltarem à mesma posição. O nome do festival nunca chega a estar montado, que é ao mesmo tempo o que o nome quer dizer e a forma como se toca a música que lhe dá o resto do nome.",
+            "Encostadas à margem direita estão dez teclas de piano. Cada uma sai para fora quando o rato lhe toca e volta a entrar quando ele sai. O cabeçalho não é uma coisa que se veja, é uma coisa que se toca.",
+            "Abaixo dos 720 pixéis tudo isto é arrumado e fica um wordmark simples no lugar. As peças precisam de largura para andar e um telemóvel não a tem, e uma animação espremida num espaço que não a serve é pior do que não haver animação nenhuma."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "process",
+          "title": "Quatro páginas, uma só base",
+          "sub": "E uma fonte gratuita a fazer o trabalho de uma paga",
+          "body": [
+            "O site é uma página inicial, uma loja, uma página de inscrição e uma de contactos. Todas carregam primeiro a mesma folha de estilos base, onde as cores, a tipografia e os espaçamentos vivem como variáveis, para que a loja e o formulário não se fossem afastando um do outro à medida que cresciam.",
+            "Tudo o que aparece com o scroll está marcado no HTML e é vigiado por um único observador, para haver uma resposta à pergunta de quando é que um bloco pode entrar, e não uma resposta por página. Em quem tem o movimento reduzido ligado no browser, isto para.",
+            "O manual de normas pede Gotham Black nos títulos. A Gotham é uma família paga e não a tínhamos, por isso o site compõe os títulos em Anton, com Montserrat por baixo: o mesmo peso achatado e em bloco, a custo zero.",
+            "A página inicial leva ainda aquilo que um site de festival tem de levar. A programação, oito noites com as suas datas e os seus nomes, um bloco de números da edição anterior e um mapa da rua onde tudo acontece."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "shop",
+          "title": "Uma loja que funciona a sério",
+          "sub": "Vinte e quatro produtos e um carrinho que se lembra",
+          "body": [
+            "A loja tem vinte e quatro produtos divididos por quatro categorias, com uma barra de categorias que fica colada ao topo e acende a que corresponde à secção onde se está.",
+            "Alguns produtos trazem as suas variantes escritas no próprio HTML, por isso escolher preto ou branco, ou o corte de homem ou de mulher, troca a fotografia sem sair da grelha. Carregar num produto abre-o maior, num painel por cima da página.",
+            "O carrinho não é um desenho de um carrinho. Guarda o que lá está no armazenamento do próprio browser, por isso continua lá depois de recarregar a página, abre numa gaveta lateral e responde de cada vez que se junta alguma coisa: o contador salta e um aviso pequeno diz o que entrou e oferece-se para o mostrar."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "signup",
+          "title": "Propor uma banda em quatro passos",
+          "sub": "Um formulário comprido que não parece comprido",
+          "body": [
+            "As bandas candidatam-se a tocar através de um formulário com muitas perguntas. Feitas todas de uma vez, é o género de página que as pessoas fecham, por isso está cortado em quatro passos, a banda, os critérios, a atuação e os detalhes finais, com uma barra em cima a mostrar onde se vai.",
+            "Cada passo é verificado antes de deixar avançar, para que um erro seja apanhado onde foi feito e não no fim. O envio é simulado, porque aqui não há para onde enviar: o formulário é substituído por uma confirmação.",
+            "Por trás, três fotografias do festival trocam entre si de seis em seis segundos, devagar o suficiente para serem cenário e não mais uma coisa a disputar atenção com as perguntas."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Os professores gostaram",
+          "sub": "Porque era um site e não o desenho de um",
+          "body": [
+            "Correu muito bem. O site foi a parte do trabalho que se destacou e os professores gostaram.",
+            "O que fez a diferença não foi o código, foi a diferença entre descrever uma coisa e entregá-la. O enunciado pedia uma imagem de um website e o que chegou foi um website: páginas por onde se anda, um carrinho que se lembra, um formulário que responde.",
+            "Ficou tudo como conceito. O festival existe mesmo, mas a identidade e este site nunca foram encomendados nem chegaram a funcionar para ele."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Afonso Almeida"
+        }
+      ]
     },
     {
       "id": "kapout-app",
@@ -433,24 +1446,78 @@
       "category": "uiux",
       "year": "2025",
       "role": "Design de Produto",
-      "partners": "",
-      "contextText": "Um projeto desenvolvido na jeKnowledge, a Júnior Empresa da UC, para um briefing real de cliente.",
+      "partners": "Madalena Conceição",
+      "contextText": "Projeto interno na jeKnowledge, a júnior empresa da Universidade de Coimbra. Sem cliente e sem enunciado.",
       "heroVideo": "",
       "heroEmbed": "",
       "poster": "assets/banners/kapout-app.webp",
-      "description": "O Kapout é uma aplicação mobile para o público jovem que transforma as saídas à noite num jogo partilhado entre amigos. Combina o acompanhamento e a contagem de bebidas com uma mecânica gamificada de desafios em tempo real, tabelas de classificação e conquistas em grupo, sob uma linguagem visual escura, envolvente e de estética neon.",
-      "body": [
-        "Desenvolvido no âmbito da jeKnowledge (a Júnior Empresa da Universidade de Coimbra), assumi a liderança integral da vertente de design do produto: do conceito de naming e direção de arte da marca até à arquitetura de informação, aos fluxos de utilização e ao design de interface (UI/UX no Figma) para telemóvel.",
-        "O conceito nasceu da cultura e do léxico jovem de celebração. O nome «Kapout» resulta de um jogo de palavras entre cap (da expressão «no cap»), tap out e a ideia humorística de «cair para o lado» numa noite de festa. Para sustentar o ambiente noturno, a interface foi desenhada sobre um tema escuro de alto contraste, com o logótipo geométrico de inspiração Pac-Man, que cruza o formato da personagem com a silhueta de uma garrafa, e uma paleta neon eletrizante.",
-        "Em UX/UI, o foco foi uma experiência fluida, rápida e intuitiva, otimizada para pouca luz e grande interação social. O fluxo arranca no registo, com a idade e a bebida favorita a definirem o perfil. Durante a noite, os utilizadores registam bebidas num contador dinâmico que atualiza o pódio do grupo, acumulando XP e subindo de nível. A dimensão social é reforçada com desafios pendentes e concluídos, álbuns de fotografias e notificações de grupo, transformando a app num ponto de encontro interativo."
-      ],
+      "description": "Uma app de noite que transforma uma saída com amigos numa coisa que se joga: bebidas contadas, desafios aceites e uma tabela de classificação a correr entre o grupo até de manhã.",
       "techStack": [
-        "UI/UX",
-        "Mobile Design",
-        "Illustration"
+        "Figma",
+        "Illustrator"
       ],
       "links": [],
-      "mockups": []
+      "mockups": [],
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Ninguém nos pediu isto",
+          "sub": "Sem cliente e sem enunciado",
+          "body": [
+            "O Kapout não foi uma encomenda. Nasceu dentro da jeKnowledge, a júnior empresa da Universidade de Coimbra, como uma ideia que a equipa quis experimentar, metade desafio e metade brincadeira, para ver o que saía dali. Foi uma das primeiras coisas em que trabalhei lá como trainee.",
+            "Isso queria dizer que não havia enunciado para responder nem ninguém para agradar, o que parece mais fácil do que é. Sem nada fixo, a única coisa que segurava o projeto era a ideia ser boa ou não, por isso o primeiro trabalho a sério foi decidir o que é que uma noite fora precisa mesmo de uma app."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "concept",
+          "title": "A noite como um jogo",
+          "sub": "Pontos, desafios e terreno a conquistar",
+          "body": [
+            "A app conta o que um grupo bebe ao longo da noite, mas contar por contar é uma folha de cálculo. A intenção era transformar a noite numa coisa que se joga em conjunto: uma tabela de classificação a correr entre amigos, desafios para aceitar, e shots e outras bebidas a valerem coisas diferentes.",
+            "A primeira página de notas é isso e mais nada. Uma tabela, desafios, bebidas, e uma bandeira espetada em terreno conquistado. Uma noite fora já funciona um bocado assim sem ninguém o dizer, e a app só ficou a marcar os pontos.",
+            "É construída à volta do grupo e não de uma pessoa. Sozinho, um contador de bebidas é uma app de saúde, e das tristes. Com quatro amigos à volta de uma mesa, o mesmo número deixa de ser uma medição e passa a ser um resultado."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "naming",
+          "title": "Quando o nome deixou de servir",
+          "sub": "Começou por se chamar Beer Kapital",
+          "body": [
+            "O primeiro nome do projeto era Beer Kapital e, para a primeira versão da ideia, servia: cerveja, uma tabela, terreno a conquistar.",
+            "Só que a app foi crescendo e a cerveja deixou de ser tudo o que ela era. Shots, desafios, tudo aquilo que um grupo faz uns aos outros ao longo de uma noite. Um nome que falava de uma bebida ia acabar mais pequeno do que a coisa onde estava.",
+            "Passou a Kapout. É curto, dá para gritar dentro de um bar, e carrega três coisas ao mesmo tempo: cap out, ir até onde se consegue ir; go out, de sair à noite; e that's cap, a gíria para uma história em que ninguém acredita, que é quase tudo o que se conta na manhã seguinte sobre a noite anterior."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "process",
+          "title": "Desenhada para ser usada às escuras",
+          "sub": "Néon sobre preto, e prémios que valem a pena",
+          "body": [
+            "Tudo na interface vem do sítio onde ela é usada. Uma sala escura, barulho, o telemóvel a um braço de distância e ninguém a ler com atenção. Por isso os ecrãs são quase pretos, com um conjunto pequeno de cores no máximo, magenta, roxo e ciano, e as coisas em que se carrega são grandes e poucas.",
+            "Os prémios são desenhados e não listados. Ilustrei um conjunto de troféus no Illustrator, todos construídos a partir da mesma forma da marca, para que ganhar alguma coisa pareça ganhar alguma coisa, em vez de ser uma linha a aparecer numa tabela.",
+            "O produto todo foi desenhado em Figma. A Madalena Conceição entrou mais tarde e construiu lá comigo alguns dos ecrãs da app."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Ficou em protótipo",
+          "sub": "Parado por trabalho que contava mais",
+          "body": [
+            "O Kapout nunca saiu da prototipagem. A equipa chegou a levá-lo ao ponto de passar o desenho para um protótipo programado, e depois parou. Havia projetos que contavam mais e as pessoas faziam falta neles.",
+            "É o fim normal de uma ideia que uma empresa tem por sua conta, e vale mais dizê-lo assim do que arranjar-lhe uma roupa melhor. O que este projeto me deu foi ele todo, do nome ao último ecrã, numa altura em que eu tinha acabado de começar."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Madalena Conceição"
+        }
+      ]
     },
     {
       "id": "eateasy",
@@ -463,18 +1530,14 @@
       "heroVideo": "videos/eateasy.webm",
       "heroEmbed": "",
       "poster": "assets/banners/eateasy.webp",
-      "description": "O EatEasy é uma plataforma web para reserva e gestão de restaurantes, desenhada para simplificar a navegação do cliente e otimizar a operação dos estabelecimentos. Foca-se numa solução dupla e intuitiva que serve utilizadores finais e administradores em simultâneo, integrando visualização de métricas e análise de dados num ambiente responsivo.",
-      "body": [
-        "Desenvolvido em equipa com a Carolina Seixas na cadeira de Sistemas de Informação, o trabalho combinou design de interface (UI/UX no Figma), desenvolvimento web full-stack e modelação de bases de dados relacionais em SQL e PHP. Pelo rigor técnico e concetual em todas as fases, o projeto foi classificado com nota máxima.",
-        "A plataforma assenta na separação clara entre dois perfis: Cliente e Administrador. Do lado do cliente, a experiência permite explorar restaurantes por localização ou tipo de cozinha, agendar reservas dinamicamente e gerir um perfil com histórico de visitas e favoritos. Do lado do administrador, a interface transforma-se num painel de controlo para registar e gerir espaços, atualizar menus, definir horários e gerir o estado de cada reserva.",
-        "Na arquitetura de dados, concebeu-se um modelo relacional robusto que guarda o histórico de alterações (dos utilizadores, dos estabelecimentos e dos estados das reservas) com conjuntos de dados fictícios verosímeis para a demonstração. O grande diferenciador é o módulo analítico da área de administração: a plataforma processa a base de dados e apresenta-a em gráficos claros, permitindo aos proprietários analisar o volume de reservas e a performance do restaurante."
-      ],
+      "description": "Uma plataforma web para encontrar e reservar restaurantes, com dois lados: quem marca a mesa e quem é dono do sítio. Feita em PHP sobre uma base de dados PostgreSQL, e ainda online.",
       "techStack": [
+        "Figma",
         "PHP",
-        "MySQL",
-        "JavaScript",
+        "PostgreSQL",
         "HTML",
-        "CSS"
+        "CSS",
+        "JavaScript"
       ],
       "links": [
         {
@@ -485,12 +1548,82 @@
       "mockups": [
         {
           "src": "assets/mockups/eateasy/img1.webp",
-          "alt": "Ilustrações de pratos criadas para a plataforma EatEasy",
+          "alt": "As ilustrações de pratos usadas na interface do EatEasy",
           "span": "full",
-          "caption": "Sistema de ilustração"
+          "caption": "Ilustrações usadas na interface"
         }
       ],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Duas pessoas diferentes, o mesmo site",
+          "sub": "Quem reserva e quem recebe a reserva",
+          "body": [
+            "O EatEasy foi o trabalho da cadeira de Sistemas de Informação, feito com a Carolina Seixas. A ideia era uma plataforma de reservas de restaurantes que tinha de servir, ao mesmo tempo, duas pessoas com trabalhos opostos.",
+            "Uma quer encontrar onde comer: procurar por cidade ou por tipo de comida, ver um sítio, marcar uma mesa e depois dizer como foi. A outra é dona do restaurante: pôr a casa na plataforma, manter a informação atualizada e aceitar ou recusar as reservas que vão chegando.",
+            "Não são o mesmo site com um botão diferente. São duas portas de entrada, cada uma com a sua página inicial e o seu perfil, e quase tudo atrás delas é diferente."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "design",
+          "title": "Primeiro desenhado, depois programado",
+          "sub": "Passou tudo pelo Figma",
+          "body": [
+            "Nada da interface foi inventado no editor. Foi tudo prototipado e desenhado primeiro em Figma, os dois percursos, ecrã a ecrã, e só depois escrito em código. Os relatórios que entregámos levam esses protótipos ao lado do diagrama de navegação, que foi o que manteve as duas metades a par.",
+            "O aspeto é um verde-azulado escuro com outro mais claro por cima, Inter em tudo, cantos largos e sombras suaves. É discreto de propósito: o ecrã é quase todo fotografias de comida e listas de sítios, e o trabalho da interface é não competir com elas."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "data",
+          "title": "Sem dados de encher",
+          "sub": "Uns vinte restaurantes, todos preenchidos a sério",
+          "body": [
+            "Não há nada na plataforma a dizer Lorem Ipsum nem Restaurante 1. Funciona sobre um conjunto inventado mas completo de uns vinte restaurantes, cada um com um nome que parece um nome, uma cidade, um ou mais tipos de cozinha, um preço médio, um telefone, um email e uma classificação.",
+            "É isso que torna o resto testável. Pesquisar, filtrar por tipo de cozinha e filtrar por data só querem dizer alguma coisa contra um conjunto grande o suficiente para dar respostas diferentes, e uma lista de espaços por preencher teria escondido todos os problemas que valia a pena encontrar.",
+            "Por cima disso ficam as coisas que um cliente faz ao longo do tempo: favoritos, reservas que se podem cancelar, e avaliações com comentário deixadas depois da visita."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "history",
+          "title": "A base de dados nunca esquece",
+          "sub": "Cada alteração guarda o valor antigo",
+          "body": [
+            "Editar um perfil ou um restaurante não se limita a escrever por cima do que lá estava. Antes de gravar, o código lê a linha como ela está e, para cada campo que mudou mesmo, guarda o valor antigo com a data em que deixou de ser verdade.",
+            "O estado de cada reserva é guardado da mesma maneira, por isso o caminho de pedida a aceite ou recusada fica registado, em vez de se resumir ao que diz hoje.",
+            "Custa uma tabela e um ciclo, e transforma a base de dados de uma fotografia do presente num registo do que aconteceu. É a parte deste projeto que eu voltaria a fazer exatamente igual."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "stats",
+          "title": "Gráficos para quem tem o restaurante",
+          "sub": "Os dados devolvidos a quem é dono deles",
+          "body": [
+            "O lado do dono não é só uma lista de reservas para aprovar. A plataforma lê a sua própria base de dados e devolve-a em gráficos, para quem gere um restaurante ver quantas reservas entraram, como estão distribuídas e como a casa se está a portar ao longo do tempo.",
+            "É a mesma informação que o lado do cliente esconde de propósito. Quem visita quer uma mesa numa noite; quem é dono quer a forma de um mês."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Continua online",
+          "sub": "Correu bem, e não parou na nota",
+          "body": [
+            "O trabalho foi muito bem avaliado e o professor gostou. Escrevemo-lo os dois ao longo de 149 commits no GitLab, com a Carolina a fazer mais da base de dados e eu mais do design e do front-end.",
+            "A parte de que gosto mais é não ter parado quando a cadeira acabou. Está empacotado num contentor com PHP e Apache, a base de dados passou para Postgres alojado na Neon, e aquilo está publicado e aberto a quem tiver o link, que não é onde a maior parte dos trabalhos de faculdade acaba."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Carolina Seixas"
+        }
+      ]
     },
     {
       "id": "abrigo",
@@ -498,39 +1631,19 @@
       "category": "uiux",
       "year": "2026",
       "role": "Design de Produto · Investigação · Front-end",
-      "partners": "Pedro Teixeira · Afonso Almeida · Tiago Gomes",
+      "partners": "Afonso Almeida · Pedro Teixeira · Tiago Gomes",
       "contextText": "Este projeto foi desenvolvido para a cadeira de Design de Meios Interativos, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/abrigo.webm",
       "heroEmbed": "",
       "poster": "assets/banners/abrigo.webp",
-      "description": "O Abrigo é uma aplicação móvel de segurança e proteção civil, concebida para prestar assistência imediata durante crises militares ou cenários de emergência extrema. Foi pensada para funcionar em baixa conetividade e sob elevado stresse psicológico, centralizando protocolos de atuação, rotas de evacuação e a localização em tempo real dos abrigos mais próximos.",
-      "body": [
-        "O desenvolvimento partiu de um processo rigoroso de investigação centrada no utilizador, priorizando a validação de conceitos antes da interface final. A arquitetura de informação e a linguagem visual assentaram no princípio de «Stress-First Design»: alto contraste sobre fundo escuro com elementos amarelos de sinalização, alvos de toque grandes para evitar erros e a redução ao mínimo dos passos para executar ações críticas.",
-        "Para garantir eficácia em situações-limite, o projeto passou por várias fases de validação de usabilidade: começou com wireframes em papel e simulações Wizard-of-Oz, progrediu para testes com utilizadores em seis tarefas críticas de sobrevivência, e terminou numa auditoria completa segundo as diretrizes do Material Design 3.",
-        "Tecnicamente, a solução foi um ecossistema duplo: um protótipo interativo de alta fidelidade no Figma e uma implementação funcional para testes em web, em HTML, CSS e JavaScript. A plataforma integra a pesquisa e navegação até ao abrigo mais próximo, com detalhe dos recursos disponíveis (água, energia, instalações sanitárias, acessibilidade), um botão SOS com envio diferido em caso de falha de rede, um guia para o kit de emergência e ferramentas para organizar o plano familiar de evacuação.",
-        "O resultado é uma solução digital robusta e intuitiva que responde às exigências de usabilidade em crise, mostrando como o design centrado no utilizador e a simplificação de fluxos complexos podem transformar protocolos de emergência em ações imediatas e acessíveis."
-      ],
+      "description": "Uma app de emergência para civis durante uma guerra, feita para um telemóvel quase sem rede, quase sem bateria e com alguém assustado a segurá-lo. Abrigos, um kit que se mantém atualizado, e uma forma de pedir ajuda num só movimento.",
       "techStack": [
         "Figma",
-        "JavaScript",
         "HTML",
-        "CSS"
+        "CSS",
+        "JavaScript"
       ],
-      "links": [
-        {
-          "label": "Protótipo da app",
-          "url": "https://student.dei.uc.pt/~pfteixeira/abrigo3/",
-          "note": "Ver em telemóvel"
-        },
-        {
-          "label": "Site dos testes",
-          "url": "https://student.dei.uc.pt/~recgrc/Projeto/Website_Abrigo_Teste/"
-        },
-        {
-          "label": "Protótipo Figma",
-          "url": "https://www.figma.com/proto/u7AfvdxHfPhBcp4PlYwEdV/DMI---Projeto-de-Grupo?node-id=756-5536&starting-point-node-id=756%3A5510&show-proto-sidebar=1"
-        }
-      ],
+      "links": [],
       "mockups": [
         {
           "src": "assets/mockups/abrigo/abrigo.webp",
@@ -539,29 +1652,129 @@
           "caption": "Símbolo e logótipo"
         }
       ],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "challenge",
+          "title": "Desenhar para o pior dia",
+          "sub": "Um desastre, escolhido e assumido",
+          "body": [
+            "O enunciado era desenhar um artefacto interativo que ajudasse pessoas antes, durante ou depois de um desastre, e escolher um tipo só e ficar com ele. Escolhemos a guerra.",
+            "Traz as suas próprias regras, e são o contrário daquelas com que uma app é normalmente feita. Sem internet em que se possa confiar. Possivelmente sem eletricidade. Infraestruturas que podem já estar destruídas. E uma pessoa a usá-la que está assustada, com pressa, e que não vai ler nada com atenção.",
+            "Por isso o objetivo nunca foi uma app bonita. Foi uma que ainda funcione no pior dia da vida de alguém."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "research",
+          "title": "Cinco pessoas, cinco emergências diferentes",
+          "sub": "A mesma app, precisa por razões opostas",
+          "body": [
+            "Antes de desenhar um único ecrã escrevemos para quem é que aquilo era, e não era para uma pessoa. Um jovem a voltar para casa que precisa de saber que ruas evitar. Uma mãe a meio de um turno no hospital cujo primeiro pensamento é a escola onde estão os filhos. Um socorrista civil que recebe um alerta de que alguém perto dele precisa de ajuda. Um preparacionista que tem um kit de emergência e quer confirmá-lo. Um homem idoso, sozinho, que de repente fica sem ar.",
+            "Cada um deles ganhou um cenário escrito como uma história, desde o momento normal antes, passando pelo alerta, até como acaba. São essas histórias que definem as partes da app: um mapa em tempo real com as zonas a evitar e rotas mais seguras, abrigos, um inventário que avisa quando a comida e os medicamentos estão perto de expirar, uma forma de chegar às pessoas, e um pedido de socorro que sai com a localização e os dados médicos agarrados a ele.",
+            "O último foi o que decidiu o desenho. Se o Alberto só consegue fazer um movimento, então tudo o resto nesta app tem de estar arrumado à volta de esse movimento ser possível."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "lowfi",
+          "title": "Partido primeiro em papel",
+          "sub": "Wizard of Oz, antes de existir seja o que for",
+          "body": [
+            "Nada foi feito em alta fidelidade antes de a ideia passar por pessoas. Testámos em papel, com um Wizard of Oz: a pessoa segura o esboço e age, e um de nós faz de app, a trocar o ecrã à mão à medida que ela avança.",
+            "É uma maneira barata de nos dizerem que estamos errados. O botão de pedir ajuda foi carregado por engano vezes sem conta, por pessoas que pensavam que era ajuda geral para usar a aplicação. Outras foram ao kit de emergência à procura do próprio perfil. A página de dicas foi lida como dicas de como usar a app e não como o que fazer numa emergência.",
+            "As três foram corrigidas ali mesmo. Pedir ajuda passou a ser um slider em vez de um botão, para não poder acontecer por acidente, e deixou de se chamar Pedir Ajuda para passar a SOS. Ouvir isto em papel custou uma tarde. Ouvir isto depois da interface feita teria custado a interface."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "tests",
+          "title": "Construímos a coisa que a testou",
+          "sub": "Não um formulário, um instrumento",
+          "body": [
+            "Para os testes de usabilidade a sério não queríamos um questionário preenchido a seguir, de memória, por isso construímos um site nosso para conduzir as sessões.",
+            "Leva o participante pelo protocolo todo. Primeiro um questionário inicial e um passo de consentimento. Depois as tarefas, uma de cada vez, cada uma cronometrada pelo próprio site, com a pessoa a classificar a dificuldade logo a seguir a terminá-la. Depois um questionário final sobre a linguagem, as cores, as letras e se se imaginariam a usar aquilo sob stress. Fica tudo num sítio só, e há uma área de administração que devolve o conjunto em gráficos.",
+            "É a diferença entre lembrar que uma tarefa pareceu lenta e saber quanto tempo demorou. É o site aqui em baixo, ainda a funcionar."
+          ],
+          "layout": "split",
+          "links": [
+            {
+              "label": "Abrir o site de testes",
+              "url": "https://student.dei.uc.pt/~recgrc/Projeto/Website_Abrigo_Teste/"
+            }
+          ]
+        },
+        {
+          "id": "interface",
+          "title": "Preto, e um amarelo",
+          "sub": "A cor de um sinal de aviso",
+          "body": [
+            "A interface é preta com um único amarelo por cima. Preto porque um ecrã quase todo escuro é o que menos pede a uma bateria e a um par de olhos de noite, e o amarelo pelo contraste contra ele e por ser a cor que este tipo de informação já tem no mundo, na sinalização que marca cuidado e perigo.",
+            "Todo o resto tem a ver com uma mão que não está firme. Alvos grandes, contraste alto, o menor número de passos em que uma ação crítica se consegue fazer, e tipografia na escala do Material Design 3, contra a qual depois auditámos a interface em vez de apenas a ir buscar.",
+            "O desenho completo em alta fidelidade vive no Figma, e o protótipo aqui em baixo é o que apresentámos."
+          ],
+          "layout": "split",
+          "links": [
+            {
+              "label": "Abrir o protótipo em Figma",
+              "url": "https://www.figma.com/proto/u7AfvdxHfPhBcp4PlYwEdV/DMI---Projeto-de-Grupo?node-id=756-5536&p=f&viewport=458%2C434%2C0.06&t=KzdjLPHRfOgcb5gK-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=756%3A5510&show-proto-sidebar=1&page-id=654%3A2313"
+            }
+          ]
+        },
+        {
+          "id": "prototype",
+          "title": "E depois foi construída",
+          "sub": "Não um clique a fingir, páginas a sério",
+          "body": [
+            "O protótipo não ficou pelo Figma. O núcleo da app foi escrito como páginas a sério, para que os ecrãs que interessam possam ser abertos num telemóvel e usados com o polegar, em vez de clicados dentro de um visualizador.",
+            "É o início, o mapa, o kit de emergência, as mensagens e a página de dicas, a partilhar uma folha de estilos com a paleta e a escala tipográfica lá dentro. Abrir aquilo num telemóvel de verdade é a única forma de descobrir se os alvos são mesmo grandes o suficiente, e nenhum visualizador nos diz isso."
+          ],
+          "layout": "split",
+          "links": [
+            {
+              "label": "Abrir o protótipo da app",
+              "url": "https://student.dei.uc.pt/~pfteixeira/abrigo3/"
+            }
+          ]
+        },
+        {
+          "id": "result",
+          "title": "Nota máxima, e um nome de que gostaram",
+          "sub": "O processo é que era o objetivo, e notou-se",
+          "body": [
+            "O trabalho teve nota máxima. A professora gostou do nome e, no fim da apresentação, deram-nos os parabéns pelo trabalho.",
+            "O que estava a ser avaliado nunca foi só a app. A cadeira era sobre passar por todos os passos de um processo de design de interação como deve ser, e este é o projeto em que mais discutimos, mais vezes voltámos atrás e mais coisas deitámos fora. É por isso que a última versão é a que é."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Afonso Almeida"
+        },
+        {
+          "name": "Pedro Teixeira"
+        },
+        {
+          "name": "Tiago Gomes"
+        }
+      ]
     },
     {
       "id": "capicua-lenga",
       "title": "Capicua, Lenga",
       "category": "motion",
       "year": "2025",
-      "role": "Ilustração & Animação Stop-Motion",
+      "role": "Ilustração e Animação Fotograma a Fotograma",
       "partners": "Carolina Seixas",
-      "contextText": "Este projeto foi desenvolvido para a cadeira de Laboratórios de Audiovisual, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
+      "contextText": "Este projeto foi desenvolvido para a cadeira de Produção Audiovisual, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/lenga-capicua.webm",
       "heroEmbed": "",
       "poster": "assets/banners/capicua-lenga.webp",
-      "description": "Videoclipe animado para o tema «Lenga», da artista portuguesa Capicua. A obra traduz o universo lírico da canção numa narrativa animada que combina ingenuidade, leveza e rigor técnico na linguagem do audiovisual.",
-      "body": [
-        "O conceito baseou-se numa tradução literal e simbólica da letra. A partir de palavras-chave dos versos de Capicua, concebemos cenários específicos (uma sala de aula, um livro de História, uma cadeia montanhosa) que ganham vida à medida que a música avança. Para os unificar, introduziu-se uma personagem principal: uma jovem criança que atravessa e interage com cada espaço. Sem diálogos nem texto, a narrativa é expressa só pelo movimento, pela postura e pela viagem da protagonista.",
-        "Esteticamente, o videoclipe inspira-se na imaginação infantil: contornos simples, formas orgânicas suaves e uma tipografia com aspeto desenhado à mão, mimetizando a textura autêntica e imperfeita dos desenhos de crianças.",
-        "Na técnica, adotámos uma metodologia puramente artesanal de stop-motion e animação frame a frame. Cada fotograma foi desenhado individualmente de raiz, sem reutilização nem interpolação digital. A escolha exigiu um controlo rigoroso da consistência da linha e do ritmo visual, resultando numa textura «viva» onde o traço mantém um micro-movimento constante. O resultado é uma peça orgânica e expressiva, perfeitamente sintonizada com a identidade musical do tema."
-      ],
+      "description": "Um videoclipe animado para Lenga, da Capicua. Cada fotograma desenhado um a um, no registo de um desenho de criança, com uma menina a atravessar os sítios que a letra nomeia.",
       "techStack": [
-        "Frame-by-Frame",
-        "Digital Illustration",
-        "Adobe"
+        "Photoshop",
+        "Premiere Pro"
       ],
       "links": [
         {
@@ -570,31 +1783,97 @@
         }
       ],
       "mockups": [],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "song",
+          "title": "Levar a letra à letra",
+          "sub": "Uma escola, um livro de História, uma montanha",
+          "body": [
+            "O exercício era um videoclipe e tínhamos de escolher uma música de uma lista. Ficámos primeiro com a Capicua, como artista, e depois fomos à procura da certa dentro do trabalho dela. A Lenga ganhou pelo tema: a infância, a escola, as coisas que nos ensinam. A Carolina gostou muito da letra, eu fui atrás, e ficou decidido.",
+            "Tirámos versos da música e construímos os sítios que eles nomeiam. Uma escola. Um livro de História. Uma serra. Nada é uma metáfora do verso, é o verso, desenhado.",
+            "É literal e simbólico ao mesmo tempo, e é aí que está o truque: quem vê acompanha as imagens sem ter de descodificar nada, e o sentido chega pela música em vez de chegar pela imagem a explicar-se a si própria."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "child",
+          "title": "Uma menina que não diz nada",
+          "sub": "O fio entre os sítios",
+          "body": [
+            "Um conjunto de sítios ilustrados é uma apresentação de slides. O que faz dele um filme é uma pessoa a andar lá dentro, por isso juntou-se uma personagem principal: uma criança que atravessa cada espaço e os liga numa pequena viagem.",
+            "Ela nunca fala e não há nada no ecrã a explicá-la. Tudo o que ela é vem do corpo: como está de pé, como se move, a que velocidade vai. É a forma mais antiga de carregar uma narrativa e é a que não compete com uma música que já vem cheia de palavras.",
+            "Traz auscultadores em quase todas as cenas, que é a coisa pequena que segura o vídeo todo. Está a ouvir a música que nós estamos a ouvir, e os sítios por onde anda são aquilo que ela lhe está a pôr na cabeça."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "look",
+          "title": "Desenhado como uma criança desenha",
+          "sub": "Traço simples, formas suaves, letras à mão",
+          "body": [
+            "O registo visual vem dos desenhos de criança. Um contorno simples e sem enfeites, formas orgânicas e suaves, e as letras feitas à mão em vez de compostas. As palavras no ecrã são poucas, o título e pouco mais: quem está a falar é a música, e pôr também a letra por cima seria dizer tudo duas vezes.",
+            "Não é um atalho, é uma correspondência. A música fala de infância e das coisas que nos dizem quando somos pequenos, e um vídeo polido, corrigido e perfeitamente alinhado teria discutido com ela. A imperfeição é o argumento."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "frames",
+          "title": "Cada fotograma desenhado uma vez",
+          "sub": "Sem cópias e sem interpolação",
+          "body": [
+            "A animação é fotograma a fotograma, e a regra que impusemos foi que nenhum desenho é reaproveitado. Cada fotograma é o seu próprio desenho, feito de raiz, em todas as cenas do filme.",
+            "É uma maneira brutal de trabalhar e compra uma coisa muito específica. Como não há dois fotogramas desenhados exatamente iguais, o traço nunca está quieto: mexe e treme muito ligeiramente de um para o outro, que é a textura que as pessoas reconhecem na animação feita à mão e que nenhum programa finge de forma convincente.",
+            "Impõe também uma disciplina. Quando cada fotograma custa o mesmo trabalho, deixa-se de animar aquilo que não precisa de se mexer, e o filme fica mais apertado por causa disso."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "Um minuto e meio que nunca para",
+          "sub": "O desenho nunca assenta de vez",
+          "body": [
+            "O vídeo acabado tem um minuto e vinte e oito segundos, e não há um momento parado nele, nem sequer onde não acontece nada. O próprio traço está sempre a respirar.",
+            "Para um minuto e meio de filme é muito desenho, e a razão de o fazer assim vê-se em todos os segundos dele."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "made",
+          "title": "Feito a quatro mãos",
+          "sub": "Uma música, dividida ao meio",
+          "body": [
+            "Correu bem, e outra vez a nota não é a parte interessante. Este foi um projeto bom de estar lá dentro: uma música, uma regra, e uma colega com quem discutir o aspeto que um verso tem.",
+            "Os problemas que apareceram eram dos bons. Quantos desenhos é que um passo precisa até deixar de parecer um soluço. Como manter uma cara reconhecível quando se volta a desenhá-la de raiz vezes sem conta. Onde deixar o traço andar mais solto, porque a música também anda solta naquele compasso.",
+            "Eu e a Carolina trabalhámos em tudo em conjunto, em vez de dividir por metades, que numa coisa desenhada fotograma a fotograma é a única forma de aquilo chegar ao fim."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Carolina Seixas"
+        }
+      ]
     },
     {
       "id": "a-ultima-chama",
       "title": "A Última Chama",
       "category": "motion",
       "year": "2025",
-      "role": "Modelação · Som & Visual",
+      "role": "Ilustração, Animação Stop-Motion e Som",
       "partners": "Carolina Seixas",
-      "contextText": "Este projeto foi desenvolvido para a cadeira de Laboratórios de Audiovisual, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
+      "contextText": "Este projeto foi desenvolvido para a cadeira de Produção Audiovisual, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/exercise-2-a-ultima-chama.webm",
       "heroEmbed": "",
       "poster": "assets/banners/a-ultima-chama.webp",
-      "description": "A Última Chama é uma curta-metragem de animação stop-motion, adaptação direta do manuscrito medieval Apocalipse de Lorvão. Reinterpreta o imaginário do manuscrito numa narrativa que se desenrola literalmente dentro das páginas de um livro, encenando a eterna luta entre o bem e o mal através da animação e da sonoplastia.",
-      "body": [
-        "A conceção inspirou-se diretamente nas iluminuras originais da obra medieval, que serviram de modelo para as personagens. O confronto central opõe o bem (um cavaleiro celestial montado no seu cavalo) ao mal, um dragão mitológico de múltiplas cabeças que cospe fogo. Cavaleiros, dragão e fundos foram totalmente desenhados e pintados à mão de raiz, preservando a textura crua e expressiva do suporte histórico.",
-        "A produção envolveu marionetas articuladas em papel e a captação de mais de 1 800 fotografias individuais para dar movimento às cenas de combate. A montagem e pós-produção fizeram-se no Adobe Premiere Pro, onde se sincronizou a sequência de imagens, se introduziram os créditos e se trabalhou a gradação de cor para estabilizar o ritmo visual.",
-        "O som foi fundamental para o realismo e a carga dramática. Desenvolveu-se um ecossistema áudio híbrido, combinando bibliotecas profissionais com gravação caseira de Foley: o galope do cavalo, o desembainhar de espadas, os impactos de combate e o fogo do dragão, sincronizados ao milissegundo com a ação. O resultado mostra como ilustração tradicional, controlo de fotogramas e sonoplastia detalhada podem transformar um acervo histórico numa narrativa audiovisual dinâmica."
-      ],
+      "description": "Uma curta em stop motion tirada do Apocalipse do Lorvão, um manuscrito iluminado de 1189. Um cavaleiro e um dragão combatem nas páginas do próprio manuscrito, em recortes de papel fotografados fotograma a fotograma.",
       "techStack": [
-        "Stop-Motion",
-        "Puppetry",
-        "Foley",
-        "Sound Design",
-        "Adobe"
+        "Photoshop",
+        "Illustrator",
+        "After Effects",
+        "Premiere Pro",
+        "Photography"
       ],
       "links": [
         {
@@ -603,7 +1882,79 @@
         }
       ],
       "mockups": [],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "book",
+          "title": "O livro é o cenário",
+          "sub": "O filme acontece na página, e não num sítio",
+          "body": [
+            "O exercício deu-nos um livro para trabalhar: o Apocalipse do Lorvão, um manuscrito iluminado feito no mosteiro de Lorvão em 1189 e hoje guardado no arquivo nacional.",
+            "Pegámos nele de forma muito direta, e foi dessa decisão que saiu o filme todo. Em vez de adaptar a história para um mundo próprio, o filme fica dentro do livro. As páginas por baixo da animação são as do próprio manuscrito, por isso a luta acontece em cima do objeto de onde veio.",
+            "Isso resolve tudo o resto de uma vez. Se o palco é uma página, a animação tem de ser plana e feita de papel, a câmara tem de olhar a direito de cima, e a coisa toda tem de parecer feita à mão, porque aquilo que está a imitar foi feito à mão há oitocentos anos."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "characters",
+          "title": "Um cavaleiro e um dragão, tirados das iluminuras",
+          "sub": "A história mais antiga que há, de propósito",
+          "body": [
+            "A história é o bem contra o mal, e não houve nenhuma tentativa de a complicar. O bem é um cavaleiro a cavalo. O mal é um dragão que cospe fogo. Qualquer pessoa a segue com o som desligado.",
+            "O que a faz pertencer à fonte é a origem das personagens. As duas foram desenhadas a partir das próprias iluminuras do manuscrito, por isso as proporções, as posturas e a estranheza são as medievais e não as nossas. Depois foi tudo desenhado e pintado à mão, personagens e cenários.",
+            "Desenhá-las nós em vez de recortar as digitalizações faz diferença: o manuscrito é uma referência, não uma textura para ir buscar."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "stopmotion",
+          "title": "Uma fotografia de cada vez",
+          "sub": "Papel, movido à mão, fotografado de cima",
+          "body": [
+            "A animação é stop motion, e o equipamento todo era a câmara de um telemóvel presa por cima da mesa numa estrutura improvisada por nós. As peças são de papel, são movidas uns milímetros, e são fotografadas, vezes sem conta, e o filme é aquilo em que essas fotografias se transformam quando passam por ordem.",
+            "Foi filmado em cenas separadas e montado depois: o castelo, o cavaleiro a galopar, a espada a sair, o dragão a virar-se, e a luta. Entre todas dão várias centenas de fotografias.",
+            "O método é lento e é também a razão de o filme ter o aspeto que tem. Papel fotografado sob uma luz tem uma textura e uma ligeira instabilidade que nada gerado depois consegue imitar, e essa instabilidade é exatamente aquilo que um manuscrito pintado à mão já tem."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "sound",
+          "title": "Metade dele é som",
+          "sub": "Um stop motion de papel sem som é só papel",
+          "body": [
+            "Recortes a deslizar numa página não se lêem como uma luta. O que os transforma numa é aquilo que se ouve: cascos, uma lâmina a sair da bainha, fogo, o embate, e a pausa antes de cada um deles.",
+            "A banda é uma mistura. Boa parte é material de biblioteca, escolhido e cortado à medida da ação, e outra parte gravámo-la nós. O fogo é o que ficou. De uma maneira ou de outra, tudo tem depois de ser alinhado fotograma a fotograma contra a imagem, que é onde a maior parte do trabalho numa sequência destas realmente vai parar.",
+            "É também o que carrega o drama. A animação é propositadamente simples; o som é o que faz um desenho simples parecer que tem peso."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "edit",
+          "title": "Montar, e pôr as palavras",
+          "sub": "Onde as peças se tornam um filme",
+          "body": [
+            "A montagem é onde as fotografias deixam de ser pastas e passam a ser um minuto e quarenta e sete. Sequências juntas, tempos ajustados, e a cor acertada para a luz aguentar de uma cena para a seguinte.",
+            "A tipografia foi acrescentada aqui e não desenhada dentro dos fotogramas, para as palavras ficarem sobre o filme como o texto fica sobre a página de um manuscrito, e os créditos fecham-no."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "made",
+          "title": "Nós os dois e uma mesa",
+          "sub": "Os problemas é que eram a parte boa",
+          "body": [
+            "Correu bem, e a nota não é a parte que vale a pena escrever. O que fica é que isto foi mesmo bom de fazer: nós os dois, uma mesa, uma pilha de papel recortado e um telemóvel preso por cima.",
+            "Cada cena trouxe um problema que só existe nesta maneira de trabalhar. Quanto é que uma asa anda entre duas fotografias até a batida se ler como uma batida. Como manter um cavalo com ar de estar a galopar quando é uma forma plana empurrada com um dedo. Que volume tem de ter um fogo até um dragão de papel começar a parecer perigoso.",
+            "Nada disso se planeia antes e é tudo a parte divertida. Eu e a Carolina dividimos tudo ao meio, do desenho às fotografias e ao som, e o filme é os dois do princípio ao fim."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Carolina Seixas"
+        }
+      ]
     },
     {
       "id": "o-sonho",
@@ -615,17 +1966,10 @@
       "contextText": "Este projeto foi desenvolvido para a cadeira de Projeto II, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "",
       "heroEmbed": "",
-      "description": "Inspirado no conto da cidade invisível de Zobeide, de Italo Calvino, O Sonho é uma curta-metragem que explora os temas universais do desejo, da obsessão e da perpétua busca por aquilo que permanece inalcançável.",
-      "body": [
-        "A narrativa acompanha cinco homens de ofícios distintos (um Pedreiro, um Navegador, um Arquiteto, um Visionário e um Cartógrafo), desconhecidos entre si mas unidos por uma mesma visão noturna. Nos seus sonhos, cada um percorre ruas labirínticas envoltas em nevoeiro, perseguindo a silhueta fugidia de uma mulher misteriosa que desaparece antes de revelar o seu destino.",
-        "Ao despertarem inquietos, a vivacidade das memórias impele cada homem a abandonar a rotina e a partir numa jornada individual. Os caminhos acabam por se cruzar, e decidem materializar a visão partilhada: construir do zero uma cidade à imagem exata dos seus sonhos. Mas, com o tempo, a obsessão dá lugar à nostalgia e à incerteza. A cidade labiríntica torna-se um reflexo psicológico da frustração humana, até ao momento em que uma mulher surge nas suas ruas com uma mala, sem que ninguém saiba ao certo quem é.",
-        "Com uma direção artística inspirada na transição entre os séculos XIX e XX, o projeto constrói uma atmosfera intimista, misteriosa e onírica. O contraste vincado de sombras, o nevoeiro e uma sonoplastia detalhada (passos repetitivos, respirações, ambientes noturnos) transportam o espetador para um universo imersivo sobre a eterna busca e a melancolia do inalcançável."
-      ],
+      "description": "Uma curta construída a partir de Zobeide, uma das cidades invisíveis de Italo Calvino. Cinco desconhecidos sonham a mesma mulher na mesma rua com nevoeiro, e passam a vida atrás dela. Sem diálogo, seis minutos, filmado de noite em Coimbra.",
       "techStack": [
-        "Cinematic Direction",
-        "Scriptwriting",
-        "Foley",
-        "Post-Production"
+        "DaVinci Resolve",
+        "Photoshop"
       ],
       "links": [
         {
@@ -638,6 +1982,84 @@
         "assets/banners/o-sonho/teaser-1.webp",
         "assets/banners/o-sonho/teaser-2.webp",
         "assets/banners/o-sonho/teaser-3.webp"
+      ],
+      "chapters": [
+        {
+          "id": "zobeide",
+          "title": "Escolhi uma cidade que não existe",
+          "sub": "Zobeide, tirada do Calvino",
+          "body": [
+            "O trabalho partia das Cidades Invisíveis do Italo Calvino, e cada um de nós escolheu uma para trabalhar. Fiquei com Zobeide, e as razões ficaram escritas antes de se filmar seja o que for.",
+            "A primeira foi o assunto. Zobeide é sobre desejo e obsessão, sobre perseguir uma coisa que nunca se apanha, que é uma coisa que toda a gente reconhece, tenha lido o livro ou não.",
+            "A segunda era mais fria e igualmente importante. Zobeide é uma cidade de ruas repetidas e espaços fechados, o que quer dizer que se constrói com quase nada. Um filme de estudante que precisa de espetáculo é um filme de estudante que corre mal, e este podia ser carregado pelo símbolo e pelo ambiente."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "story",
+          "title": "Cinco homens e o mesmo sonho",
+          "sub": "Um pedreiro, um navegador, um arquiteto, um visionário, um cartógrafo",
+          "body": [
+            "Cinco homens que nunca se viram sonham a mesma coisa na mesma noite: ruas estreitas debaixo de nevoeiro, e a silhueta de uma mulher que dobra uma esquina e desaparece antes de eles lá chegarem.",
+            "Acordam com o sonho ainda nítido, e cada um vai à procura dele. Os caminhos cruzam-se, e juntos põem-se a tornar real o sítio do sonho. O tempo passa, aquilo que construíram cresce, e cresce também a dúvida sobre se alguma coisa daquilo valeu a pena.",
+            "Depois entra lá uma mulher, com uma mala na mão, e ninguém sabe quem ela é. É esse o fim, e é onde o filme finalmente larga a tensão.",
+            "Cada homem tem um ofício e um quarto seu, e o filme apresenta-os todos da mesma maneira: um corredor, uma cama, um gesto pequeno. Tirar os sapatos. Tirar os óculos. Apagar uma vela."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "silence",
+          "title": "Não se diz uma única palavra",
+          "sub": "O som foi escrito antes da imagem",
+          "body": [
+            "Não há diálogo nenhum no filme, e isso foi decidido no início e não por acaso. A história é sobre uma coisa que ninguém consegue explicar, nem a si próprio, por isso deixar as personagens explicá-la teria desfeito tudo.",
+            "O que substitui o diálogo é uma lista de sons que existia antes de filmarmos um plano: passos que se repetem até virarem um loop, um relógio, cobertores, a respiração calma de quem dorme e a respiração ofegante de quem acorda mal, vozes de bêbados algures na rua, vento.",
+            "O som foi a parte de que tratei principalmente, e num filme onde não se diz nada não é acompanhamento, é onde mora metade do sentido."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "shoot",
+          "title": "Coimbra de noite, iluminada por um carro",
+          "sub": "Roupa emprestada, nevoeiro verdadeiro, quatro noites",
+          "body": [
+            "Foi filmado em Coimbra, nas ruas da cidade, e em casas de pessoas nossas conhecidas, porque um filme com cinco homens que precisam cada um de um quarto precisa de cinco quartos e não tem dinheiro para cenário.",
+            "A roupa é de época, do final do século XIX para o XX, e veio do rancho folclórico, que no-la emprestou. Os atores são colegas nossos.",
+            "A luz foi um carro. Usámos os faróis, apontados para onde o plano precisava, que é o tipo de solução que só envergonha até se ver aquilo no ecrã. E o nevoeiro, de que o sonho inteiro depende, não é máquina nem é efeito: é o nevoeiro que Coimbra tem de qualquer maneira à noite, e filmámos nas noites em que ele lá estava.",
+            "Quatro noites de filmagem e perto de quinhentos takes, em 4K, para seis minutos de filme."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "labyrinth",
+          "title": "O labirinto está na montagem",
+          "sub": "Nunca construímos cidade nenhuma",
+          "body": [
+            "A história tem-nos a levantar uma cidade a partir do sonho. Nós não construímos nenhuma, e nunca foi essa a intenção. É esse o buraco que qualquer adaptação tem de resolver e é a parte do projeto de que gosto mais.",
+            "O labirinto é feito na sala de montagem. Atores a andar e a correr por ruas verdadeiras, filmados de ângulos que escondem onde estão, cortados de forma a parecer que passam na mesma esquina mais do que uma vez e que chegam ao sítio de onde partiram. Planos fechados para o quanto cada um está sozinho, planos abertos para o tamanho da coisa dentro da qual estão.",
+            "Dá-se a quem vê a sensação de um labirinto em vez da imagem de um, e uma sensação é mais barata e dura mais tempo."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "result",
+          "title": "O que correu melhor",
+          "sub": "E os agradecimentos que deve",
+          "body": [
+            "De tudo o que fiz na faculdade, este é o projeto que foi melhor recebido. Não vou pôr a nota num site, mas foi a mais alta que tive.",
+            "É também a coisa mais conceptual que aqui está. Não há diálogo, não há explicação e não há nada que diga a quem vê o que deve sentir, e pede-se à pessoa que venha ter com o filme a meio do caminho. Era esse o risco e é essa a razão de ter resultado.",
+            "Foi feito com a Ana Oliveira e o Rafael Campos, e não existe sem os cinco atores que lhe deram as noites deles. A entrega levou também um cartaz animado e um conjunto de teasers, cortados do mesmo material."
+          ],
+          "layout": "split"
+        }
+      ],
+      "team": [
+        {
+          "name": "Ana Oliveira"
+        },
+        {
+          "name": "Rafael Campos"
+        }
       ]
     },
     {
@@ -651,16 +2073,10 @@
       "heroVideo": "videos/silvestre.webm",
       "heroEmbed": "",
       "poster": "assets/banners/silvestre.webp",
-      "description": "Reinterpretação gráfica da sequência de abertura da longa-metragem Silvestre (1982), de João César Monteiro, protagonizada por Luís Miguel Cintra. Desenvolvido para a 30.ª edição do festival Caminhos do Cinema Português, o trabalho foi selecionado e exibido em sala durante o festival.",
-      "body": [
-        "A proposta procurou traduzir a atmosfera sombria, enigmática e psicologicamente densa da obra através de uma linguagem profundamente artesanal e imersiva. Para construir o suspense, criei um cenário de luz propositadamente reduzida, com um tecido escuro em fundo a anular distrações e a destacar os elementos principais. A iluminação dinâmica e instável foi conseguida de forma prática: a imagem foi gravada enquanto uma chama real era segurada e movida junto à lente, fazendo o oscilar do fogo gerar sombras vivas sobre o set.",
-        "A tipografia recaiu sobre a clássica Baskerville, cuja elegância e formalidade histórica estabelecem uma ponte subtil com a época da narrativa. A sequência estrutura-se como uma espiral de tensão que culmina na visão dramática de um braço coberto de sangue, um sinal visual marcante que introduz a tragédia iminente e prepara o espetador para a densidade da obra."
-      ],
+      "description": "Uma sequência de genérico original para o Silvestre, de João César Monteiro, de 1982. Filmada numa mesa de quarto com uma vela encostada aos objetos, e projetada em sala durante o festival Caminhos do Cinema Português.",
       "techStack": [
-        "Motion Graphics",
-        "Macro Cinematography",
-        "Chiaroscuro",
-        "Typography"
+        "Premiere Pro",
+        "Photoshop"
       ],
       "links": [
         {
@@ -669,27 +2085,79 @@
         }
       ],
       "mockups": [],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "assigned",
+          "title": "O filme foi-me dado",
+          "sub": "Silvestre, sem eu ter escolha nenhuma",
+          "body": [
+            "O exercício era fazer o genérico de um filme português, e os filmes foram atribuídos a partir de uma lista. O meu foi o Silvestre, do João César Monteiro, de 1982.",
+            "Aquilo tudo existia por causa do festival. O Caminhos do Cinema Português, o único festival do país dedicado inteiramente ao cinema português, chegava à trigésima edição e ia homenagear o ator Luís Miguel Cintra, por isso todos os filmes da lista eram filmes em que ele entra.",
+            "A primeira coisa que fiz foi vê-lo. Dava para trabalhar a partir de uma sinopse e teria sido ao contrário: o que se pedia era estabelecer o tom de um filme logo no primeiro fotograma, e não se estabelece o tom de uma coisa por que não se passou."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "objects",
+          "title": "Uma tesoura conta o filme todo",
+          "sub": "Objetos em vez de ilustração",
+          "body": [
+            "A sequência é feita de coisas, filmadas de perto. Não desenhos de coisas nem imagens de arquivo de coisas: objetos verdadeiros, dispostos numa mesa e filmados em macro, para encherem o enquadramento e deixarem de ser banais.",
+            "O que carrega a coisa toda é uma tesoura, que no filme é o que a mulher usa para cortar o cabelo e conseguir passar por homem. Posta sozinha numa mesa, às escuras, uma tesoura de casa transforma-se num instrumento, e quem está a ver já percebeu que género de filme é este antes de o primeiro cartão ter acabado.",
+            "É esse o método inteiro: escolher os objetos de que a história depende, e deixar a luz torná-los ameaçadores."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "candle",
+          "title": "Uma vela encostada aos objetos",
+          "sub": "Um quarto, uma mesa e uma chama",
+          "body": [
+            "Não havia estúdio nem material de iluminação. Foi filmado em casa, numa mesa, com um telemóvel, e a única luz é uma vela encostada àquilo que está a ser filmado.",
+            "Isto não é uma limitação a que se tirou o melhor partido, é a razão de a sequência ter o aspeto que tem. Uma chama nunca está quieta, por isso as sombras mexem-se sozinhas o tempo todo, e tudo o que está no enquadramento fica num claro-escuro duro com um rebordo quente. Dá àquilo uma qualidade fantasmagórica que uma luz fixa não produz e que nenhum filtro imita de forma convincente.",
+            "O calor faz ainda um segundo trabalho. Põe as imagens no passado sem uma única legenda a dizê-lo."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "type",
+          "title": "Baskerville, por causa da época",
+          "sub": "E os créditos cortados ao som",
+          "body": [
+            "O tipo de letra é a Baskerville, escolhida pela formalidade e pela idade. É uma letra com história lá dentro, e compor os créditos nela liga a sequência ao tempo em que a história vive, em surdina, sem ninguém ter de reparar porquê.",
+            "O enunciado fixava o que tinha de aparecer: o título, o realizador, o produtor, o diretor de fotografia, quatro atores incluindo o Luís Miguel Cintra, o ano, e o meu nome em titles design. Trabalhar dentro de uma lista fechada de créditos é que é o exercício tipográfico.",
+            "Os títulos estão cortados ao som e não pousados por cima dele. Cada um entra num fade seco com um efeito a cair no mesmo instante, o que transforma aquilo que seria um rolo de texto numa coisa com pulsação."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "screened",
+          "title": "Foi mostrado numa sala de cinema",
+          "sub": "E quem ajudou a fazê-lo",
+          "body": [
+            "As melhores sequências do exercício foram selecionadas para ser projetadas durante o festival, e a minha foi uma delas. Passou no TAGV e na Casa do Cinema, e eu fui lá vê-la.",
+            "Isso é uma coisa diferente de uma nota. Um genérico é feito para correr às escuras à frente de pessoas, e este chegou a fazê-lo.",
+            "Foi feito sozinho, do princípio ao fim, tirando algumas coisas à frente da câmara para as quais precisei de um segundo par de mãos. A minha mãe e o meu irmão, a quem fica o crédito por isso."
+          ],
+          "layout": "split"
+        }
+      ]
     },
     {
       "id": "o-escaravelho",
-      "title": "O Escaravelho",
+      "title": "Sísifo",
       "category": "motion",
       "year": "2025",
-      "role": "Modelação 3D · Animação · Iluminação",
+      "role": "Modelação 3D · Animação · Iluminação · Som",
       "partners": "",
       "contextText": "Este projeto foi desenvolvido para a cadeira de Computação Gráfica, no âmbito da licenciatura em Design e Multimédia da Universidade de Coimbra.",
       "heroVideo": "videos/sisifo.webm",
       "heroEmbed": "",
       "poster": "assets/banners/o-escaravelho.webp",
-      "description": "Sísifo é uma curta animação 3D em Blender que rompe, concetual e esteticamente, com a proposta inicial do enunciado. Em vez do interior de escritório sugerido, a composição foi levada para um ambiente exterior imersivo, dominado por uma montanha imponente e uma vasta floresta.",
-      "body": [
-        "No centro está um escaravelho, modelado de raiz no Blender, que empurra continuamente uma bola de matéria orgânica. O nome e o tema aludem ao mito de Sísifo, sugerindo uma reflexão sobre a persistência e o fardo de uma tarefa infinda. A cena ganha vida num ciclo complexo de locomoção do inseto, com animação detalhada de patas e overlapping action, sincronizado com a rotação da bola. O esforço é interrompido nos últimos segundos com a entrada de um pássaro, desenhado com curvas Bézier no NLA editor, que agarra o escaravelho e encerra a ação com um desfecho inesperado.",
-        "A construção equilibrou rigor visual e otimização. O primeiro plano tem mapas de textura completos (Albedo, Normal e Displacement) aplicados por UV Mapping e ajustados no Photoshop, enquanto o segundo plano recorre a árvores simplificadas para garantir fluidez no rendering. A iluminação combina uma fonte solar direta com um HDRI ambiental controlado para dar profundidade e coerência às sombras. Na pós-produção, o projeto recebeu sound design dedicado, com efeitos realistas e pequenas variações que amplificam a atmosfera natural e a dramaticidade dos dez segundos de animação."
-      ],
+      "description": "Uma animação 3D de doze segundos construída à volta de uma restrição: o enunciado entregou uma bola já animada a rodar e uma câmara que não se podia mexer. Pôs-se um escaravelho atrás dela para dar uma razão à rotação.",
       "techStack": [
         "Blender",
-        "NLA Editor",
         "Photoshop",
         "Premiere Pro"
       ],
@@ -707,7 +2175,72 @@
           "caption": "Modelo 3D, vista traseira"
         }
       ],
-      "videoHasAudio": true
+      "videoHasAudio": true,
+      "chapters": [
+        {
+          "id": "constraint",
+          "title": "Deram-me uma bola a rodar",
+          "sub": "E uma câmara que eu não podia mexer",
+          "body": [
+            "O exercício não começou num ficheiro vazio. Vinha com uma bola cuja rotação já estava animada e não se podia tocar, uma câmara com restrições, uma cena base, e dez segundos para fazer alguma coisa com aquilo tudo.",
+            "É um problema mais estranho do que parece. Uma bola a rodar no sítio não é um plano, é um facto sem causa. Tudo o que construí existe para responder a uma pergunta: porque é que aquilo está a rodar?"
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "office",
+          "title": "Deitei o escritório fora",
+          "sub": "Uma floresta em vez de uma secretária",
+          "body": [
+            "A cena base que nos deram era um interior de escritório. Não a usei. Apaguei-a e construí outro sítio de raiz, no exterior, com uma montanha atrás e chão de floresta à frente.",
+            "Deu mais trabalho do que aceitar a sala, e foi a decisão de que o filme todo dependeu. Uma bola a rolar na alcatifa de um escritório não tem para onde ir nem o que significar. Uma bola no chão de uma floresta tem as duas coisas."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "beetle",
+          "title": "O escaravelho é a razão de a bola rodar",
+          "sub": "Sísifo, com seis patas",
+          "body": [
+            "A resposta foi pôr um animal atrás dela. Um escaravelho a empurrar uma bola de matéria é uma coisa que existe, toda a gente já viu um, e explica a rotação por inteiro sem ser preciso uma palavra de apresentação.",
+            "Trouxe também o título. Um bicho a empurrar um peso para cima para sempre é o mito de Sísifo, e a partir do momento em que o escaravelho entrou na cena aquilo deixou de ser um exercício com uma bola lá dentro e passou a ser um filme muito pequeno sobre uma tarefa que não acaba.",
+            "É a única coisa da cena modelada do zero: corpo, patas e carapaça, feitos em Blender de propósito para isto."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "build",
+          "title": "O que é meu e o que fui buscar",
+          "sub": "Detalhe à frente, truques atrás",
+          "body": [
+            "Tirando o escaravelho, a cena é montada e não esculpida, e isso é de propósito. Parte da vegetação vem de projetos meus anteriores. O resto, árvores e pedras, veio do BlenderKit e do Sketchfab, e as texturas de bibliotecas como o AmbientCG e o PolyHaven.",
+            "O que decide a qualidade numa construção destas não é quanto se modelou, é onde se pôs o esforço. Só os objetos perto da câmara é que estão modelados a sério, com malhas limpas e otimizadas. As árvores lá ao fundo são falsas, simplificadas até quase não custarem nada, porque ninguém olha para elas e o render tem de acabar.",
+            "Os elementos principais levam conjuntos de textura completos, albedo, normal e displacement, aplicados com UV mapping e retocados no Photoshop onde as emendas se notavam. A iluminação é um sol para as sombras mais um HDRI ambiente de intensidade controlada para o preenchimento suave, com as sombras afinadas para o primeiro plano, a floresta e a montanha se lerem como três distâncias diferentes."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "animation",
+          "title": "As patas, e o pássaro que acaba com aquilo",
+          "sub": "Um ciclo de passo preso à rotação de outra pessoa",
+          "body": [
+            "O escaravelho anda num ciclo completo de push-loop, com overlapping action nas patas para não se mexerem todas como uma peça só, e o ciclo inteiro está preso à velocidade a que a bola já rodava. A animação que fiz tem de concordar com a animação que me deram, ao certo, senão a ilusão desfaz-se.",
+            "Depois entra um pássaro e leva o escaravelho. A animação das asas foi importada e modificada para fazer loop bem; o que construí foi a trajetória, desenhada à mão com curvas de Bézier e keyframes no NLA editor, com slow in e slow out para o arco se ler como um corpo com peso e não como uma forma a deslizar pelo enquadramento.",
+            "Chega nos últimos segundos e é a piada. O escaravelho finalmente pára de empurrar, mas não da maneira que queria."
+          ],
+          "layout": "split"
+        },
+        {
+          "id": "sound",
+          "title": "Doze segundos, e um remate",
+          "sub": "O som veio no fim",
+          "body": [
+            "O som entrou depois, em pós-produção. Alguns gravei-os eu, os outros vieram de uma biblioteca, e é isso que transforma um render limpo num sítio com ar lá dentro.",
+            "A coisa acabada tem doze segundos. Tudo o que está acima, a cena, o animal, o ciclo de passo, as texturas, existe para os encher, e o objetivo inteiro era meter lá dentro uma história pequena e completa sem quebrar uma única regra do enunciado: a câmara ficou onde lhe mandaram, e a bola roda exatamente como me foi entregue."
+          ],
+          "layout": "split"
+        }
+      ]
     }
   ]
 }

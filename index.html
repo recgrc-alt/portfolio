@@ -4,8 +4,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Rogério Edgar · Portfolio</title>
-  <meta name="description" content="Portfolio of Rogério Edgar: design and multimedia." />
+  <!-- WHAT iOS AND ANDROID PAINT AROUND THE PAGE.
+       Safari and Chrome tint their own chrome from this. Left out, Safari
+       guesses from whatever it samples at the top of the document, and this
+       site's top is a fixed WebGL layer rather than a flat colour - so the
+       guess is not reliably the ground the page is actually made of. Stated
+       here, the bar is the same black as the site.
+
+       Hard-coded rather than --color-bg because a meta attribute cannot read a
+       custom property. It is the one place on the site where this value is
+       written twice; if --color-bg ever changes, this changes with it. -->
+  <meta name="theme-color" content="#000000" />
+
+  <title>Rogério Edgar · Interactive Design, 3D and Creative Development</title>
+  <meta name="description" content="Portfolio of Rogério Edgar (Rogerio Edgar), designer and creative developer in Porto, Portugal. Interactive web, real-time 3D, UI/UX and brand." />
 
   <!-- Content-Security-Policy: a rede de seguranca. Mesmo que um dia
        entre por engano markup vindo de fora, o browser recusa-se a
@@ -13,8 +25,13 @@
 
        blob: nao e decorativo. O GLTFLoader extrai as texturas de dentro
        do eye.glb e serve-as como URLs blob:; sem isso o olho carrega sem
-       iris. Foi apanhado a testar esta politica, nao em producao. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'sha256-4ODAao+sk3HqfLrhlo1/4J/pP6Iybrzy9N3XLy4mCSg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+       iris. Foi apanhado a testar esta politica, nao em producao.
+
+       O sha256 em script-src e o do importmap mais abaixo, calculado sobre
+       o texto EXATO entre as tags, espacos incluidos. Mudar um caracter no
+       importmap sem recalcular o hash faz o browser recusa-lo, e sem
+       importmap nao corre JavaScript nenhum no site. Ver vendor/README.md. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-IATkqRMH8LC2/MkVVm5Z0BZ2GjRmMt1Eivlm+m0i9S0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://api-bdc.io https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
 
   <!-- Favicon. Three sizes because browsers ask for different ones and none of
        them negotiate: 16/32 for the tab, 180 for an iOS home screen. The PNGs
@@ -22,30 +39,30 @@
        role and which every other browser would have to download whole just to
        draw sixteen pixels. favicon.ico sits at the site root as well, because
        some clients request /favicon.ico without ever reading the markup. -->
-  <link rel="icon" href="assets/favicon-32.png?v=74" sizes="32x32" type="image/png" />
-  <link rel="icon" href="assets/favicon-16.png?v=74" sizes="16x16" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=74" />
+  <link rel="icon" href="assets/favicon-32.png?v=289" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=289" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=289" />
 
   <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@300..700&display=swap"
     rel="stylesheet" />
 
   <!-- Design tokens first, then the stylesheet. -->
-  <link rel="stylesheet" href="css/tokens.css?v=74" />
-  <link rel="stylesheet" href="css/style.css?v=74" />
-  <link rel="stylesheet" href="css/pages.css?v=74" />
+  <link rel="stylesheet" href="css/tokens.css?v=289" />
+  <link rel="stylesheet" href="css/style.css?v=289" />
+  <link rel="stylesheet" href="css/pages.css?v=289" />
 
   <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
        This MUST come before any module load or preload (see below). -->
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-        "lenis": "https://unpkg.com/lenis@1.1.14/dist/lenis.mjs"
+        "three": "./vendor/three@0.160.0/build/three.module.min.js",
+        "three/addons/": "./vendor/three@0.160.0/examples/jsm/",
+        "lenis": "./vendor/lenis@1.1.14/dist/lenis.mjs"
       }
     }
   </script>
@@ -55,8 +72,110 @@
        that arrives after that point is rejected outright. Firefox enforces
        this strictly: with the preload above the map, every bare "three"
        specifier failed to resolve and the whole bundle died. Keep them here. -->
-  <link rel="preconnect" href="https://unpkg.com" crossorigin />
-  <link rel="modulepreload" href="https://unpkg.com/three@0.160.0/build/three.module.js" crossorigin />
+  <!-- THE DEPTH MAP, ASKED FOR AT PARSE TIME RATHER THAN SIX MODULES LATER.
+       The About photo is two files. The photo itself is already in the markup
+       further down, so the browser starts it here; its depth map was requested
+       only by photo-depth.js, which does not run until every module the home
+       page imports has arrived. That put the smaller of the pair LAST, behind
+       work it has nothing to do with.
+
+       `media` is not decoration. photo-depth.js is skipped entirely where
+       isTouch() is true, and isTouch() is (hover: none) - so this is its exact
+       inverse, and a phone never spends a byte on a file it will not open.
+       Low priority because it must not compete with the first screen.
+
+       `crossorigin` IS LOAD-BEARING, and its absence cost the whole point of
+       this line. A preload is only reused if it matches the real request in
+       credentials mode as well as in URL, and Three.js fetches its textures
+       through ImageLoader, which sets crossOrigin="anonymous". Without the
+       attribute here the browser called them two different requests and
+       downloaded the file TWICE - the opposite of what a preload is for. It
+       says so in the console if you look, which is the only reason this was
+       caught. -->
+  <link rel="preload" as="image" href="assets/foto-depthmap.webp?v=289"
+        media="(hover: hover)" fetchpriority="low" crossorigin />
+
+  <link rel="modulepreload" href="vendor/three@0.160.0/build/three.module.min.js" crossorigin />
+
+  <!-- --- Identity, sharing and structured data ---------------------------
+       CANONICAL first, and absolute. Without it a page reached with a
+       tracking parameter, a trailing slash or over http is a second URL as
+       far as a search engine is concerned, and the two split whatever
+       ranking either would have had on its own.
+
+       The og: tags are what a link to this page looks like when somebody
+       pastes it into a message. Left out, the preview is the URL and
+       nothing else. The image is a real 1200x630 JPEG rather than the
+       site's WebP, because several of the services that render these
+       previews still do not accept WebP.
+
+       The JSON-LD says in machine-readable form what the page says in
+       words. It is a data block, not a script: script-src does not apply
+       to it, which is why it is safe under this page's CSP. -->
+  <link rel="canonical" href="https://rogerioedgar.com/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Rogério Edgar" />
+  <meta property="og:url" content="https://rogerioedgar.com/" />
+  <meta property="og:title" content="Rogério Edgar · Interactive Design, 3D and Creative Development" />
+  <meta property="og:description" content="Portfolio of Rogério Edgar (Rogerio Edgar), designer and creative developer in Porto, Portugal. Interactive web, real-time 3D, UI/UX and brand." />
+  <meta property="og:image" content="https://rogerioedgar.com/assets/social/og-cover.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Rogério Edgar" />
+  <meta property="og:locale" content="en" />
+  <meta property="og:locale:alternate" content="pt_PT" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Rogério Edgar · Interactive Design, 3D and Creative Development" />
+  <meta name="twitter:description" content="Portfolio of Rogério Edgar (Rogerio Edgar), designer and creative developer in Porto, Portugal. Interactive web, real-time 3D, UI/UX and brand." />
+  <meta name="twitter:image" content="https://rogerioedgar.com/assets/social/og-cover.jpg" />
+
+  <meta name="author" content="Rogério Edgar" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Rogério Edgar",
+    "alternateName": [
+      "Rogerio Edgar",
+      "Rogério Correia"
+    ],
+    "url": "https://rogerioedgar.com/",
+    "image": "https://rogerioedgar.com/assets/social/og-cover.jpg",
+    "jobTitle": "Designer and Creative Developer",
+    "description": "Designer and creative developer working across interactive web, real-time 3D, UI/UX, brand identity and motion.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Penafiel",
+      "addressRegion": "Porto",
+      "addressCountry": "PT"
+    },
+    "knowsAbout": [
+      "Interactive Design",
+      "Three.js",
+      "WebGL",
+      "UI/UX Design",
+      "Brand Identity",
+      "Motion Design",
+      "Blender",
+      "Voxel Art"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Rogério Edgar",
+    "url": "https://rogerioedgar.com/",
+    "inLanguage": [
+      "en",
+      "pt"
+    ]
+  }
+  </script>
 </head>
 
 <body>
@@ -70,7 +189,7 @@
   <div class="loader" data-loader aria-hidden="true">
     <video class="loader__eye" data-loader-eye autoplay muted loop playsinline
            width="200" height="200">
-      <source src="assets/loading-eye.webm" type="video/webm" />
+      <source src="assets/loading-eye.webm?v=289" type="video/webm" />
     </video>
     <p class="loader__dots"><span></span><span></span><span></span></p>
   </div>
@@ -167,7 +286,17 @@
         <li class="service" data-reveal>
           <a class="service__link" href="work.html#cat-branding">
             <span class="service__index">03.</span>
-            <span class="service__label" data-i18n="services.03">Branding &amp; Motion</span>
+            <span class="service__label" data-i18n="services.03">Brand &amp; Identity</span>
+          </a>
+        </li>
+        <!-- The gallery has always had four categories; this list had three,
+             so the home page promised one fewer discipline than the work page
+             delivered. The labels here now read exactly as the gallery's own
+             category headings do, so the promise and the destination match. -->
+        <li class="service" data-reveal>
+          <a class="service__link" href="work.html#cat-motion">
+            <span class="service__index">04.</span>
+            <span class="service__label" data-i18n="services.04">Motion &amp; Audiovisual</span>
           </a>
         </li>
       </ul>
@@ -187,7 +316,26 @@
           <!-- Hidden on desktop, where the statement is painted to the canvases
                below and revealed by the cursor. On a phone there is no cursor,
                so THIS becomes the visible statement, sitting over the photo. -->
-          <h2 class="visually-hidden about__statement" data-i18n="about.statementSr">Interactive web built with code and curiosity</h2>
+          <!-- THE TEXT LIVES IN A SPAN, AND THAT IS NOT DECORATION.
+               The h2 centres its content with `display: grid`, and in a grid every
+               child is an item in a row of its own. split-lines.js works out where
+               the visual lines are by measuring each word's position - so wrapping
+               the words directly in the h2 made the browser put one word per row
+               and the split found seven "lines" in a sentence that has three. The
+               span is one grid item, and inside it the words wrap normally again.
+
+               data-lines is what gets split and what is watched for coming into
+               view. NOT data-reveal: that attribute carries its own opacity rule,
+               and this heading already has one driven by the section's scroll
+               progress - the two would fight over the same property and the
+               stronger selector would win, which is the fade-out.
+
+               data-i18n moves down here with the text, because the dictionary
+               writes textContent and would erase the span from the h2. -->
+          <h2 class="visually-hidden about__statement">
+            <span class="about__statement-line" data-lines
+                  data-i18n="about.statementSr">Interactive web built with code and curiosity</span>
+          </h2>
 
           <div class="reveal__stage">
             <!-- text → photo → text. Both statement layers are canvases painted
@@ -205,7 +353,7 @@
                  edge to edge and crops to portrait like a phone expects.
                  display:none on desktop; and on touch photo-depth.js is never
                  started at all, so the phone is spared a WebGL context. -->
-            <img class="reveal__still" src="assets/foto.webp?v=74" alt="" decoding="async" />
+            <img class="reveal__still" src="assets/foto.webp?v=289" alt="" decoding="async" />
             <canvas class="reveal__canvas reveal__canvas--front" data-reveal-front aria-hidden="true"></canvas>
           </div>
         </div>
@@ -264,147 +412,192 @@
          clean white on hover — the inverse of the nav. -->
     <section class="skills" id="skills" data-skills>
       <div class="skills__stage">
-        <h2 class="skills__title" data-i18n="skills.title">Capabilities &amp; Toolkit</h2>
+        <!-- Split into its visual lines and raised one after another as it
+             comes into view, the same way the About statement is. Where the
+             title fits on ONE line - which is every desktop width - split-lines
+             leaves it alone and there is nothing to animate, so this only ever
+             shows itself where the heading actually wraps. -->
+        <h2 class="skills__title" data-lines data-i18n="skills.title">Capabilities &amp; Toolkit</h2>
 
         <div class="marquee" data-marquee>
           <ul class="marquee__track">
-            <li class="skill">
+            <li>
+            <a class="skill" href="work.html?tool=Figma#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="Figma">Figma</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Blender#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="Blender">Blender</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Photoshop#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Ps" aria-hidden="true">Ps</span>
               </span>
               <span class="skill__name text-echo" data-text="Photoshop">Photoshop</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Illustrator#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Ai" aria-hidden="true">Ai</span>
               </span>
               <span class="skill__name text-echo" data-text="Illustrator">Illustrator</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=After%20Effects#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Ae" aria-hidden="true">Ae</span>
               </span>
               <span class="skill__name text-echo" data-text="After Effects">After Effects</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Premiere%20Pro#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Pr" aria-hidden="true">Pr</span>
               </span>
               <span class="skill__name text-echo" data-text="Premiere Pro">Premiere Pro</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Three.js#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="Three.js">Three.js</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=JavaScript#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="JavaScript">JavaScript</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=HTML#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="HTML">HTML</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=CSS#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="CSS">CSS</span>
-            </li>
+            </a>
+          </li>
           </ul>
 
           <!-- Duplicate set: the loop translates by exactly one track width, so
                the seam is invisible. Hidden from assistive tech. -->
           <ul class="marquee__track" aria-hidden="true">
-            <li class="skill">
+            <li>
+            <a class="skill" href="work.html?tool=Figma#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="Figma">Figma</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Blender#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="Blender">Blender</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Photoshop#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Ps" aria-hidden="true">Ps</span>
               </span>
               <span class="skill__name text-echo" data-text="Photoshop">Photoshop</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Illustrator#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Ai" aria-hidden="true">Ai</span>
               </span>
               <span class="skill__name text-echo" data-text="Illustrator">Illustrator</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=After%20Effects#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Ae" aria-hidden="true">Ae</span>
               </span>
               <span class="skill__name text-echo" data-text="After Effects">After Effects</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Premiere%20Pro#work-list">
               <span class="skill__mark">
                 <span class="skill__mono text-echo" data-text="Pr" aria-hidden="true">Pr</span>
               </span>
               <span class="skill__name text-echo" data-text="Premiere Pro">Premiere Pro</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=Three.js#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M.38 0a.268.268 0 0 0-.256.332l2.894 11.716a.268.268 0 0 0 .01.04l2.89 11.708a.268.268 0 0 0 .447.128L23.802 7.15a.268.268 0 0 0-.112-.45l-5.784-1.667a.268.268 0 0 0-.123-.035L6.38 1.715a.268.268 0 0 0-.144-.04L.456.01A.268.268 0 0 0 .38 0zm.374.654L5.71 2.08 1.99 5.664zM6.61 2.34l4.864 1.4-3.65 3.515zm-.522.12l1.217 4.926-4.877-1.4zm6.28 1.538l4.878 1.404-3.662 3.53zm-.52.13l1.208 4.9-4.853-1.392zm6.3 1.534l4.947 1.424-3.715 3.574zm-.524.12l1.215 4.926-4.876-1.398zm-15.432.696l4.964 1.424-3.726 3.586zM8.047 8.15l4.877 1.4-3.66 3.527zm-.518.137l1.236 5.017-4.963-1.432zm6.274 1.535l4.965 1.425-3.73 3.586zm-.52.127l1.235 5.012-4.958-1.43zm-9.63 2.438l4.873 1.406-3.656 3.523zm5.854 1.687l4.863 1.403-3.648 3.51zm-.54.04l1.214 4.927-4.875-1.4zm-3.896 4.02l5.037 1.442-3.782 3.638z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="Three.js">Three.js</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=JavaScript#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="JavaScript">JavaScript</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=HTML#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="HTML">HTML</span>
-            </li>
-            <li class="skill">
+            </a>
+          </li>
+            <li>
+            <a class="skill" href="work.html?tool=CSS#work-list">
               <span class="skill__mark">
                 <svg class="skill__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
                 <svg class="skill__icon skill__icon--echo" viewBox="0 0 24 24" aria-hidden="true"><path d="M0 0v20.16A3.84 3.84 0 0 0 3.84 24h16.32A3.84 3.84 0 0 0 24 20.16V3.84A3.84 3.84 0 0 0 20.16 0Zm14.256 13.08c1.56 0 2.28 1.08 2.304 2.64h-1.608c.024-.288-.048-.6-.144-.84-.096-.192-.288-.264-.552-.264-.456 0-.696.264-.696.84-.024.576.288.888.768 1.08.72.288 1.608.744 1.92 1.296q.432.648.432 1.656c0 1.608-.912 2.592-2.496 2.592-1.656 0-2.4-1.032-2.424-2.688h1.68c0 .792.264 1.176.792 1.176.264 0 .456-.072.552-.24.192-.312.24-1.176-.048-1.512-.312-.408-.912-.6-1.32-.816q-.828-.396-1.224-.936c-.24-.36-.36-.888-.36-1.536 0-1.44.936-2.472 2.424-2.448m5.4 0c1.584 0 2.304 1.08 2.328 2.64h-1.608c0-.288-.048-.6-.168-.84-.096-.192-.264-.264-.528-.264-.48 0-.72.264-.72.84s.288.888.792 1.08c.696.288 1.608.744 1.92 1.296.264.432.408.984.408 1.656.024 1.608-.888 2.592-2.472 2.592-1.68 0-2.424-1.056-2.448-2.688h1.68c0 .744.264 1.176.792 1.176.264 0 .456-.072.552-.24.216-.312.264-1.176-.048-1.512-.288-.408-.888-.6-1.32-.816-.552-.264-.96-.576-1.2-.936s-.36-.888-.36-1.536c-.024-1.44.912-2.472 2.4-2.448m-11.031.018c.711-.006 1.419.198 1.839.63.432.432.672 1.128.648 1.992H9.336c.024-.456-.096-.792-.432-.96-.312-.144-.768-.048-.888.24-.12.264-.192.576-.168.864v3.504c0 .744.264 1.128.768 1.128a.65.65 0 0 0 .552-.264c.168-.24.192-.552.168-.84h1.776c.096 1.632-.984 2.712-2.568 2.688-1.536 0-2.496-.864-2.472-2.472v-4.032c0-.816.24-1.44.696-1.848.432-.408 1.146-.624 1.857-.63"/></svg>
               </span>
               <span class="skill__name text-echo" data-text="CSS">CSS</span>
-            </li>
+            </a>
+          </li>
           </ul>
         </div>
 
@@ -429,8 +622,22 @@
       <h2 class="footer__title" data-i18n="footer.title">Let's build something unique</h2>
 
       <p class="footer__status">
-        <span class="footer__dot" aria-hidden="true"></span>
-        <span data-i18n="footer.status">Available for freelance &amp; full-time roles</span>
+        <!-- Two lines in one place, taking turns. The availability is the
+             statement; the invitation is what to do about it.
+             EACH CARRIES ITS OWN DOT. One shared dot outside meant the pair
+             was only ever adjacent for whichever line was the wider of the
+             two, and the cell is as wide as that one. Inside, each line is a
+             self-contained unit that can be centred on its own. -->
+        <span class="footer__swap">
+          <span class="footer__swap-item">
+            <span class="footer__dot" aria-hidden="true"></span>
+            <span data-i18n="footer.status">Available for freelance &amp; full-time roles</span>
+          </span>
+          <a class="footer__swap-item footer__swap-cta" href="contact.html">
+            <span class="footer__dot" aria-hidden="true"></span>
+            <span data-i18n="footer.contact">Contact me</span>
+          </a>
+        </span>
       </p>
 
       <ul class="footer__links">
@@ -485,7 +692,7 @@
     <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
   </div>
 
-  <script type="module" src="js/main.js?v=74"></script>
+  <script type="module" src="js/main.js?v=289"></script>
 
 </body>
 

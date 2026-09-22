@@ -1,0 +1,9 @@
+# Everything here is meant to be found. There is no admin area, no login and
+# no private path on this site, so there is nothing to keep a crawler out of.
+User-agent: *
+Allow: /
+
+# The gallery and the case studies are built by JavaScript from
+# data/projects.*.json. A crawler that renders sees them; one that does not
+# still needs the sitemap below to know the project URLs exist at all.
+Sitemap: https://rogerioedgar.com/sitemap.xml

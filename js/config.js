@@ -77,6 +77,13 @@ export const config = {
       envFill:    0.8,
       envRim:     1.4,
       envBounce:  0.12,       // the bounce card, seen in reflections
+
+      /* The mirrored spark on the cornea — "a pinta branca". Lives in the
+         ENVIRONMENT, not the rig: only the map can put a hard reflection on
+         the wet film. Small and far brighter than anything else in the room,
+         which is what a catchlight is. */
+      envCatch:     26.0,
+      envCatchSize: 0.34,
       /* PMREM blur. Three clamps its kernel at 20 samples, which puts the
          largest usable value at ~0.039 for a 256px LOD; 0.22 was silently
          capped and produced an undersampled, banded blur plus a console
@@ -120,6 +127,32 @@ export const config = {
 
     followStrength: 0.22,     // how far the eyeball rotates toward the cursor (rad)
     followEase:     0.08,     // 0..1 smoothing per frame (lower = lazier)
+    /* --- The dust around the eye -------------------------------------------
+     * A bokeh field in the space the model sits in, so the black back there
+     * reads as a volume rather than as a backdrop, and so a few motes drift
+     * across the front of the eye the way dust in a room does. See
+     * eye-dust.js.
+     *
+     * THE WHOLE FEATURE HANGS OFF `enabled`. False and nothing is built,
+     * imported or drawn; removing the module needs only that and the two
+     * lines in eye.js that call it. */
+    dust: {
+      enabled: true,
+      count: 320,      // all of them inside the frustum, so this is the
+                       // density on screen rather than a raw total
+      front: 0.1,      // the share that passes IN FRONT of the eye. Small on
+                       // purpose: those are the only motes drawn over the
+                       // iris, and a crowd of them reads as a dirty lens
+      size: 9,         // px across at the focal plane, at DPR 1
+      spread: 7,       // how much a mote at the far wall opens up
+      maxSize: 110,    // px ceiling on any one mote, before DPR
+      opacity: 0.2,    // the ceiling; every mote is dimmer than this
+      drift: 0.22,     // world units of wander, over a period of minutes
+      flow: 0.01,      // the steady crossing. ~3 minutes edge to edge; this
+                       // is what makes them pass rather than only shimmer
+      parallax: 0.9,   // how far the field slides against the pointer
+      warmth: 0.65,    // 0 borrows the sky colour, 1 the sun colour
+    },
   },
 
   /* --- Photo depth parallax --------------------------------------------

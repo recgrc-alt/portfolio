@@ -1,7 +1,7 @@
 /* ==========================================================================
    EYE  ·  Three.js scene for the hero eyeball
    --------------------------------------------------------------------------
-   Loads the real Blender model (assets/models/eye.glb) and dresses it in
+   Loads the real Blender model (assets/models/eye-opt.glb) and dresses it in
    code-driven materials:
      · sclera  → matte white + clearcoat (wet), lit by scene + environment
      · iris    → PBR material with a procedural amber→green + fibers gradient
@@ -24,13 +24,14 @@ import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUnifo
 import {
   createScleraMaterial,
   vertexShader, fragmentShader, createEyeUniforms,
-} from "./iris-shader.js?v=74";
+} from "./iris-shader.js?v=289";
 import {
   buildStudioEnvironment, buildLightRig, createPupilMaterial,
-} from "./eye-lighting.js?v=74";
-import { startTimeOfDay } from "./eye-time.js?v=74";
-import { currentHour } from "./time-override.js?v=74";
-import { runEffects } from "./eye-effects.js?v=74";
+} from "./eye-lighting.js?v=289";
+import { startTimeOfDay } from "./eye-time.js?v=289";
+import { currentHour } from "./time-override.js?v=289";
+import { initEyeDust } from "./eye-dust.js?v=289";
+import { runEffects } from "./eye-effects.js?v=289";
 
 export function initEye({ canvas, pointer, config }) {
 
@@ -70,6 +71,12 @@ export function initEye({ canvas, pointer, config }) {
     // afternoon. With no picker on the page this returns the real time.
     now: currentHour,
   });
+
+  /* --- The dust behind the eye -------------------------------------------
+   * One line to build it, one line in the loop to move it, one boolean in
+   * config.js to switch it off. It owns its own clock, its own geometry and
+   * its own teardown; nothing else in this file knows what it is. */
+  const dust = initEyeDust({ THREE, scene, config });
 
   /* --- Shared context for effects --------------------------------------- */
   const ctx = {
@@ -136,8 +143,23 @@ export function initEye({ canvas, pointer, config }) {
   }
 
   /* --- Load the eye model (fallback: shader-sphere) --------------------- */
+  /* eye-opt.glb, NOT eye.glb, and the two are the same model. The only
+     difference is how the iris photo is stored: eye.glb embeds it as a
+     1032 KB PNG, eye-opt.glb as a 205 KB WebP (EXT_texture_webp, which
+     GLTFLoader reads natively). 1231 KB down to 403 KB, on every page, since
+     the eye is on every page.
+
+     Checked before switching, not assumed: every geometry buffer is byte for
+     byte the same, the alpha channel is identical bit for bit, and rendered
+     through this same loader the two differ by 0.08 levels in 255 on average
+     and 4 at most. The WebP keeps the colour under the transparent pixels
+     (encoded with exact=True) because this iris material is OPAQUE, so that
+     colour reaches the screen through the mipmaps at the rim.
+
+     eye.glb stays in the folder as the untouched original. Going back is this
+     one line. */
   new GLTFLoader().load(
-    "assets/models/eye.glb",
+    "assets/models/eye-opt.glb",
     (gltf) => {
       dressModel(gltf.scene);
       const eye = fitModel(gltf.scene, 1.0);
@@ -200,16 +222,50 @@ export function initEye({ canvas, pointer, config }) {
       ctx.eye.rotation.y += (ctx.lookTarget.ry - ctx.eye.rotation.y) * ease;
     }
 
+    /* OUTSIDE the `if (ctx.eye)` above, deliberately: the field is the space
+       the eye sits in and should be there whether or not the model has
+       finished loading. It also reads ctx.px / ctx.py, which are written in
+       that block, so on the first frames before the model arrives it simply
+       parallaxes from zero. */
+    dust?.update(ctx, renderer.getPixelRatio());
+
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
-  /* --- Pause when the tab is hidden ------------------------------------- */
-  document.addEventListener("visibilitychange", () => {
-    running = !document.hidden;
+  /* --- When this is allowed to run ---------------------------------------
+   * TWO REASONS TO STOP, HELD AS TWO FLAGS. The tab being switched away and
+   * the eye being buried under a sealed section are different events, and
+   * folding them into one boolean means whichever happened last decides for
+   * both: scroll into a chapter, switch tabs, come back, and the eye would
+   * restart underneath ground that still covers it.
+   *
+   * `last` is reset on every restart. dt is clamped inside the loop anyway,
+   * but resetting it is what keeps the first frame after a long pause from
+   * being a frame at all rather than a jump that has to be clamped away.
+   */
+  let awake = !document.hidden;      // the tab is in front
+  let wanted = true;                 // something can actually see the canvas
+
+  function sync() {
+    const next = awake && wanted;
+    if (next === running) return;
+    running = next;
     if (running) { last = performance.now(); requestAnimationFrame(frame); }
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    awake = !document.hidden;
+    sync();
   });
 
-  return { scene, camera, renderer, ctx, rig, stopTimeOfDay };
+  return {
+    scene, camera, renderer, ctx, rig, stopTimeOfDay, dust,
+    /* Called by scene-power.js, which is the thing that knows whether the page
+       has laid opaque ground over this canvas. The eye deliberately does not
+       work that out for itself: it would have to know about section classes it
+       has no other reason to have heard of. */
+    setRunning(on) { wanted = !!on; sync(); },
+  };
 }
