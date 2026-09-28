@@ -1,18 +1,57 @@
 # Rogério Edgar
 
-> Designer and creative developer based in Penafiel, Porto district, Portugal.
+> Designer and creative developer based in Porto, Portugal, from Penafiel in the
+> Porto district. Graduated in Design and Multimedia from the University of
+> Coimbra, and now doing a master's degree.
 > Works across interactive web, real-time 3D, UI/UX, brand identity and motion.
-> Also written without the accents as "Rogerio Edgar".
+> Full name Rogério Edgar Carneiro Geraldes Rodrigues Correia. He goes by
+> Rogério Edgar Correia, or Rogério Correia. The accents belong on the name;
+> it is also written "Rogerio Edgar" and "Rogerio Correia" where accents are
+> stripped.
 
-This site is a portfolio. Every case study is a first-person account of how one
-project was actually built, including what went wrong, rather than a gallery of
-finished screens.
+This site is a portfolio, and it is written as a set of accounts rather than a
+gallery. Each project page follows one piece of work from the brief to the end:
+what was tried, what broke, what was thrown away, and what was done instead to
+reach the result. The failures are named rather than edited out, and the
+finished screens are the smallest part of each page.
+
+The site itself is his own work: hand-written HTML, CSS and JavaScript, with
+Three.js for the real-time 3D, no framework and no page builder. It reads in
+Portuguese and in English.
+
+## Background
+
+The path started in secondary school, in Visual Arts, and turned towards code
+from there: design first, then programming, and now the two in the same piece
+of work.
+
+He graduated in Design and Multimedia from the University of Coimbra. In 2026
+he was admitted to the master's degree ranked first in the intake, with an
+average of 19.2 out of 20.
+
+He works as Senior Designer at jeKnowledge, the junior enterprise where several
+of the client projects below were made. He works on both sides of the same
+project, the design and the code, and the part he is usually called in for is
+finding the UX and UI problems in an interface that already exists.
+
+He is fast with the current AI tools, and the useful part is what sits under
+them: enough programming to tell an answer that works from one that only looks
+right, and enough design to tell a finished result from a good one. The
+Treasure Within case study says it plainly. The AIs were asked for the hard
+collision and camera maths, the answers broke the code further and left the
+ship flying upside down, and the problem was worked out on paper in the end.
 
 ## Pages
 
 - [Home](https://rogerioedgar.com/): who he is, the toolkit, and the way in.
 - [Work](https://rogerioedgar.com/work.html): every project, filterable by discipline and tool.
 - [Contact](https://rogerioedgar.com/contact.html): how to reach him.
+
+## Elsewhere
+
+- [LinkedIn](https://www.linkedin.com/in/rogerio-edgar-correia/)
+- [Behance](https://www.behance.net/Rogerio_Correia)
+- [GitHub](https://github.com/recgrc-alt)
 
 ## Projects
 
