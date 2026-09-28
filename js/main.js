@@ -17,26 +17,26 @@
    Orchestration lives here; logic lives in the modules.
    ========================================================================== */
 
-import { config } from "./config.js?v=291";
-import { startClock } from "./clock.js?v=291";
-import { initI18n, i18nReady } from "./i18n.js?v=291";
-import { holdPage, pageReady, sealPage } from "./page-ready.js?v=291";
-import { createPointer } from "./pointer.js?v=291";
-import { initEye } from "./eye.js?v=291";
-import { initScenePower } from "./scene-power.js?v=291";
-import { initSmoothScroll, holdScrollTarget } from "./smooth-scroll.js?v=291";
-import { initReveal, settleInView, replayEntrances } from "./reveal.js?v=291";
-import { initClickSound } from "./click-sound.js?v=291";
-import { initPrefetch } from "./prefetch.js?v=291";
-import { initAmbience } from "./ambience.js?v=291";
-import { initSoundToggle } from "./sound-toggle.js?v=291";
-import { initCursor } from "./cursor.js?v=291";
-import { initCardAudio } from "./card-audio.js?v=291";
-import { initPageTransition } from "./page-transition.js?v=291";
-import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=291";
-import { initNavMenu } from "./nav-menu.js?v=291";
-import { initCardCarousel } from "./card-carousel.js?v=291";
-import { initLoader } from "./loader.js?v=291";
+import { config } from "./config.js?v=289";
+import { startClock } from "./clock.js?v=289";
+import { initI18n, i18nReady } from "./i18n.js?v=289";
+import { holdPage, pageReady, sealPage } from "./page-ready.js?v=289";
+import { createPointer } from "./pointer.js?v=289";
+import { initEye } from "./eye.js?v=289";
+import { initScenePower } from "./scene-power.js?v=289";
+import { initSmoothScroll, holdScrollTarget } from "./smooth-scroll.js?v=289";
+import { initReveal, settleInView, replayEntrances } from "./reveal.js?v=289";
+import { initClickSound } from "./click-sound.js?v=289";
+import { initPrefetch } from "./prefetch.js?v=289";
+import { initAmbience } from "./ambience.js?v=289";
+import { initSoundToggle } from "./sound-toggle.js?v=289";
+import { initCursor } from "./cursor.js?v=289";
+import { initCardAudio } from "./card-audio.js?v=289";
+import { initPageTransition } from "./page-transition.js?v=289";
+import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=289";
+import { initNavMenu } from "./nav-menu.js?v=289";
+import { initCardCarousel } from "./card-carousel.js?v=289";
+import { initLoader } from "./loader.js?v=289";
 
 /* Bumped whenever the JS changes. If the console does not show this exact
    line, the browser is running a CACHED old bundle — hard-reload or clear the
@@ -106,14 +106,14 @@ function boot() {
     hudExtrasWired = true;
 
     // Neither asks for anything on arrival — see the modules.
-    import("./distance.js?v=291").then((m) =>
+    import("./distance.js?v=289").then((m) =>
       m.initDistance(document.querySelector("[data-distance]"))
     );
 
     // Pressing the local time opens the hour scrubber, which re-lights the eye
     // live. Loaded on demand: it is an extra, and a page where nobody presses
     // it should not pay to download it.
-    import("./hour-picker.js?v=291").then((m) =>
+    import("./hour-picker.js?v=289").then((m) =>
       m.initHourPicker(document.querySelector(".meta--time"))
     );
   }
@@ -156,7 +156,7 @@ function boot() {
   /* The other half of "Drag / Scroll to explore". Loaded on demand and it
      returns null on a touch screen, where the browser already does this
      better than any script could. See drag-scroll.js. */
-  import("./drag-scroll.js?v=291").then((m) => m.initDragScroll(lenis));
+  import("./drag-scroll.js?v=289").then((m) => m.initDragScroll(lenis));
 
   const pointer = createPointer();
   const canvas = document.getElementById("eye-canvas");
@@ -256,14 +256,14 @@ function boot() {
   // WORK — the gallery, built from data/projects.json.
   if (document.querySelector("[data-work-gallery]")) {
     // The cards ARE this page. Nothing should uncover before they exist.
-    holdPage(import("./work-gallery.js?v=291").then(async (m) => {
+    holdPage(import("./work-gallery.js?v=289").then(async (m) => {
       await m.initWorkGallery(document.querySelector("[data-work-gallery]"));
 
       /* Only now. Two of the three things this sets up — the anchors from the
          hero index and the echo on each category heading — need the sections
          and headings to exist, and they are built from JSON a moment ago. Run
          earlier it would find nothing and silently do nothing. */
-      const page = await import("./work-page.js?v=291");
+      const page = await import("./work-page.js?v=289");
       page.initWorkPage({ lenis });
     }));
 
@@ -272,18 +272,18 @@ function boot() {
        uncovers, and making the loading screen wait for it would be paying
        for something off screen. It builds from the same JSON, which by then
        is already in the cache. */
-    import("./work-list.js?v=291").then((m) => {
+    import("./work-list.js?v=289").then((m) => {
       m.initWorkList(document.querySelector("[data-work-list]"), { lenis });
     });
   }
 
   // PROJECT — one template filled from the ?id= parameter.
   if (document.querySelector("[data-project-page]")) {
-    holdPage(import("./project-page.js?v=291").then(async (m) => {
+    holdPage(import("./project-page.js?v=289").then(async (m) => {
       await m.initProjectPage(document.querySelector("[data-project-page]"));
       // The hero video is injected by the module, so its feed observer can
       // only be wired after that has run.
-      const { initCamFeeds } = await import("./cam-feeds.js?v=291");
+      const { initCamFeeds } = await import("./cam-feeds.js?v=289");
       initCamFeeds(document.querySelector("[data-project-page]"));
 
       /* --- The depth chapters, once their canvases exist --------------------
@@ -298,7 +298,7 @@ function boot() {
 
   // CONTACT — the copy button and the form.
   if (document.querySelector("[data-contact]")) {
-    import("./contact.js?v=291").then((m) =>
+    import("./contact.js?v=289").then((m) =>
       m.initContact(document.querySelector("[data-contact]"))
     );
   }
@@ -330,8 +330,8 @@ function boot() {
  * parallax that stops, not the content. */
 async function initDepthChapters(canvases, { pointer, lenis }) {
   const [{ initDepthMedia }, { trackScrollProgress }] = await Promise.all([
-    import("./depth-media.js?v=291"),
-    import("./scroll-progress.js?v=291"),
+    import("./depth-media.js?v=289"),
+    import("./scroll-progress.js?v=289"),
   ]);
 
   const semMovimento = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -389,12 +389,12 @@ async function initHome({ pointer, lenis }) {
     { initHorizontalScroll },
     { bindProgressToProperty, trackScrollProgress },
   ] = await Promise.all([
-    import("./scroll-fx.js?v=291"),
-    import("./reveal-photo.js?v=291"),
-    import("./photo-depth.js?v=291"),
-    import("./marquee.js?v=291"),
-    import("./horizontal-scroll.js?v=291"),
-    import("./scroll-progress.js?v=291"),
+    import("./scroll-fx.js?v=289"),
+    import("./reveal-photo.js?v=289"),
+    import("./photo-depth.js?v=289"),
+    import("./marquee.js?v=289"),
+    import("./horizontal-scroll.js?v=289"),
+    import("./scroll-progress.js?v=289"),
   ]);
 
   initHeroScrollFx(lenis);
@@ -496,7 +496,7 @@ async function initHome({ pointer, lenis }) {
    * when that happens. */
   const frase = document.querySelector("[data-lines]");
   if (frase) {
-    const { keepSplit } = await import("./split-lines.js?v=291");
+    const { keepSplit } = await import("./split-lines.js?v=289");
     /* On the HEADING, not on the span: the h2 is what a screen reader
        announces, and once the span is split its textContent runs the lines
        together - "Interactive webbuilt with code". Taken while it is still a

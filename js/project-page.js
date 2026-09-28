@@ -33,19 +33,19 @@
 
 import {
   loadProjects, getProject, getCategory, resolveField, nextProject,
-} from "./projects.js?v=291";
-import { actionButton, echoLabel, safeUrl } from "./project-actions.js?v=291";
-import { initReveal } from "./reveal.js?v=291";
-import { keepSplit } from "./split-lines.js?v=291";
-import { buildChapters, buildSpecs } from "./project-chapters.js?v=291";
-import { resetSlots } from "./project-slot.js?v=291";
-import { buildTeamRail } from "./project-team.js?v=291";
-import { initAmbient } from "./project-ambient.js?v=291";
-import { t } from "./i18n.js?v=291";
-import { fillMedia } from "./media.js?v=291";
-import { initReels } from "./reel-player.js?v=291";
-import { setAmbienceSource } from "./ambience.js?v=291";
-import { linkSoundToBanner } from "./banner-sound.js?v=291";
+} from "./projects.js?v=289";
+import { actionButton, echoLabel, safeUrl } from "./project-actions.js?v=289";
+import { initReveal } from "./reveal.js?v=289";
+import { keepSplit } from "./split-lines.js?v=289";
+import { buildChapters, buildSpecs } from "./project-chapters.js?v=289";
+import { resetSlots } from "./project-slot.js?v=289";
+import { buildTeamRail } from "./project-team.js?v=289";
+import { initAmbient } from "./project-ambient.js?v=289";
+import { t } from "./i18n.js?v=289";
+import { fillMedia } from "./media.js?v=289";
+import { initReels } from "./reel-player.js?v=289";
+import { setAmbienceSource } from "./ambience.js?v=289";
+import { linkSoundToBanner } from "./banner-sound.js?v=289";
 
 /* --- WHAT USED TO BE HERE ------------------------------------------------
  * A table of Simple Icons slugs, a fetch cache, and an async toolIcon() that
@@ -114,13 +114,7 @@ function setMeta(name, content) {
 export async function initProjectPage(root) {
   if (!root) return null;
 
-  /* TWO WAYS TO SAY WHICH PROJECT THIS IS, and the page needs both.
-     `?id=` is how project.html has always been addressed. `data-project` on
-     the <main> is how the pre-rendered file for a single project says so
-     without a query string, which is what lets each case study have its own
-     URL and its own text sitting in the HTML before a line of this runs.
-     See tools/build-project-pages.py. */
-  const id = new URLSearchParams(location.search).get("id") || root.dataset.project || null;
+  const id = new URLSearchParams(location.search).get("id");
 
   async function render() {
     let data;
@@ -156,7 +150,7 @@ export async function initProjectPage(root) {
     document.title = titulo;
     setProp("og:title", titulo);
     setMeta("twitter:title", titulo);
-    setProp("og:url", `${SITE_ORIGIN}/${project.id}.html`);
+    setProp("og:url", `${SITE_ORIGIN}/project.html?id=${encodeURIComponent(project.id)}`);
 
     /* --- The head, per project ------------------------------------------
      * project.html ships one description for all nineteen case studies, which
@@ -176,7 +170,7 @@ export async function initProjectPage(root) {
       const l = document.createElement("link");
       l.rel = "canonical";
       return l;
-    }).href = `${SITE_ORIGIN}/${project.id}.html`;
+    }).href = `${SITE_ORIGIN}/project.html?id=${encodeURIComponent(project.id)}`;
 
     /* A previous render may have marked the page noindex for a bad id. This one
        found a project, so that verdict is out of date. */
@@ -890,7 +884,7 @@ function buildOnward(project, data) {
   if (next) {
     const link = document.createElement("a");
     link.className = "btn btn--next";
-    link.href = `${next.id}.html`;
+    link.href = `project.html?id=${encodeURIComponent(next.id)}`;
 
     const label = document.createElement("span");
     label.className = "btn__label";

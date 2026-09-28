@@ -40,9 +40,9 @@
    know where the page is scrolled to.
    ========================================================================== */
 
-import { canPlay, onChange } from "./audio-state.js?v=291";
-import { onDuckChange } from "./audio-ducking.js?v=291";
-import { getAudioContext, resumeAudio } from "./audio-context.js?v=291";
+import { canPlay, onChange } from "./audio-state.js?v=289";
+import { onDuckChange } from "./audio-ducking.js?v=289";
+import { getAudioContext, resumeAudio } from "./audio-context.js?v=289";
 
 // The active instance, so page-transition.js can fade it on the way out
 // without having to be handed a reference through main.js.
