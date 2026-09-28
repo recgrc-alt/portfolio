@@ -35,8 +35,8 @@
    the first drag spends the rest of the page facing wherever it was left.
    ========================================================================== */
 
-import { isCompact } from "./viewport.js?v=289";
-import { t } from "./i18n.js?v=289";
+import { isCompact } from "./viewport.js?v=291";
+import { t } from "./i18n.js?v=291";
 
 const MAX_DPR = 1.75;      // a small canvas gains nothing above this
 const IDLE_MS = 2600;      // hands off this long and it turns again

@@ -27,9 +27,9 @@
    wheel; one pixel outside it and the page scrolls again.
    ========================================================================== */
 
-import { isCompact } from "./viewport.js?v=289";
-import { t } from "./i18n.js?v=289";
-import { uiMark } from "./ui-marks.js?v=289";
+import { isCompact } from "./viewport.js?v=291";
+import { t } from "./i18n.js?v=291";
+import { uiMark } from "./ui-marks.js?v=291";
 
 const MAX_DPR = 1.75;      // past this the gain is invisible and the cost is not
 const IDLE_MS = 3200;      // hands off this long and it turns again
@@ -687,7 +687,7 @@ export function initProjectStage(host, config = {}) {
     const list = Array.isArray(config.crew) ? config.crew : [];
     if (!list.length || !model) return;
 
-    const { makeDeck, makeDeckHelper, Crew } = await import("./project-crew.js?v=289");
+    const { makeDeck, makeDeckHelper, Crew } = await import("./project-crew.js?v=291");
     deck = makeDeck(THREE, model);
     fazMarcas = makeDeckHelper;
     hull = model.children.filter((o) => o !== deck);

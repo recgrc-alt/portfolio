@@ -20,9 +20,9 @@
    anyone stuck behind it.
    ========================================================================== */
 
-import { i18nReady } from "./i18n.js?v=289";
-import { pageReady } from "./page-ready.js?v=289";
-import { settleInView, replayEntrances } from "./reveal.js?v=289";
+import { i18nReady } from "./i18n.js?v=291";
+import { pageReady } from "./page-ready.js?v=291";
+import { settleInView, replayEntrances } from "./reveal.js?v=291";
 
 const SEEN_KEY = "re.loaded";
 /* A floor, so a cached second visit does not flash the screen for 80ms and
@@ -116,7 +116,7 @@ export function initLoader(el) {
    files every time the render changes and quietly letting them drift apart.
    When the video cannot play, the dots underneath still count — so the screen
    is visibly alive without the eye having to move. */
-const FALLBACK = "assets/loading-eye-still.webp?v=289";
+const FALLBACK = "assets/loading-eye-still.webp?v=291";
 
 function keepEyeAlive(root) {
   const video = root.querySelector("[data-loader-eye]");

@@ -47,6 +47,12 @@ ship flying upside down, and the problem was worked out on paper in the end.
 - [Work](https://rogerioedgar.com/work.html): every project, filterable by discipline and tool.
 - [Contact](https://rogerioedgar.com/contact.html): how to reach him.
 
+## Full text
+
+- [llms-full.txt](https://rogerioedgar.com/llms-full.txt): every case study
+  on this site in full, as plain text. The project pages build themselves with
+  JavaScript, so that file is the one to read if you do not run it.
+
 ## Elsewhere
 
 - [LinkedIn](https://www.linkedin.com/in/rogerio-edgar-correia/)

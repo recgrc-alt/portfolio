@@ -34,7 +34,15 @@ export function initPrefetch() {
     const href = a.getAttribute("href");
     if (!href || href.startsWith("#") || /^[a-z]+:/i.test(href)) return;  // skip anchors + external
     prefetch(href.split("#")[0].split("?")[0]);                          // the .html document
-    if (href.includes("project.html") || href.includes("work.html")) prefetch(dataUrl);
+    /* Which links need the project data warmed as well as the document: the
+       gallery, and every case study. Case studies used to be project.html?id=,
+       and are now one file each named after the project, so the test is no
+       longer a filename. Anything that is not one of the fixed pages of the
+       site is a case study. */
+    const page = href.split("#")[0].split("?")[0].replace(/^\.?\//, "");
+    const FIXED = ["index.html", "contact.html", "404.html", ""];
+    if (page === "work.html" || page === "project.html" ||
+        (page.endsWith(".html") && !FIXED.includes(page))) prefetch(dataUrl);
   };
 
   // Intent = the pointer resting on a link, or the link taking focus. Both

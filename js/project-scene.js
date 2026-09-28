@@ -19,9 +19,9 @@
    own wheel; a pixel outside it the page scrolls again.
    ========================================================================== */
 
-import { isCompact } from "./viewport.js?v=289";
-import { t } from "./i18n.js?v=289";
-import { makeDeck, Crew } from "./project-crew.js?v=289";
+import { isCompact } from "./viewport.js?v=291";
+import { t } from "./i18n.js?v=291";
+import { makeDeck, Crew } from "./project-crew.js?v=291";
 
 const MAX_DPR = 1.75;
 const IDLE_MS = 3200;      // hands off this long and it turns again

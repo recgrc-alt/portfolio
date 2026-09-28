@@ -23,10 +23,10 @@
    screen. cam-feeds.js starts them from an IntersectionObserver instead.
    ========================================================================== */
 
-import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=289";
-import { initCamFeeds } from "./cam-feeds.js?v=289";
-import { fillMedia } from "./media.js?v=289";
-import { t } from "./i18n.js?v=289";
+import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=291";
+import { initCamFeeds } from "./cam-feeds.js?v=291";
+import { fillMedia } from "./media.js?v=291";
+import { t } from "./i18n.js?v=291";
 
 export async function initWorkGallery(root) {
   if (!root) return null;
@@ -133,7 +133,7 @@ function buildCard(project, index = 0) {
 
   const link = document.createElement("a");
   link.className = "card-work";
-  link.href = `project.html?id=${encodeURIComponent(project.id)}`;
+  link.href = `${project.id}.html`;
 
   // --- the footage -------------------------------------------------------
   const media = document.createElement("span");

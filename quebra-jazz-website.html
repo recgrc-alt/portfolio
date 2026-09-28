@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- WHAT iOS AND ANDROID PAINT AROUND THE PAGE.
+       Safari and Chrome tint their own chrome from this. Left out, Safari
+       guesses from whatever it samples at the top of the document, and this
+       site's top is a fixed WebGL layer rather than a flat colour - so the
+       guess is not reliably the ground the page is actually made of. Stated
+       here, the bar is the same black as the site.
+
+       Hard-coded rather than --color-bg because a meta attribute cannot read a
+       custom property. It is the one place on the site where this value is
+       written twice; if --color-bg ever changes, this changes with it. -->
+  <meta name="theme-color" content="#000000" />
+
+  <title>Quebra Jazz Website · Rogério Edgar</title>
+  <meta name="description" content="A site for Quebra Jazz, the free open air jazz festival on the Quebra-Costas steps in Coimbra. Four pages, a shop with a working cart, and a cover where the name of the festival never quite assembles itself." />
+
+  <!-- Content-Security-Policy: a rede de seguranca. Mesmo que um dia
+       entre por engano markup vindo de fora, o browser recusa-se a
+       executar seja o que for que nao esteja listado aqui.
+
+       blob: nao e decorativo. O GLTFLoader extrai as texturas de dentro
+       do eye.glb e serve-as como URLs blob:; sem isso o olho carrega sem
+       iris. Foi apanhado a testar esta politica, nao em producao.
+
+       O sha256 em script-src e o do importmap mais abaixo, calculado sobre
+       o texto EXATO entre as tags, espacos incluidos. Mudar um caracter no
+       importmap sem recalcular o hash faz o browser recusa-lo, e sem
+       importmap nao corre JavaScript nenhum no site. Ver vendor/README.md. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-IATkqRMH8LC2/MkVVm5Z0BZ2GjRmMt1Eivlm+m0i9S0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://api-bdc.io https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+
+  <!-- Favicon. Three sizes because browsers ask for different ones and none of
+       them negotiate: 16/32 for the tab, 180 for an iOS home screen. The PNGs
+       rather than the 1000px WebP source, which Safari will not accept in this
+       role and which every other browser would have to download whole just to
+       draw sixteen pixels. favicon.ico sits at the site root as well, because
+       some clients request /favicon.ico without ever reading the markup. -->
+  <link rel="icon" href="assets/favicon-32.png?v=291" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=291" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=291" />
+
+  <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Space+Grotesk:wght@300..700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Tokens first, then the shared stylesheet, then the page layouts. -->
+  <link rel="stylesheet" href="css/tokens.css?v=291" />
+  <link rel="stylesheet" href="css/style.css?v=291" />
+  <link rel="stylesheet" href="css/pages.css?v=291" />
+
+  <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
+       This MUST come before any module load or preload (see below). -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three@0.160.0/build/three.module.min.js",
+        "three/addons/": "./vendor/three@0.160.0/examples/jsm/",
+        "lenis": "./vendor/lenis@1.1.14/dist/lenis.mjs"
+      }
+    }
+  </script>
+
+  <!-- ONLY NOW may a module be fetched. These are hints, not imports, but a
+       modulepreload counts as "module loading has begun" — and an import map
+       that arrives after that point is rejected outright. Firefox enforces
+       this strictly: with the preload above the map, every bare "three"
+       specifier failed to resolve and the whole bundle died. Keep them here. -->
+  <link rel="modulepreload" href="vendor/three@0.160.0/build/three.module.min.js" crossorigin />
+
+  <!-- NO robots META HERE, AND THAT IS THE POINT.
+       This file used to carry a blanket `noindex`, on the reasoning that it is
+       one template and every URL is the same file with a different ?id=. That
+       reasoning is wrong: a search engine treats ?id=treasure-within and
+       ?id=the-veldt as two separate URLs and indexes them separately. The rule
+       was therefore hiding all nineteen case studies, which are the entire
+       substance of this portfolio, while leaving the three pages that contain
+       almost no project text as the only ones that could be found.
+
+       A genuinely missing project IS a soft 404, and project-page.js sets the
+       exclusion there, on that branch alone. -->
+
+  <!-- --- Identity, sharing and structured data ---------------------------
+       CANONICAL first, and absolute. Without it a page reached with a
+       tracking parameter, a trailing slash or over http is a second URL as
+       far as a search engine is concerned, and the two split whatever
+       ranking either would have had on its own.
+
+       The og: tags are what a link to this page looks like when somebody
+       pastes it into a message. Left out, the preview is the URL and
+       nothing else. The image is a real 1200x630 JPEG rather than the
+       site's WebP, because several of the services that render these
+       previews still do not accept WebP.
+
+       The JSON-LD says in machine-readable form what the page says in
+       words. It is a data block, not a script: script-src does not apply
+       to it, which is why it is safe under this page's CSP. -->
+  <link rel="canonical" href="https://rogerioedgar.com/quebra-jazz-website.html" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Rogério Edgar" />
+  <meta property="og:url" content="https://rogerioedgar.com/quebra-jazz-website.html" />
+  <meta property="og:title" content="Quebra Jazz Website · Rogério Edgar" />
+  <meta property="og:description" content="A site for Quebra Jazz, the free open air jazz festival on the Quebra-Costas steps in Coimbra. Four pages, a shop with a working cart, and a cover where the name of the festival never quite assembles itself." />
+  <meta property="og:image" content="https://rogerioedgar.com/assets/social/og-cover.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Rogério Edgar" />
+  <meta property="og:locale" content="en" />
+  <meta property="og:locale:alternate" content="pt_PT" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Quebra Jazz Website · Rogério Edgar" />
+  <meta name="twitter:description" content="A site for Quebra Jazz, the free open air jazz festival on the Quebra-Costas steps in Coimbra. Four pages, a shop with a working cart, and a cover where the name of the festival never quite assembles itself." />
+  <meta name="twitter:image" content="https://rogerioedgar.com/assets/social/og-cover.jpg" />
+
+  <meta name="author" content="Rogério Edgar" />
+</head>
+
+<body class="page page--project">
+
+  <!-- ====================================================================
+       LOADER  ·  shown once per visit, while the site arrives
+       In the markup rather than built by script, so it is on screen from the
+       first paint — a loading screen that waits for JavaScript has missed the
+       moment it exists for. loader.js only takes it away again.
+       ==================================================================== -->
+  <div class="loader" data-loader aria-hidden="true">
+    <video class="loader__eye" data-loader-eye autoplay muted loop playsinline
+           width="200" height="200">
+      <source src="assets/loading-eye.webm?v=291" type="video/webm" />
+    </video>
+    <p class="loader__dots"><span></span><span></span><span></span></p>
+  </div>
+
+
+  <!-- The black wipe between pages. Its fade-IN is a pure CSS animation so it
+       clears itself even if JS never runs; page-transition.js only drives the
+       fade-OUT on the way to the next page. -->
+  <div class="page-veil" data-page-veil aria-hidden="true"></div>
+
+  <!-- ====================================================================
+       FIXED BACKGROUND EYE
+       Stays put across all scroll, on every page. Decorative → aria-hidden.
+       ==================================================================== -->
+  <canvas class="eye-layer" id="eye-canvas" aria-hidden="true"></canvas>
+
+  <!-- Veil over the eye: on interior pages it is background, not subject. -->
+  <div class="eye-scrim" aria-hidden="true"></div>
+
+  <!-- ====================================================================
+       MASTHEAD  (fixed top bar with a blur/gradient underlay)
+       ==================================================================== -->
+  <header class="masthead" data-masthead>
+    <a class="wordmark" href="index.html">Rogério Edgar</a>
+
+    
+    <!-- Phone only: the masthead's links collapse behind this. Two bars, which
+         rotate into an X when the panel is open (see .nav-toggle in style.css).
+         display:none above the breakpoint, so desktop never sees it. -->
+    <button class="nav-toggle" type="button" data-nav-toggle
+            aria-expanded="false" aria-controls="nav-panel"
+            aria-label="Menu" data-i18n-attr="aria-label=nav.menu">
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+    </button>
+
+    <nav class="nav" id="nav-panel" data-nav-panel aria-label="Main navigation">
+      <!-- data-text feeds the hover duplicate that CSS draws in ::after -->
+      <ul class="nav__list">
+        <li><a class="nav__link text-echo" href="index.html#about" data-text="About" data-i18n="nav.about" data-i18n-attr="data-text=nav.about">About</a></li>
+        <li><a class="nav__link text-echo" href="work.html" data-text="Work" data-i18n="nav.work" data-i18n-attr="data-text=nav.work" aria-current="page">Work</a></li>
+        <li><a class="nav__link text-echo" href="contact.html" data-text="Contact" data-i18n="nav.contact" data-i18n-attr="data-text=nav.contact">Contact</a></li>
+      </ul>
+
+      <div class="nav__controls">
+        <div class="lang" role="group" aria-label="Language">
+          <button class="lang__btn text-echo" type="button" data-lang="pt" data-text="PT" aria-pressed="false">PT</button>
+          <button class="lang__btn text-echo is-active" type="button" data-lang="en" data-text="ENG" aria-pressed="true">ENG</button>
+        </div>
+
+        <!-- Mutes the whole site: ambience, click ticks, a reel's own sound.
+             Both glyphs ship here and CSS picks one from aria-pressed — the
+             hover shows the OTHER, previewing what a click will do. -->
+        <button class="sound-btn" type="button" data-sound-toggle aria-pressed="false"
+                aria-label="Sound" data-i18n-attr="aria-label=sound.label">
+          <svg class="sound-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="sound-btn__glyph sound-btn__glyph--on" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            <path class="sound-btn__glyph sound-btn__glyph--off" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Everything inside is built by project-page.js from the ?id= parameter.
+       The element ships empty on purpose — there is no placeholder content to
+       flash before the real project arrives. -->
+  <main class="content" data-project-page data-project="quebra-jazz-website">
+    <article class="project-plain">
+      <h1>Quebra Jazz Website</h1>
+      <p>2024 &middot; UI/UX &amp; Product &middot; UI/UX Designer &amp; Front-end Developer</p>
+      <p>With Afonso Almeida</p>
+      <p>A site for Quebra Jazz, the free open air jazz festival on the Quebra-Costas steps in Coimbra. Four pages, a shop with a working cart, and a cover where the name of the festival never quite assembles itself.</p>
+      <section>
+        <h2>The brief asked for a wireframe</h2>
+        <p>We built the site instead</p>
+        <p>The project was a full visual identity for a fictional client, chosen from three options. We took the music festival, and rather than invent one we picked a real one we already knew: Quebra Jazz, the free open air jazz festival held on the Quebra-Costas steps in the old town of Coimbra, the city we study in.</p>
+        <p>For the website, the brief asked for a wireframe or a prototype in Figma or something like it, showing the main pages. We skipped that step. There was no prototype and no mockup: the design was made straight in the browser, and what got handed in was four working pages in HTML, CSS and JavaScript.</p>
+      </section>
+      <section>
+        <h2>A cover that never settles</h2>
+        <p>The name is never assembled</p>
+        <p>On the left, QUEBRA runs down the page one letter to a line, stacked like the steps the festival is named after. Floating across it are six pieces of the name, A, EBRA, BRA, RA, ZZ and JAZZ, each sliding from one side to the other on its own clock: five seconds, six, six, four, three and three and a half.</p>
+        <p>Those numbers share no common beat, so the pieces drift in and out of each other and never come back to the same arrangement twice. The name of the festival is never fully assembled, which is both what the name means and how the music it is named after is played.</p>
+        <p>Down the right edge there are ten piano keys. Each one slides out from the margin when the pointer touches it and slides back when it leaves. The header is not something you watch, it is something you play.</p>
+        <p>Below 720 pixels all of it is put away and a plain wordmark takes its place. The pieces need width to drift across and a phone has none, and an animation squeezed into a space it does not fit is worse than no animation at all.</p>
+      </section>
+      <section>
+        <h2>Four pages, one base</h2>
+        <p>And a free typeface doing a paid one&#x27;s job</p>
+        <p>The site is a home page, a shop, a sign up page and a contact page. Every one of them loads the same base stylesheet first, where the colours, the type and the spacing live as variables, so the shop and the form could not quietly drift away from each other as they grew.</p>
+        <p>Everything that appears on scroll is marked in the markup and watched by a single observer, so there is one answer to the question of when a block may arrive rather than one answer per page. Where the browser is set to reduce motion, it stops.</p>
+        <p>The style guide asks for Gotham Black in headings. Gotham is a paid family and we did not have it, so the site sets its headings in Anton with Montserrat underneath: the same flat, heavy, blocky weight, for nothing.</p>
+        <p>The home page also carries the things a festival site has to carry. The programme, eight nights with their dates and their names, a block of figures from the previous edition, and a map of the street the whole thing happens on.</p>
+      </section>
+      <section>
+        <h2>A shop that actually works</h2>
+        <p>Twenty four products and a cart that remembers</p>
+        <p>The shop holds twenty four products across four categories, with a category bar that sticks to the top and lights up whichever section you have scrolled into.</p>
+        <p>Some products carry their own variants in the markup, so choosing black or white, or a men&#x27;s or women&#x27;s cut, swaps the photograph without leaving the grid. Clicking a product opens it larger, in a panel over the page.</p>
+        <p>The cart is not a picture of a cart. It keeps its contents in the browser&#x27;s own storage, so they are still there after a reload, opens as a drawer from the side, and answers every time you add something: the counter jumps, and a small message says what went in and offers to show you.</p>
+      </section>
+      <section>
+        <h2>Putting a band forward, in four steps</h2>
+        <p>A long form that does not feel long</p>
+        <p>Bands apply to play through a form with a lot of questions in it. Asked all at once it is the kind of page people close, so it is cut into four steps, the band, the criteria, the performance and the last details, with a bar across the top showing how far along you are.</p>
+        <p>Each step is checked before it lets you move on, so a mistake is caught where it was made instead of at the end. Sending is simulated, since nothing here has anywhere to be sent: the form is replaced by a confirmation.</p>
+        <p>Behind it, three photographs of the festival cross fade into each other every six seconds, slowly enough to be scenery rather than something competing for attention with the questions.</p>
+      </section>
+      <section>
+        <h2>The teachers liked it</h2>
+        <p>Because it was a site and not a drawing of one</p>
+        <p>It went very well. The site was the part of the project that stood out, and the teachers liked it.</p>
+        <p>What made the difference was not the code, it was the difference between describing a thing and handing it over. The brief asked for a picture of a website, and what arrived was a website: pages you move through, a cart that remembers, a form that answers back.</p>
+        <p>Everything stayed a concept. The festival is real, but the identity and this site were never commissioned and never ran for it.</p>
+      </section>
+      <p>Built with: HTML, CSS, JavaScript</p>
+      <section>
+        <h2>Credits</h2>
+        <ul>
+          <li>Afonso Almeida</li>
+        </ul>
+      </section>
+      <p><a href="https://rogerioedgar.infinityfree.me/?i=1" rel="noopener">Visit the site</a></p>
+      <p><a href="work.html">All projects</a></p>
+    </article>
+  </main>
+
+  <!-- ====================================================================
+       FOOTER  ·  the close
+       ==================================================================== -->
+  <footer class="footer">
+    <div class="footer__inner">
+        <p class="footer__status">
+          <!-- Two lines in one place, taking turns. The availability is the
+               statement; the invitation is what to do about it.
+               EACH CARRIES ITS OWN DOT. One shared dot outside meant the pair
+               was only ever adjacent for whichever line was the wider of the
+               two, and the cell is as wide as that one. Inside, each line is a
+               self-contained unit that can be centred on its own. -->
+          <span class="footer__swap">
+            <span class="footer__swap-item">
+              <span class="footer__dot" aria-hidden="true"></span>
+              <span data-i18n="footer.status">Available for freelance &amp; full-time roles</span>
+            </span>
+            <a class="footer__swap-item footer__swap-cta" href="contact.html">
+              <span class="footer__dot" aria-hidden="true"></span>
+              <span data-i18n="footer.contact">Contact me</span>
+            </a>
+          </span>
+        </p>
+
+        <ul class="footer__links">
+          <li>
+            <a class="footer__link" href="mailto:recgrc@gmail.com">
+              <span class="footer__glyph text-echo" data-text="@" aria-hidden="true">@</span>
+              <span class="visually-hidden" data-i18n="footer.email">Email Rogério Edgar Correia</span>
+            </a>
+          </li>
+          <li>
+            <a class="footer__link" href="https://www.behance.net/Rogerio_Correia" target="_blank" rel="noopener noreferrer">
+              <span class="footer__glyph text-echo" data-text="Bē" aria-hidden="true">Bē</span>
+              <span class="visually-hidden" data-i18n="footer.behance">Behance profile</span>
+            </a>
+          </li>
+          <li>
+            <a class="footer__link" href="https://github.com/recgrc-alt" target="_blank" rel="noopener noreferrer">
+              <!-- two copies: the second is the difference ghost, revealed on hover -->
+              <span class="footer__mark">
+                <svg class="footer__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                         0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                         -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                         .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                         -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 2-.27c.68 0
+                         1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                         1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                         1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" /></svg>
+                <svg class="footer__icon footer__icon--echo" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                         0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                         -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                         .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                         -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 2-.27c.68 0
+                         1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                         1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                         1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" /></svg>
+              </span>
+              <span class="visually-hidden" data-i18n="footer.github">GitHub profile</span>
+            </a>
+          </li>
+        </ul>
+
+        <p class="footer__legal" data-i18n="footer.legal">© 2026 Rogério Edgar Correia. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ====================================================================
+       HUD  (fixed, persistent — local time never disappears)
+       ==================================================================== -->
+  <div class="hud">
+    <!-- The time gets a wrapper of its own because the hour picker is
+         positioned against it, and a <p> cannot legally contain the panel's
+         markup. This div is the positioning context; see .hud__slot. -->
+    <div class="hud__slot">
+    <p class="meta meta--time">
+      <span class="meta__label" data-i18n="hud.time">Local time:</span>
+      <span class="meta__value" data-clock>[ --&nbsp;:&nbsp;--&nbsp;:&nbsp;-- ]</span>
+    </p>
+    </div>
+    <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
+  </div>
+
+  <script type="module" src="js/main.js?v=291"></script>
+
+</body>
+
+</html>
