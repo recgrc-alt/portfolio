@@ -17,9 +17,9 @@
    falls out of a rule that was already there.
    ========================================================================== */
 
-import { t } from "./i18n.js?v=289";
-import { slot } from "./project-slot.js?v=289";
-import { heading } from "./project-heading.js?v=289";
+import { t } from "./i18n.js?v=292";
+import { slot } from "./project-slot.js?v=292";
+import { heading } from "./project-heading.js?v=292";
 
 export function buildStage(chapter) {
   const section = document.createElement("section");
@@ -141,7 +141,7 @@ export function buildStage(chapter) {
 
   /* Imported at the point of use, not at the top: a project page with no stage
      chapter should never pay for Three.js being reachable from this module. */
-  import("./project-stage.js?v=289").then((m) => {
+  import("./project-stage.js?v=292").then((m) => {
     if (!m.stageWorthOffering()) {
       /* A phone gets the hole rather than a 1.2 MB download it was never going
          to turn comfortably. Same answer the crew scene gives, so the two

@@ -48,8 +48,8 @@
    and the two in eye.js that call it.
    ========================================================================== */
 
-import { lightingAtHour } from "./eye-time.js?v=289";
-import { currentHour, OVERRIDE_EVENT } from "./time-override.js?v=289";
+import { lightingAtHour } from "./eye-time.js?v=292";
+import { currentHour, OVERRIDE_EVENT } from "./time-override.js?v=292";
 
 /* --- Where the dust lives, in world units --------------------------------
  * NOT A BOX. A box was the first version and it wasted six motes in seven:

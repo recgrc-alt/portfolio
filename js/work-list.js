@@ -36,9 +36,9 @@
    something to clear.
    ========================================================================== */
 
-import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=289";
-import { TOOLS, toolMark } from "./tool-icons.js?v=289";
-import { t } from "./i18n.js?v=289";
+import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=292";
+import { TOOLS, toolMark } from "./tool-icons.js?v=292";
+import { t } from "./i18n.js?v=292";
 
 export function initWorkList(root, { lenis } = {}) {
   if (!root) return null;

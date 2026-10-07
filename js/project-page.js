@@ -33,19 +33,19 @@
 
 import {
   loadProjects, getProject, getCategory, resolveField, nextProject,
-} from "./projects.js?v=289";
-import { actionButton, echoLabel, safeUrl } from "./project-actions.js?v=289";
-import { initReveal } from "./reveal.js?v=289";
-import { keepSplit } from "./split-lines.js?v=289";
-import { buildChapters, buildSpecs } from "./project-chapters.js?v=289";
-import { resetSlots } from "./project-slot.js?v=289";
-import { buildTeamRail } from "./project-team.js?v=289";
-import { initAmbient } from "./project-ambient.js?v=289";
-import { t } from "./i18n.js?v=289";
-import { fillMedia } from "./media.js?v=289";
-import { initReels } from "./reel-player.js?v=289";
-import { setAmbienceSource } from "./ambience.js?v=289";
-import { linkSoundToBanner } from "./banner-sound.js?v=289";
+} from "./projects.js?v=292";
+import { actionButton, echoLabel, safeUrl } from "./project-actions.js?v=292";
+import { initReveal } from "./reveal.js?v=292";
+import { keepSplit } from "./split-lines.js?v=292";
+import { buildChapters, buildSpecs } from "./project-chapters.js?v=292";
+import { resetSlots } from "./project-slot.js?v=292";
+import { buildTeamRail } from "./project-team.js?v=292";
+import { initAmbient } from "./project-ambient.js?v=292";
+import { t } from "./i18n.js?v=292";
+import { fillMedia } from "./media.js?v=292";
+import { initReels } from "./reel-player.js?v=292";
+import { setAmbienceSource } from "./ambience.js?v=292";
+import { linkSoundToBanner } from "./banner-sound.js?v=292";
 
 /* --- WHAT USED TO BE HERE ------------------------------------------------
  * A table of Simple Icons slugs, a fetch cache, and an async toolIcon() that

@@ -941,10 +941,19 @@ a, button, [role="button"], summary, input, textarea, select {
 .about {
   position: relative;
   /* Room for: reading the statement, the hand-over to the title, a good long
-     look at the title over the photo, and finally the card travel.
+     look at the title over the photo, a moment with the cards standing still,
+     and only then the card travel.
      The extra height matters — squeeze it and the card rail is forced through
-     in too little scroll, which makes it race sideways. */
-  height: calc(280svh + var(--h-distance, 0px));
+     in too little scroll, which makes it race sideways.
+
+     IT WENT FROM 280 TO 330 TO BUY THE STILL MOMENT. At 280 there was no room
+     for one: measured at 1440x900, the cards finished arriving 1851px into
+     2435px of scroll, leaving 584px for 815px of rail. The travel therefore
+     had to begin before they were visible, and the first card was already
+     300px off to the left by the time anyone could read it. The 50svh added
+     here is what the pause and a full-speed rail need; the phase constants
+     below were rescaled by the same amount so nothing else moved. */
+  height: calc(330svh + var(--h-distance, 0px));
   background-color: var(--color-bg);
   isolation: isolate;
 }
@@ -1161,20 +1170,38 @@ a, button, [role="button"], summary, input, textarea, select {
    * scaling and fading within ~200px of scroll — you never got to see it. */
   --p: var(--h-progress, 0);
 
-  /* PHASE 1 holds at rest until 18%. That hold is the hover-reveal moment. */
-  --p-grow: clamp(0, calc((var(--p) - 0.18) / 0.24), 1);    /* photo grows */
+  /* EVERY PERCENTAGE BELOW WAS MULTIPLIED BY 0.844, AND NOTHING ELSE CHANGED.
+     The section grew by 50svh (see .about), which means the same percentage
+     now falls further down the page. 0.844 is the old scroll length over the
+     new one at 1440x900, so each phase begins and ends on the pixel it began
+     and ended on before: the growth at 438, the statement gone by 779, the
+     title in by 1218, the photo receding from 1558. Checked, not estimated.
+
+     The percentages drift with the viewport, because the section's height
+     mixes svh with the rail's own width. They drifted before this change in
+     exactly the same way. */
+
+  /* PHASE 1 holds at rest until 15.2% (was 18%). The hover-reveal moment. */
+  --p-grow: clamp(0, calc((var(--p) - 0.152) / 0.203), 1);  /* photo grows */
 
   /* HAND-OVER — deliberately two separate curves with a GAP between them.
      Driving both from one value made the statement fade out while the title
      faded in, so the two texts overlapped mid-cross-fade and read as a mess.
-     The statement is fully gone by 32%; the title only starts at 40%. */
-  --p-statement-out: clamp(0, calc((var(--p) - 0.20) / 0.12), 1);
-  --p-title-in:      clamp(0, calc((var(--p) - 0.40) / 0.10), 1);
+     The statement is fully gone by 27%; the title only starts at 33.8%. */
+  --p-statement-out: clamp(0, calc((var(--p) - 0.169) / 0.101), 1);
+  --p-title-in:      clamp(0, calc((var(--p) - 0.338) / 0.084), 1);
 
   /* The title then holds over the photo for a long stretch — that window is
      the whole point of the difference blend, so the photo recedes late. */
-  --p-fade:  clamp(0, calc((var(--p) - 0.64) / 0.12), 1);   /* photo recedes */
-  --p-slide: clamp(0, calc((var(--p) - 0.62) / 0.38), 1);   /* cards travel  */
+  --p-fade:  clamp(0, calc((var(--p) - 0.540) / 0.101), 1); /* photo recedes */
+
+  /* AND THE RAIL WAITS FOR THEM. The cards have finished arriving at 64.1%;
+     the travel starts at 72%. Those eight points are about 230px of scroll
+     at 1440x900 in which the first card sits still, whole and readable,
+     which is the entire point of this change. The travel then has 28% of a
+     longer section, which is 808px of scroll for 815px of movement: the rail
+     is no faster than it was. */
+  --p-slide: clamp(0, calc((var(--p) - 0.72) / 0.28), 1);   /* cards travel  */
 
   /* Cursor parallax belongs to phase 1 only, so it leaves with the statement. */
   --parallax: calc(1 - var(--p-statement-out));

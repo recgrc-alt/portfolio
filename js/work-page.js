@@ -40,7 +40,7 @@
    one element that reads it. Only transform and opacity are animated.
    ========================================================================== */
 
-import { isCompact, onCompactChange } from "./viewport.js?v=289";
+import { isCompact, onCompactChange } from "./viewport.js?v=292";
 
 export function initWorkPage({ lenis } = {}) {
   const deck = document.querySelector("[data-work-deck]");
