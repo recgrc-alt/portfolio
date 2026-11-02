@@ -20,8 +20,8 @@
    No fixed sizes: every element fills the host box the caller passes in.
    ========================================================================== */
 
-import { createSlideshow } from "./slideshow.js?v=319";
-import { applyMediaCrop } from "./media-crop.js?v=319";
+import { createSlideshow } from "./slideshow.js?v=320";
+import { applyMediaCrop } from "./media-crop.js?v=320";
 
 /* Fill `host` with the best media `project` offers, wiring the fallback
    cascade. `opts` lets each caller keep its own class names (the card and the

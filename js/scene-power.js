@@ -38,7 +38,24 @@
    list is a starting point only — each candidate is then asked whether it is
    actually opaque, so a section that stops sealing stops counting here too
    without anybody remembering to edit this line. */
+/* The breakpoint, from the one place that owns it. A resize re-measures
+   anyway, so crossing it is picked up without a second listener. */
+import { isCompact } from "./viewport.js?v=320";
+
 const GROUND = ".seals, .about, .work";
+
+/* AND ON A PHONE, THE WORK DECK'S PANELS. There they are four opaque sections
+   lying in the normal flow, one after another, which is ground by any
+   measure — and work.html carries none of the selectors above, so without
+   this the eye renders a full-screen shader behind 9500px of solid black.
+
+   ONLY THERE, and the reason is geometric. On a wide screen those panels are
+   position: absolute inside a sticky stage: their rect travels with the
+   scroll, so the document range measured from it would be wrong the moment
+   the reader moved, and this file only re-measures on resize. A stale range
+   is a frozen eye in plain view, which is the one failure it refuses to have.
+   On a wide screen the deck tells it directly instead — see cover(). */
+const GROUND_FLAT = `${GROUND}, .work-deck__panel`;
 
 /** Fully opaque means alpha 1. Anything else, including a colour the browser
  *  reports as transparent, is something the eye can be seen through. */
@@ -68,7 +85,7 @@ export function initScenePower(eye, lenis) {
   let forced = false;              // ground this file cannot measure; see cover()
 
   function measure() {
-    const bands = [...document.querySelectorAll(GROUND)]
+    const bands = [...document.querySelectorAll(isCompact() ? GROUND_FLAT : GROUND)]
       .filter(isOpaque)
       .map((el) => {
         const r = el.getBoundingClientRect();

@@ -22,8 +22,8 @@
    still shown on its own rather than the whole readout falling over.
    ========================================================================== */
 
-import { config } from "./config.js?v=319";
-import { t } from "./i18n.js?v=319";
+import { config } from "./config.js?v=320";
+import { t } from "./i18n.js?v=320";
 
 /* Free, keyless, and CORS-enabled for browser use. It receives the coordinates
    the visitor has just agreed to share, and nothing else — no identifier, no

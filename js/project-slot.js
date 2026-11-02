@@ -19,7 +19,7 @@
    there is only one of them, and it is on the page.
    ========================================================================== */
 
-import { t } from "./i18n.js?v=319";
+import { t } from "./i18n.js?v=320";
 
 let counter = 0;
 
