@@ -39,9 +39,9 @@
        role and which every other browser would have to download whole just to
        draw sixteen pixels. favicon.ico sits at the site root as well, because
        some clients request /favicon.ico without ever reading the markup. -->
-  <link rel="icon" href="assets/favicon-32.png?v=292" sizes="32x32" type="image/png" />
-  <link rel="icon" href="assets/favicon-16.png?v=292" sizes="16x16" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=292" />
+  <link rel="icon" href="assets/favicon-32.png?v=319" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=319" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=319" />
 
   <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -51,9 +51,9 @@
     rel="stylesheet" />
 
   <!-- Tokens first, then the shared stylesheet, then the page layouts. -->
-  <link rel="stylesheet" href="css/tokens.css?v=292" />
-  <link rel="stylesheet" href="css/style.css?v=292" />
-  <link rel="stylesheet" href="css/pages.css?v=292" />
+  <link rel="stylesheet" href="css/tokens.css?v=319" />
+  <link rel="stylesheet" href="css/style.css?v=319" />
+  <link rel="stylesheet" href="css/pages.css?v=319" />
 
   <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
        This MUST come before any module load or preload (see below). -->
@@ -113,24 +113,10 @@
 
 <body class="page page--work">
 
-  <!-- ====================================================================
-       LOADER  ·  shown once per visit, while the site arrives
-       In the markup rather than built by script, so it is on screen from the
-       first paint — a loading screen that waits for JavaScript has missed the
-       moment it exists for. loader.js only takes it away again.
-       ==================================================================== -->
-  <div class="loader" data-loader aria-hidden="true">
-    <video class="loader__eye" data-loader-eye autoplay muted loop playsinline
-           width="200" height="200">
-      <source src="assets/loading-eye.webm?v=292" type="video/webm" />
-    </video>
-    <p class="loader__dots"><span></span><span></span><span></span></p>
-  </div>
-
-
-  <!-- The black wipe between pages. Its fade-IN is a pure CSS animation so it
-       clears itself even if JS never runs; page-transition.js only drives the
-       fade-OUT on the way to the next page. -->
+  <!-- The black circle: the cover behind the welcome, and the wipe between
+       pages afterwards. Its exit is a pure CSS animation so it clears itself
+       even if JS never runs; main.js and page-transition.js only take over
+       the timing when they are alive. -->
   <div class="page-veil" data-page-veil aria-hidden="true"></div>
 
   <!-- ====================================================================
@@ -346,7 +332,7 @@
     <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
   </div>
 
-  <script type="module" src="js/main.js?v=292"></script>
+  <script type="module" src="js/main.js?v=319"></script>
 
 </body>
 

@@ -24,6 +24,15 @@
    Reusable: call it with any container holding [data-work-video] elements.
    ========================================================================== */
 
+/* ON SCREEN, BY GEOMETRY. The observer below answers this continuously, but
+   anything that has to re-check at a moment of its own — a tab coming back, a
+   deck panel being shown again — has to ask it once, directly. Exported so
+   there is ONE answer and the callers can never drift apart on it. */
+export function onScreen(el) {
+  const box = el.getBoundingClientRect();
+  return box.bottom > 0 && box.top < window.innerHeight;
+}
+
 export function initCamFeeds(section, options = {}) {
   if (!section) return null;
   /* Both markers, one observer. [data-play-once] behaves differently once it
@@ -41,6 +50,18 @@ export function initCamFeeds(section, options = {}) {
   const rootMargin = options.rootMargin ?? "30%";
 
   function play(video) {
+    /* NOT IF IT CANNOT BE SEEN, and geometry alone does not answer that. The
+       work deck parks a covered category at the top of the screen and hides it
+       with `visibility`, which an IntersectionObserver has no way of noticing:
+       the box is still exactly where it was, still intersecting, so the feed
+       was told to play and did — behind an opaque panel, for as long as the
+       reader stayed. Measured on the fourth category: 11 of 15 running.
+
+       checkVisibility() is asked for `visibility` explicitly because it does
+       not look at it by default. Optional-chained: where it does not exist
+       this is the same function it always was. */
+    if (video.checkVisibility && !video.checkVisibility({ visibilityProperty: true })) return;
+
     // Autoplay can still be refused (low-power mode, data saver); ignore it —
     // the poster frame stays, so no card is ever broken.
     const attempt = video.play();
@@ -79,11 +100,8 @@ export function initCamFeeds(section, options = {}) {
        once-through clip that had finished should still be showing its last
        frame rather than its first. */
     if (document.hidden) feeds.forEach(pause);
-    else feeds.forEach((video) => {
-      // Only wake the ones still on screen — the observer holds the rest.
-      const box = video.getBoundingClientRect();
-      if (box.bottom > 0 && box.top < window.innerHeight) play(video);
-    });
+    // Only wake the ones still on screen — the observer holds the rest.
+    else feeds.forEach((video) => { if (onScreen(video)) play(video); });
   });
 
   return {

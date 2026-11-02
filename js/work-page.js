@@ -11,10 +11,8 @@
                       when its edge reaches the title it CARRIES it, shrinking
                       and fading, up behind the masthead and off the screen
                       altogether; the eye leaves upward too.
-                      Inside the climbing banner the category heading rides
-                      along DISPLACED — the site's difference echo, the same
-                      ghost the nav and the cards use — and resolves the
-                      moment the rectangle lands (.is-set)
+                      Inside the climbing banner the category heading simply
+                      rides along.
      3  the deck      the banner is pinned and has the screen to itself.
                       Scrolling now moves what is INSIDE it: the cards of the
                       current category travel up, and when that category is
@@ -40,9 +38,12 @@
    one element that reads it. Only transform and opacity are animated.
    ========================================================================== */
 
-import { isCompact, onCompactChange } from "./viewport.js?v=292";
+import { isCompact, onCompactChange } from "./viewport.js?v=319";
+/* One answer to "is this on screen", shared with the file that owns the
+   feeds, so the deck and the observer can never disagree about it. */
+import { onScreen } from "./cam-feeds.js?v=319";
 
-export function initWorkPage({ lenis } = {}) {
+export function initWorkPage({ lenis, power } = {}) {
   const deck = document.querySelector("[data-work-deck]");
   const eyeLayer = document.querySelector(".eye-layer");
   if (!deck) return null;
@@ -68,7 +69,7 @@ export function initWorkPage({ lenis } = {}) {
 
   function wire() {
     if (engine || isCompact() || stillness.matches) return;
-    engine = createEngine(deck, eyeLayer, lenis);
+    engine = createEngine(deck, eyeLayer, lenis, power);
   }
 
   /* --- THE INDEX IS WIRED ONCE, HERE, AND NOT INSIDE wire() -----------------
@@ -100,7 +101,7 @@ export function initWorkPage({ lenis } = {}) {
 }
 
 /* --- The engine ---------------------------------------------------------- */
-function createEngine(deck, eyeLayer, lenis) {
+function createEngine(deck, eyeLayer, lenis, power) {
   const title = document.querySelector(".work-hero__title");
   const heroIndex = document.querySelector(".work-hero__index");
   const masthead = document.querySelector(".masthead");
@@ -126,7 +127,6 @@ function createEngine(deck, eyeLayer, lenis) {
   let titleTravelPx = 0;
   let indexRestTop = 0;
   let indexGapPx = 0;
-  let landed = false;   // the current panel is locked in place
   let indexGone = false;
   let watchers = [];    // one IntersectionObserver per panel, for the reveals
   let stageEl = null;   // measured, so the rise can be written in whole pixels
@@ -498,7 +498,16 @@ function createEngine(deck, eyeLayer, lenis) {
     if (eyeLayer) {
       const away = clamp01(into / (riseLen * 0.8));
       const back = 1 - clamp01((into - total) / (riseLen * 0.9));
-      eyeLayer.style.setProperty("--deck-eye", Math.min(away, back).toFixed(3));
+      const gone = Math.min(away, back);
+      eyeLayer.style.setProperty("--deck-eye", gone.toFixed(3));
+
+      /* At 1 the eye is at opacity 0 and sunk off the top: drawing it is a
+         full-screen fragment shader into something nobody can see, for the
+         whole length of the deck. This number already knows when that is, so
+         nothing has to be measured twice — and because it comes from the
+         layout, a zoomed-out page that shows the eye again un-covers it on
+         its own. scene-power.js keeps ownership of the switch. */
+      power?.cover(gone >= 1);
     }
 
     /* 3 · Which category, and how far through it. */
@@ -520,23 +529,19 @@ function createEngine(deck, eyeLayer, lenis) {
     panels[index].style.setProperty("--panel-y",
       `${Math.round((1 - cover) * panels[index].offsetHeight)}px`);
 
+    /* And the one underneath goes away by the same amount. Without it the two
+       rectangles are the same size under the same light and the handover is
+       flat however bright the seam is — depth is the DIFFERENCE between the
+       layers, not a property of either. pages.css turns this one number into
+       the dim and the recede; at 0 both are the identity. */
+    panels[index - 1]?.style.setProperty("--covered", cover.toFixed(3));
+
     /* 5 · The cards travelling up inside it. The dwell comes AFTER the climb —
        the category is landed and read before anything moves — and only the
        scroll past that turns into travel, capped at the overflow so the last
        row stops at the top instead of scrolling into nothing. */
     const travel = Math.min(here.overflow, Math.max(0, local - here.slide - here.dwell));
     panels[index].style.setProperty("--grid-y", `${-Math.round(travel)}px`);
-
-    /* 6 · Arrival. The heading is displaced while its rectangle is still
-       climbing and resolves the moment it lands — for the first category that
-       is the main banner reaching the top, for the rest it is their own cover
-       completing. Toggled rather than written every frame: it is one boundary,
-       and the transition on the other side is what does the work. */
-    const set = index === 0 ? risen >= 0.999 : cover >= 0.999;
-    if (set !== landed || index !== current) {
-      landed = set;
-      panels[index].classList.toggle("is-set", set);
-    }
 
     if (index === current) return;      // same category: no more DOM work
     const previous = current;
@@ -546,11 +551,36 @@ function createEngine(deck, eyeLayer, lenis) {
       const on = i === index;
       panel.classList.toggle("is-current", on);
 
+      /* And the index says so. Matched by href rather than by position, which
+         is how jumpsFromIndex() already pairs the two — the link knows the id
+         of the panel it names, and nothing has to assume the four are in the
+         same order twice. */
+      heroIndex?.querySelector(`[href="#${panel.id}"]`)
+        ?.classList.toggle("is-current", on);
+
       /* Live means rendered: the current rectangle, and the one it is in the
          act of covering. Everything else is either off-screen below or sealed
          behind an opaque panel, and rendering it would be compositing video
          nobody can see. */
-      panel.classList.toggle("is-live", on || i === index - 1);
+      const live = on || i === index - 1;
+      panel.classList.toggle("is-live", live);
+
+      /* AND ITS FEEDS GO QUIET WITH IT. cam-feeds.js stops a video that leaves
+         the viewport — but a panel parked at --panel-y 0 underneath an opaque
+         one never leaves it, because visibility: hidden is not something an
+         IntersectionObserver can see. Measured on the fourth category: 11 of
+         the 15 feeds still decoding, three categories' worth behind the one
+         actually on screen.
+
+         BOTH DIRECTIONS, because the observer will not restart them either —
+         nothing moved, so it has nothing to report, and a category returned to
+         would show a wall of frozen first frames. A clip that has ended keeps
+         its last frame: that is cam-feeds' own rule for [data-play-once] and
+         play() here would rewind it. */
+      panel.querySelectorAll("video").forEach((video) => {
+        if (!live) video.pause();
+        else if (!video.ended && onScreen(video)) video.play().catch(() => {});
+      });
 
       // Out of the tab order and out of the accessibility tree when it is not
       // the one on screen; otherwise a keyboard walks into cards stacked
@@ -574,11 +604,11 @@ function createEngine(deck, eyeLayer, lenis) {
            returning to it opens them again rather than finding them done. */
         if (i !== index - 1) {
           panel.style.setProperty("--grid-y", "0px");
+          panel.style.setProperty("--covered", "0");
           panel.querySelectorAll(".work-card.is-shown")
             .forEach((card) => card.classList.remove("is-shown"));
         }
 
-        if (i !== previous) panel.classList.remove("is-set");
       }
     });
 
@@ -623,7 +653,6 @@ function createEngine(deck, eyeLayer, lenis) {
     // Brand new panel elements: nothing that was true of the old ones is true
     // of these, so both pieces of remembered state go back to unknown.
     current = -1;
-    landed = false;
     measure();
     apply();
   });

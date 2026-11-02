@@ -213,7 +213,7 @@ export function settleInView(root = document) {
  */
 export function replayEntrances() {
   if (!document.getAnimations) return;
-  const COVERS = "[data-loader], [data-page-veil]";
+  const COVERS = "[data-hero-greeting], [data-page-veil]";
 
   document.getAnimations().forEach((anim) => {
     const el = anim.effect?.target;

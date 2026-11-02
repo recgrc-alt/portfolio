@@ -28,12 +28,12 @@ const CEILING_MS = 5000;
 
 /* --- Why a seal, and not just "wait for the holds" -----------------------
  * The first version asked whether anything was holding the page and, finding
- * an empty list, said yes immediately — because the loader asks at the top of
+ * an empty list, said yes immediately — because the intro asks at the top of
  * boot() and the page modules register a few lines further down. It waited for
  * nothing at all.
  *
  * On a fast connection that was invisible: the gallery still arrived before
- * the loader's own minimum, so the timing looked right for the wrong reason.
+ * the greeting's own minimum, so the timing looked right for the wrong reason.
  * On a real one the cover lifted on an empty page and the work appeared into
  * a black screen, which is the bug this file was written to prevent.
  *

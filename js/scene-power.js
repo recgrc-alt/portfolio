@@ -65,6 +65,7 @@ export function initScenePower(eye, lenis) {
   /** @type {{ top: number, bottom: number }[]} merged, sorted document ranges */
   let ranges = [];
   let covered = null;              // last state pushed to the eye
+  let forced = false;              // ground this file cannot measure; see cover()
 
   function measure() {
     const bands = [...document.querySelectorAll(GROUND)]
@@ -94,7 +95,7 @@ export function initScenePower(eye, lenis) {
     const bottom = top + window.innerHeight;
     /* Inside ONE range, not inside the union of several: the ranges are
        already merged, so anything spanning two of them has a gap between. */
-    const hidden = ranges.some((r) => r.top <= top && r.bottom >= bottom);
+    const hidden = forced || ranges.some((r) => r.top <= top && r.bottom >= bottom);
     if (hidden === covered) return;          // nothing to say
     covered = hidden;
     eye.setRunning(!hidden);
@@ -122,6 +123,23 @@ export function initScenePower(eye, lenis) {
   measure();
 
   return {
+    /* GROUND THIS FILE CANNOT MEASURE. The work deck's cover is a sticky child
+       painting over the whole screen for the length of its parent's scroll,
+       and no document range of that parent describes it: at the parent's first
+       pixel the cover has not risen yet and the eye is in full view.
+
+       So the deck says when, and it says it THROUGH HERE rather than calling
+       setRunning() itself. That matters: the latch in check() is what keeps
+       this file quiet while a state holds, and a stop arriving from outside
+       would leave it believing the eye still runs — which is how an eye ends
+       up frozen with nothing left to thaw it. One owner, one latch. */
+    cover(on) {
+      const next = !!on;
+      if (next === forced) return;
+      forced = next;
+      check();
+    },
+
     refresh: measure,
     destroy() {
       offScroll?.();

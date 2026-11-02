@@ -195,6 +195,26 @@ export const config = {
   /* --- Performance ------------------------------------------------------ */
   perf: {
     maxPixelRatio: 2,        // cap DPR so 4K/retina doesn't melt the GPU
+
+    /* THE OTHER HALF OF THE SAME KNOB. maxPixelRatio caps how many pixels a
+       frame costs; this caps how many frames are paid for. Nothing in this
+       scene gets better above it — the eye drifts, the dust drifts, and
+       neither has anything to say in the 8ms between 60 and 120 frames a
+       second — but every one of them is a full-screen fragment shader, which
+       on a 144Hz laptop panel is more than twice the GPU for no difference
+       anyone can see. It also leaves a phone's battery alone. */
+    maxFps: 60,
+
+    /* AND LOWER STILL WHEN NOTHING IS BEING ASKED. With the pointer still and
+       the page not scrolling, the only thing changing is a slow drift of
+       dust, which does not need sixty frames a second to read. Halves the
+       shader's work for most of a visit, because most of a visit is spent
+       reading rather than moving.
+       30 and not 15: the eye blinks, and a blink is fast enough that a lower
+       rate would show. This is the number to turn if it is still too warm —
+       try 20 before touching anything else. */
+    idleFps: 30,
+    idleAfter: 2000,         // ms of nothing before it settles
     /* Lower again on a phone. The eye is full-screen and fragment-bound, so
        the pixel count IS the cost — 1.5 instead of 2 removes 44% of it. See
        the note in main.js for why the texture is not cut to match. */

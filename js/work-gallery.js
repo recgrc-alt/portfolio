@@ -23,10 +23,10 @@
    screen. cam-feeds.js starts them from an IntersectionObserver instead.
    ========================================================================== */
 
-import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=292";
-import { initCamFeeds } from "./cam-feeds.js?v=292";
-import { fillMedia } from "./media.js?v=292";
-import { t } from "./i18n.js?v=292";
+import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=319";
+import { initCamFeeds } from "./cam-feeds.js?v=319";
+import { fillMedia } from "./media.js?v=319";
+import { t } from "./i18n.js?v=319";
 
 export async function initWorkGallery(root) {
   if (!root) return null;
@@ -87,17 +87,13 @@ function buildPanel({ category, items }) {
   const head = document.createElement("header");
   head.className = "work-deck__head";
 
-  /* The heading speaks the site's own hover language: a displaced copy of
-     itself, blended, that resolves into one clean word. .text-echo is the
-     shared implementation of exactly that — the ghost is drawn from data-text,
-     and two variables say how far it sits and how present it is. Here the
-     trigger is not a pointer but arrival: displaced while the panel is still
-     climbing, resolved once it lands. See pages.css. */
+  /* A plain heading. It wore the site's difference echo until it landed, and
+     that is gone — the echo is the answer to a pointer, and borrowing it for
+     an arrival the reader controls with the scroll wheel meant it could sit
+     doubled indefinitely. See pages.css. */
   const title = document.createElement("h2");
-  title.className = "work-deck__title text-echo";
-  const label = resolveField(category.label);
-  title.textContent = label;
-  title.dataset.text = label;
+  title.className = "work-deck__title";
+  title.textContent = resolveField(category.label);
 
   head.append(title);
 

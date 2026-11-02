@@ -2260,6 +2260,37 @@
   --index-dock-size: clamp(var(--text-xs), 1.15vw, var(--text-sm));
 }
 
+/* --- 1b · The index says which one is on screen --------------------------
+ * THE WHOLE ENTRY ANSWERS, not just its numeral. Lighting the number alone
+ * from 55% to full white was the first attempt and it was not enough to read
+ * as an answer at docked size — what the eye picks up is the CONTRAST between
+ * the four, not the brightness of one. So the three that are not on screen
+ * step back and the one that is comes forward, name and number together.
+ *
+ * BEHIND :has(), so nothing changes until a category is actually marked. On a
+ * narrow screen the deck never runs, nothing is ever marked, and the four stay
+ * the plain list they always were — no second state to maintain for a layout
+ * that has no use for it.
+ *
+ * work-page.js puts .is-current on the link whose href names the panel on
+ * screen; hover keeps its own answer, which is why it is named again below. */
+.work-hero__index .service__link,
+.work-hero__index .service__index {
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.work-hero__index:has(.is-current) .service__link,
+.work-hero__index:has(.is-current) .service__index {
+  color: var(--color-ink-faint);
+}
+
+.work-hero__index .service__link.is-current,
+.work-hero__index .is-current .service__index,
+.work-hero__index .service__link:hover,
+.work-hero__index .service__link:hover .service__index {
+  color: var(--color-ink);
+}
+
 .work-hero__index .service__link {
   font-size: calc(
     var(--index-rest) * (1 - var(--index-dock, 0)) +
@@ -2320,6 +2351,29 @@
      panels on their own, that much light at the seam announced the mechanism
      instead of hinting at it. */
   --deck-glow-a: 0.1;
+
+  /* AND THE LINE THE GLOW NEVER WAS. 0.1 spread over 80px of blur is about 2%
+     a band — light, but no edge, which is why a rectangle climbing over
+     another read as content being cut rather than covered. A shadow with no
+     blur at all is a 1px rule, and sitting on top of the glow it gives the
+     seam the one thing it was missing: somewhere to end. Brighter than the
+     glow on purpose; at the same value it disappears into it. */
+  --deck-edge-a: 0.32;
+
+  /* The whole seam, in one place. It was written out twice — on the stage and
+     on the panel — which is two chances to change one of them. */
+  --deck-edge:
+    0 -1px 0 rgb(255 255 255 / var(--deck-edge-a)),
+    0 calc(-1 * var(--deck-glow-y)) var(--deck-glow-blur)
+      rgb(255 255 255 / var(--deck-glow-a));
+
+  /* HOW FAR THE ONE UNDERNEATH GOES AWAY while it is being covered. Depth is
+     the difference between two layers, not a property of either: with both
+     sitting at the same size and the same light, no amount of edge makes one
+     read as being in front of the other. Both self-extinguish at --covered 0,
+     so a panel that is not being covered carries neither. */
+  --deck-dim:    0.55;   /* light it loses      */
+  --deck-recede: 0.04;   /* and how far it backs off */
 }
 
 .work-deck__stage {
@@ -2347,8 +2401,7 @@
      edge is the top of the screen and the glow is thrown off it. The effect
      ends because the geometry ends, not because something remembered to
      cancel it. */
-  box-shadow: 0 calc(-1 * var(--deck-glow-y)) var(--deck-glow-blur)
-              rgb(255 255 255 / var(--deck-glow-a));
+  box-shadow: var(--deck-edge);
   isolation: isolate;
   pointer-events: auto;     /* the runway above opts out; the content opts in */
 }
@@ -2398,7 +2451,14 @@
      back grayscale-antialiased, which on a black ground reads as thin and
      ragged. The transform alone is enough; the browser promotes when it
      actually needs to, and the raster stays honest. */
-  transform: translateY(var(--panel-y, 100%));
+  /* --covered is written by work-page.js on the panel being covered, and on
+     no other: the same 0…1 that raises the rectangle in front of it. At 0
+     both of these are the identity — scale(1) and opacity 1 — so a panel that
+     is not under anything is promoted to nothing and keeps its subpixel
+     antialiasing, which is what the note above is protecting. */
+  transform: translateY(var(--panel-y, 100%))
+             scale(calc(1 - var(--deck-recede) * var(--covered, 0)));
+  opacity: calc(1 - var(--deck-dim) * var(--covered, 0));
 
   /* Same light, same reason, one rectangle deeper. Panels are siblings with no
      z-index, so paint order is document order and a climbing panel's glow
@@ -2410,8 +2470,7 @@
      And every panel that is neither current nor being covered is
      visibility: hidden, which takes its box decorations with it. Nothing has
      to turn this off while scrolling. */
-  box-shadow: 0 calc(-1 * var(--deck-glow-y)) var(--deck-glow-blur)
-              rgb(255 255 255 / var(--deck-glow-a));
+  box-shadow: var(--deck-edge);
 }
 
 /* Panels neither current nor the one being covered are taken out of rendering
@@ -2435,27 +2494,14 @@
   color: var(--color-ink);
 }
 
-/* --- 4 · The title resolving on arrival -----------------------------------
- * The site already has one way of saying "this word is not settled yet": the
- * difference echo, a displaced copy of the text that converges into a single
- * clean word. It is what the nav, the buttons, the toolkit and the card names
- * all use, and it is the same idea here — only the trigger changes. A pointer
- * resolves those; ARRIVAL resolves this one.
- *
- * So the heading is a plain .text-echo, displaced while its rectangle is
- * still climbing, and resolved the moment the rectangle lands. Both variables
- * transition on --nav-hover-dur, which is the site's own timing for exactly
- * this gesture, so the fade and the convergence are the ones already in use
- * everywhere else rather than a second dialect invented for this page. */
-.work-deck__title.text-echo {
-  --echo-opacity: 1;
-  --echo-shift: var(--nav-hover-shift);
-}
-
-.work-deck__panel.is-set .work-deck__title.text-echo {
-  --echo-opacity: 0;
-  --echo-shift: 0;
-}
+/* The heading used to arrive wearing the site's difference echo, displaced
+   until its rectangle landed. It is gone, and the reason is worth keeping:
+   the echo says "this word has not settled yet", which only works while the
+   unsettled state is brief. Here the clock is the reader's scroll wheel, so
+   stopping mid-climb left the heading permanently doubled — a transition
+   state held as a resting state, which reads as a fault and not as a gesture.
+   The echo stays what it is everywhere else on the site: the answer to a
+   pointer. The heading simply arrives. */
 
 /* --- 5 · The cards travelling ---------------------------------------------
  * The grid is taller than the room the banner gives it, and --grid-y (written
@@ -2933,10 +2979,6 @@
     padding-block: clamp(var(--space-16), 2.4svh, var(--space-32));
   }
 
-  /* Same reason: .is-set is never written, so the heading must resolve on its
-     own rather than sit permanently displaced. */
-  .work-deck__title.text-echo { --echo-opacity: 0; --echo-shift: 0; }
-
   .work-deck__viewport { overflow: visible; }
 
   /* No travelling: the page itself scrolls. */
@@ -2972,9 +3014,6 @@
   .page--work .work-card.is-shown .card-work__video,
   .page--work .work-card.is-shown .card-work__still,
   .page--work .work-card.is-shown .slides { animation: none; --settle: 1; }
-
-  /* The heading is a word, not a word arriving. */
-  .work-deck__title.text-echo { --echo-opacity: 0; --echo-shift: 0; }
 
   /* No hover to zoom with; pinning it at 1.03 would just be a permanently
      cropped thumbnail. */
@@ -4706,26 +4745,6 @@
 .project-chapter__title--ask:has(.is-split) { margin-bottom: var(--space-16); }
 
 .project-chapter__title-inner { display: block; }
-
-.project-line {
-  display: block;
-  overflow: hidden;
-  /* Same descender room as the whole-heading frame, and taken back the same
-     way, so a two-line heading is exactly as tall as the two lines it had
-     before it was split. */
-  padding-bottom: 0.16em;
-  margin-bottom: -0.16em;
-}
-
-.project-line__inner {
-  display: block;
-  transform: translateY(110%);
-  transition: transform var(--dur-reveal) var(--ease-out);
-  /* --line is the line's position in the heading, set by split-lines.js. The
-     delay is worked out here so the pace lives with every other duration on
-     this site rather than inside a script. */
-  transition-delay: calc(var(--line, 0) * var(--dur-line-step));
-}
 
 .project-chapter__title[data-reveal].is-visible .project-line__inner {
   transform: none;

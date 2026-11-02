@@ -32,6 +32,20 @@ html.lenis body { height: auto; }
 
 .lenis.lenis-stopped { overflow: hidden; }
 
+/* EXCEPT DURING THE INTRO, AND THIS IS A LAYOUT FIX. overflow:hidden is not a
+   scroll container with a gutter, so holding the page took the scrollbar's
+   15px away and releasing it handed them back — in the middle of the
+   entrance, which stepped the whole site sideways. Measured: 1024px of page
+   while held, 1009px once free.
+
+   scrollbar-gutter: stable does NOT rescue this; it was tried and measured,
+   and it has nothing to reserve while the overflow is hidden. So the gutter
+   is kept the only way that works: by leaving the page a scroll container all
+   along. The hold is then Lenis's alone, which is enough — stop() refuses the
+   wheel and the touch, and a key or a wheel during the greeting ends it
+   anyway (see hero-intro.js). */
+html.is-intro.lenis-stopped { overflow: visible; }
+
 
 /* ==========================================================================
    2. RESET
@@ -73,6 +87,95 @@ body {
   text-rendering: optimizeLegibility;
   overflow-x: hidden;   /* never scroll sideways */
 }
+
+
+/* --------------------------------------------------------------------------
+   THE SCROLLBAR
+   --------------------------------------------------------------------------
+   The last piece of operating-system chrome left on the page. On Windows it
+   turns up with arrow buttons and a grey track that belong to nothing else
+   here. It is also a LAYOUT MEASURE: it is the width the viewport loses, and
+   a bar that changes width part way through a visit steps the whole site
+   sideways — which is what the intro note at the top of this file is about.
+   Declared once, here, for every page.
+
+   TWO IMPLEMENTATIONS, AND THEY MUST NOT MEET. Firefox has scrollbar-width
+   and scrollbar-color and no pseudo-elements. Blink now has both — and that
+   is the trap: the moment scrollbar-width is set, Blink switches to drawing
+   its own bar and ignores every ::-webkit-scrollbar rule below outright.
+   Measured: the gutter came out at Blink's own 10px instead of the 12px asked
+   for, and the round buttons never appeared at all.
+
+   So the Firefox half is fenced off behind a feature query that is false in
+   anything which has the pseudo-elements. Firefox gets the nearest thing it
+   can say — a thin bar in the same two colours — and the circles are Blink's.
+
+   AND EVERY SELECTOR STARTS AT html, ON PURPOSE. Unscoped, these rules reach
+   every scroll container on the site — the custom select's list and the
+   About carousel's track both have their own, deliberately barer, bars, and
+   giving the buttons a height here would have put circles on them too. This
+   block is the PAGE's scrollbar and nothing else.
+   -------------------------------------------------------------------------- */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-faint) transparent;
+  }
+}
+
+html::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);       /* the horizontal bar, where one exists */
+}
+
+/* Nothing behind the bar but the page. */
+html::-webkit-scrollbar-track,
+html::-webkit-scrollbar-corner { background-color: transparent; }
+
+/* THE BAR. Grey at rest, white under the cursor — the same move the nav links
+   and the buttons make, so the scrollbar answers to the pointer like the rest
+   of the site rather than sitting there as a fixture.
+
+   The transparent border is not decoration: padding does nothing to a
+   scrollbar part, and a border plus background-clip is the only way to inset
+   the bar from the edges of its own track. */
+html::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;                /* a capsule at any width */
+  background-color: var(--color-ink-faint);
+  background-clip: content-box;
+  /* Blink paints scrollbar parts itself and may ignore this, in which case
+     the change is a cut. Stated anyway: it costs one line and it is the
+     behaviour that was asked for. */
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+html::-webkit-scrollbar-thumb:hover { background-color: var(--color-ink); }
+
+/* THE ARROWS, REPLACED BY TWO CIRCLES. A scrollbar button exists only if it
+   is given a size — so these are the arrows' slots, claimed and made round,
+   and they still do what the arrows did: click to step the page.
+   `height` and not `width`, because for a vertical bar the button's cross
+   axis is already the bar's width. */
+html::-webkit-scrollbar-button:vertical:decrement,
+html::-webkit-scrollbar-button:vertical:increment {
+  height: var(--scrollbar-size);
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background-color: var(--color-ink-faint);
+  background-clip: content-box;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+html::-webkit-scrollbar-button:vertical:decrement:hover,
+html::-webkit-scrollbar-button:vertical:increment:hover {
+  background-color: var(--color-ink);
+}
+
+/* And the SECOND button at each end, which Blink draws beside the first if it
+   is allowed to. Left alone, every end shows two circles. */
+html::-webkit-scrollbar-button:vertical:start:increment,
+html::-webkit-scrollbar-button:vertical:end:decrement { display: none; }
 
 
 /* ==========================================================================
@@ -242,84 +345,6 @@ a, button, [role="button"], summary, input, textarea, select {
   transform: translateY(calc((var(--bar-gap) + var(--bar)) / -2)) rotate(-45deg);
 }
 
-/* ==========================================================================
-   LOADER  ·  the eye that turns while the site arrives
-   --------------------------------------------------------------------------
-   Above everything, including the page veil, because it IS the first thing.
-   loader.js removes it when the page is ready; the animation below is the
-   safety net — it hides the loader on its own after the same ceiling the
-   script uses, so a failed bundle can never leave a visitor staring at a
-   black screen with no way past it.
-   ========================================================================== */
-.loader {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-loader);
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: clamp(var(--space-24), 4svh, var(--space-48));
-  background-color: var(--color-bg);
-  opacity: 1;
-  /* Its own duration, not --dur-slow. A cover coming OFF is not the same
-     gesture as something arriving: the page is already built and waiting
-     behind it, and every extra hundred milliseconds here is time the visitor
-     spends looking at a screen with nothing left to say. --dur-slow is right
-     for things that enter; this one should get out of the way. */
-  transition: opacity var(--loader-out) var(--ease-out);
-  /* The net: fades itself out at the ceiling, whatever the script is doing. */
-  animation: loader-giveup 0s linear var(--loader-max) forwards;
-}
-
-/* What the script does when the page is actually ready. */
-.loader.is-done {
-  opacity: 0;
-  pointer-events: none;
-}
-
-@keyframes loader-giveup { to { opacity: 0; pointer-events: none; } }
-
-.loader__eye {
-  display: block;
-  /* Deliberately small. The eye is a full-screen presence everywhere else on
-     the site, so at the door it works better as a quiet mark than as another
-     big one. Tops out at 100px; the source is rendered at 200 so it stays
-     sharp where those are 200 real pixels. */
-  width: clamp(3.5rem, 18vw, 6.25rem);
-  height: auto;
-}
-
-/* Three dots counting under the eye. They fade in turn rather than bounce:
-   the eye is already moving, and two motions competing would read as busy. */
-.loader__dots {
-  display: flex;
-  gap: var(--space-8);
-  margin: 0;
-}
-
-.loader__dots span {
-  width: 0.375rem;
-  height: 0.375rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background-color: var(--color-ink-faint);
-  animation: loader-dot 1.4s var(--ease-inout) infinite;
-}
-
-.loader__dots span:nth-child(2) { animation-delay: 0.18s; }
-.loader__dots span:nth-child(3) { animation-delay: 0.36s; }
-
-@keyframes loader-dot {
-  0%, 70%, 100% { opacity: 0.25; transform: none; }
-  35%           { opacity: 1;    transform: translateY(-0.25rem); }
-}
-
-/* Reduced motion: keep the screen, drop the movement. The eye still shows,
-   it simply does not spin, and the dots hold instead of pulsing. */
-@media (prefers-reduced-motion: reduce) {
-  .loader__dots span { animation: none; opacity: 0.6; }
-}
-
 /* --- Page veil -----------------------------------------------------------
  * The black wipe between pages (see page-transition.js).
  *
@@ -331,24 +356,76 @@ a, button, [role="button"], summary, input, textarea, select {
  * The EXIT is a transition the script triggers by adding .is-leaving — its
  * duration is --veil-leave, which page-transition.js waits out before it hands
  * over to the next document. Change one and change the other. */
+/* --- THE BLACK IS A CIRCLE -----------------------------------------------
+ * It covers the screen, and it leaves on the diagonal: up and to the right,
+ * so the page is uncovered from the bottom left. Between pages it comes back
+ * the same way — in from the bottom left, out to the top right — so a whole
+ * navigation is one circle crossing the screen once, not a cover that
+ * retreats and then returns by the way it came.
+ *
+ * It is also what is behind the welcome on the first page of a visit. There
+ * is one black layer on this site and this is it; on the home page the
+ * greeting is drawn over it rather than bringing a black of its own.
+ * See js/hero-intro.js.
+ *
+ * THE VEIL IS THE WINDOW, THE ::before IS THE CIRCLE. The circle has to be
+ * wider than the screen's diagonal, so it is kept inside a plain inset: 0 box
+ * that clips it — nothing oversized is ever in the layout and no screen can
+ * end up with a stray scrollbar. transitionend is reported on the
+ * originating element, so page-transition.js keeps working untouched.
+ *
+ * transform IS THE ONLY THING THAT MOVES, which is what keeps the whole wipe
+ * on the compositor rather than repainting the screen each frame. */
 .page-veil {
   position: fixed;
   inset: 0;
   z-index: var(--z-veil);
-  background-color: var(--color-bg);
+  overflow: hidden;                    /* the circle is wider than the screen */
   pointer-events: none;                /* never intercepts a click */
-  opacity: 0;
+}
+
+.page-veil::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--veil-size);
+  height: var(--veil-size);
+  /* Centred on the screen by its own margin rather than by a translate, so
+     that transform is free to mean one thing only: how far it has travelled. */
+  margin: calc(var(--veil-size) / -2) 0 0 calc(var(--veil-size) / -2);
+  border-radius: 50%;
+  background-color: var(--color-bg);
+
+  /* IT STARTS OVER THE PAGE, AND THAT IS DELIBERATE. The modules are
+     deferred, so for a moment after the markup is parsed no script has run
+     yet. If the circle rested off-screen the page would paint, then be
+     covered, then revealed again. Starting covered means the first thing
+     anyone sees is the cover, which is what every state below is written
+     around. */
+  transform: none;
+
+  /* The no-JavaScript path: hold, then leave, and stay gone. */
   animation: veil-clear var(--veil-enter) var(--ease-out) both;
 }
 
-/* Fully black for the first fifth, THEN fades. The hold is the point: the
-   curve is an ease-out, which dumps most of its opacity in the first ~150ms,
-   and that is exactly the window in which the language swap lands. Without a
-   hold the veil was technically covering the arrival and visibly not covering
-   the one thing that needed covering. */
+/* Over the page for the first stretch, THEN away. The hold is the point:
+   that is the window in which the language swap lands. Without it the veil
+   was technically covering the arrival and visibly not covering the one
+   thing that needed covering. */
 @keyframes veil-clear {
-  0%, 45% { opacity: 1; }
-  100%    { opacity: 0; }
+  0%, 45% { transform: none; }
+  100%    { transform: translate(var(--veil-away-x), var(--veil-away-y)); }
+}
+
+/* Coming back over the page, from the corner it will next leave towards.
+   An animation rather than a transition because an animation states where it
+   starts: the circle is parked off the TOP RIGHT when this begins, and a
+   transition from there would simply reverse the way it went. */
+@keyframes veil-cover {
+  from { transform: translate(calc(-1 * var(--veil-away-x)),
+                              calc(-1 * var(--veil-away-y))); }
+  to   { transform: none; }
 }
 
 /* --- Held open until the page is actually ready --------------------------
@@ -356,21 +433,33 @@ a, button, [role="button"], summary, input, textarea, select {
  * been applied, so the words never change in front of anybody. The animation
  * above stays as the no-JavaScript path: neither class is ever added there,
  * it plays through, and the page is revealed regardless. */
-.page-veil.is-held {
+/* HELD: the circle sits over the page and nothing moves. The animation is
+   switched off so it cannot leave while main.js is still waiting for the
+   dictionary — or, on the first page of a visit, while the welcome is still
+   being read. */
+.page-veil.is-held::before {
   animation: none;
-  opacity: 1;
+  transform: none;
 }
 
-.page-veil.is-clearing {
+/* CLEARING: the arrival. The circle leaves towards the top right and the
+   page is uncovered from the bottom left, behind its edge. */
+.page-veil.is-clearing::before {
   animation: none;
-  opacity: 0;
-  transition: opacity var(--dur-slow) var(--ease-out);
+  transform: translate(var(--veil-away-x), var(--veil-away-y));
+  transition: transform var(--veil-enter) var(--ease-inout);
 }
 
-.page-veil.is-leaving {
-  animation: none;                     /* hand over from the entrance */
-  opacity: 1;
-  transition: opacity var(--veil-leave) var(--ease-out);
+/* LEAVING: the exit. The circle comes in from the bottom left until it
+   covers everything, and only then does page-transition.js let the browser
+   go.
+   AFTER is-clearing ON PURPOSE: that class is never removed, so both are on
+   the element at this point and they have the same specificity. Later wins.
+   Same curve as the arrival, so the two halves of a navigation read as one
+   circle crossing the screen rather than two separate effects. */
+.page-veil.is-leaving::before {
+  animation: veil-cover var(--veil-leave) var(--ease-inout) both;
+  transition: none;
 }
 
 .masthead::before {
@@ -832,6 +921,234 @@ a, button, [role="button"], summary, input, textarea, select {
   font-style: italic;
   font-weight: var(--weight-bold);
 }
+
+
+/* ==========================================================================
+   HERO INTRO  ·  "Olá", and then the world arrives
+   --------------------------------------------------------------------------
+   Once per visit, home page only:
+
+     1  a black rectangle slides down off the word and uncovers "Olá"
+     2  it waits, then slides back up and covers it again
+     3  the title arrives, softly, in its own place
+     4  and the rest of the scene comes in from far away towards it — the
+        camera inside the 3D scene travelling in, not anything scaled here
+
+   THE TITLE NEVER MOVES, and that is the whole design. It is the thing
+   everything else approaches. Nothing here measures it, scales it or
+   repositions it — it simply arrives where it lives and stays.
+
+   WHICH IS WHY THERE IS NO COVER AT ALL. The page's own background is
+   already --color-bg, so a screen with the eye, the chrome and the title
+   switched off IS a black screen. Nothing has to be laid over the page, so
+   nothing has to be lifted above that layer either — which is what used to
+   cost this section a z-index on the hero panel, a stacking context, and a
+   broken mix-blend-mode on the title. The title blends against the eye
+   correctly from the first frame to the last, because it never leaves the
+   normal flow.
+
+   AND IT STARTS BEFORE JAVASCRIPT DOES. .is-intro is set by a short script
+   in the <head> of index.html, so it is in place for the FIRST PAINT, and
+   the first beat is a CSS animation for the same reason — the greeting
+   cannot wait for forty-odd modules, three.js among them, to arrive and run.
+
+   THE ORDER OF THESE RULES IS LOAD-BEARING. .is-intro-played, .is-intro and
+   the step classes are all on <html> together at some point and they all
+   weigh the same, so later wins. They are written in the order they happen.
+   ========================================================================== */
+
+/* The page veil is the black that covers a navigation between pages. During
+   the intro it is the one thing that would be IN THE WAY — a sheet at the
+   top of the stack, over a screen that is already black for its own reasons.
+   main.js still clears it on its own schedule; it just does it unseen. */
+.is-intro .page-veil { opacity: 0; }
+
+/* EVERYTHING THAT IS NOT THE TITLE OR THE GREETING, switched off. This is
+   what makes the screen black, and the list is the whole of it: the eye and
+   its dust, the nav, the HUD, and the hint under the hero. */
+.is-intro .eye-layer,
+.is-intro .masthead,
+.is-intro .hud,
+.is-intro .scroll-hint {
+  opacity: 0;
+}
+
+/* NOTHING IS SCALED HERE, AND THAT IS THE POINT. The approach is a camera
+   move inside the 3D scene (see eye.js). Scaling the canvas in CSS scales an
+   image that has already been rendered: everything grows by the same amount,
+   the dust never separates from the eye, and it reads as a flat zoom on a
+   photograph — which is exactly how it looked. Moving the camera instead
+   gives the near things more travel than the far ones, and that parallax is
+   the whole sensation of coming in from the back.
+   It was also expensive: a scale in a full-screen WebGL canvas's matrix takes
+   it off the compositor's fast path, and left in the base rule it slowed the
+   entire site for the whole visit. */
+
+/* The intro owns the title's entrance, so the CSS-only one is cancelled —
+   and for the rest of this page's life, not just during. If animation-name
+   came back when the intro class came off, rise-in would restart and the
+   title would arrive a second time. Set in the same breath as .is-intro, and
+   never removed. */
+.is-intro-played .hero-title__line {
+  animation-name: none;
+  opacity: 1;
+}
+
+
+/* --- 1 and 2. "Olá", uncovered and covered again -------------------------
+ * IT WAITS FOR THE PAGE TO BE ABLE TO DRAW IT, which is what .is-intro-go
+ * is for — and it is a bug fix, not a preference. The black screen is up from
+ * the first paint, because the <head> puts .is-intro on <html> before
+ * anything is rendered. But the MOVEMENT cannot start there: measured on this
+ * machine, three.js booting left three frames in three seconds, and the whole
+ * sequence below played inside that void. The word was covered on one frame
+ * and uncovered on the next, a second later, with nothing seen in between.
+ * hero-intro.js adds .is-intro-go once frames are actually flowing.
+ *
+ * The wait in front of it is what makes the black read as black rather than
+ * as a page that has not loaded.
+ *
+ * ONE KEYFRAME, PLAYED TWICE — the second time in reverse, because it is the
+ * same rectangle coming back the way it went. Two animations rather than
+ * three keyframe stops so that every moment in the sequence stays a token:
+ * the second one's delay is the first's length plus the pause, worked out
+ * from the same values the rest of this file uses.
+ *
+ * `forwards` and not `both` on the second: `both` would apply its starting
+ * value through its own delay, which would cover the word before the first
+ * animation had even uncovered it.
+ *
+ * AND BOTH ENDS ARE WRITTEN OUT, which is the fix for the rectangle that
+ * never came back up. With only a `to` keyframe the missing `from` is the
+ * "underlying value" — and for the SECOND animation that underlying value is
+ * what the first one is still holding through its forwards fill: 110%. So the
+ * second animation's keyframes resolved to 110% -> 110%, it ran its full
+ * 1200ms moving nothing, and fired animationend on time, which is why the
+ * title still arrived and the word simply stayed uncovered until it was
+ * switched off. Measured: translateY stuck at 57.3px from 2700ms to 3900ms.
+ * Stated explicitly, there is nothing left to infer. */
+@keyframes curtain-down {
+  from { transform: translateY(0); }
+  to   { transform: translateY(110%); }
+}
+
+.hero-greeting__word {
+  position: relative;
+  display: inline-block;
+}
+
+/* A REAL RECTANGLE AND NOT A CLIP, because that is what it is: a black panel
+   over the word, which leaves downwards and comes back. Nothing needs to
+   clip it — once it has slid off it sits below the word on a black page.
+   It is wider and taller than the line it covers: ascenders, descenders and
+   an italic's overhang all reach past the box the browser gives the text,
+   and a rectangle that fitted exactly would leave a sliver of them showing.
+
+   will-change: transform ASKS FOR A LAYER OF ITS OWN, up front. Without it
+   the browser decides for itself, and it decides late — in the middle of a
+   load, while three.js is parsing a model, is the worst moment to be asked.
+   On its own layer the slide is the compositor's work and a busy main thread
+   cannot swallow it. The element is removed at the end of the intro, so the
+   layer costs nothing for the rest of the visit. */
+.hero-greeting__curtain {
+  position: absolute;
+  inset: -0.18em -0.12em;
+  z-index: 1;
+  background-color: var(--color-bg);
+  transform: translateY(0);
+  will-change: transform;
+}
+
+/* --ease-inout BOTH WAYS, and this is what actually makes the slide slow.
+   --ease-out is an expo curve: it covers most of its distance in the first
+   fifth of the time and then creeps, so lengthening it does not read as
+   slower — it reads as a quick move followed by a crawl. --ease-inout spends
+   its time evenly, which is what you want from a movement meant to be
+   watched. It is also the same rectangle going both ways, so it should be the
+   same curve both ways. */
+.is-intro-go .hero-greeting__curtain {
+  animation:
+    curtain-down var(--intro-curtain) var(--ease-inout) var(--intro-wait) both,
+    curtain-down var(--intro-curtain) var(--ease-inout)
+      calc(var(--intro-wait) + var(--intro-curtain) + var(--intro-read))
+      1 reverse forwards;
+}
+
+/* The greeting is absolutely positioned, so it can never touch the title's
+   box. Small and quiet: a word being said, not a headline.
+   IT STARTS INVISIBLE AND IS TURNED ON BY A CLASS, so a browser that never
+   runs the <head> script — or one asked for less motion — gets the site as
+   it was, with no greeting at all. */
+.hero-greeting {
+  position: absolute;
+  top: 50%;
+  left: var(--intro-inset);
+  z-index: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-greeting);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;                /* the title is uppercase; this is not */
+  color: var(--color-ink);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.is-intro .hero-greeting { opacity: 1; }
+
+
+/* --- 3. The title --------------------------------------------------------
+ * Softly, and in its own place. It is the point of arrival, so it should be
+ * the calmest thing on the screen: a fade and a rise of a third of a letter,
+ * which is the language the rest of the site already uses. No curtain on it
+ * — the curtain belongs to the word that introduced it. */
+/* AN ANIMATION AND NOT A TRANSITION, and this is a bug fix rather than a
+   preference. A transition needs the browser to have seen a "before" state in
+   an earlier style pass; while the main thread is busy booting three.js the
+   class lands in the same pass as the first paint, there is no before, and
+   the title simply appears with no entrance at all — which is what Rogério
+   was seeing. An animation states both ends itself and cannot be skipped. */
+@keyframes title-in {
+  from { opacity: 0; transform: translateY(0.3em); }
+  to   { opacity: 1; transform: none; }
+}
+
+.is-intro .hero-title__line { opacity: 0; }
+
+.is-intro-title .hero-title__line {
+  animation: title-in var(--intro-title) var(--ease-out) both;
+}
+
+/* The name a breath behind the line above it, so the two read as one sentence
+   arriving rather than as two lines appearing together. */
+.is-intro-title .hero-title__name {
+  animation-delay: calc(var(--intro-title) * 0.12);
+}
+
+
+/* --- 4. The scene arrives -----------------------------------------------
+ * From far away, towards the title. --ease-inout and not --ease-out, and
+ * the difference is the whole complaint: --ease-out is an expo curve that is
+ * half way through in a quarter of a second, so over three seconds the eye
+ * was all but fully lit before it had travelled anywhere — it arrived out of
+ * nothing. Approaching should start slowly, build, and settle, and the camera
+ * move in eye.js is on the same curve for the same reason. */
+.is-intro-arrive .eye-layer,
+.is-intro-arrive .masthead,
+.is-intro-arrive .hud,
+.is-intro-arrive .scroll-hint {
+  opacity: 1;
+  transition: opacity var(--intro-approach) var(--ease-inout);
+}
+
+/* AND THE GREETING IS GONE BEFORE THE TITLE STARTS. Its own rectangle has
+   just finished covering it, so on screen this changes nothing — which is the
+   point: it makes certain of it. A cut and not a fade, for the same reason;
+   there is nothing visible left to fade. The element itself is removed a beat
+   later, when the intro ends. */
+.is-intro-title .hero-greeting { opacity: 0; }
 
 /* Scroll hint (fades out as you leave the hero).
  *
@@ -2537,6 +2854,36 @@ a, button, [role="button"], summary, input, textarea, select {
  * unsplit and none of this applies. That is why "Capabilities & Toolkit"
  * animates on a phone, where it wraps, and is untouched on a desktop, where it
  * does not. */
+/* --- A HEADING THAT ARRIVES ONE LINE AT A TIME ----------------------------
+ * split-lines.js wraps each visual line of a heading in a .project-line mask
+ * with a .project-line__inner inside it. This pair is the resting state: the
+ * inner waits below its own mask and slides up when the heading is revealed.
+ *
+ * IT LIVES HERE, NOT IN pages.css, because split-lines.js runs on every page
+ * of the site and this is the site-wide stylesheet. It used to sit in
+ * pages.css, which meant the home page downloaded 233KB of project-page CSS
+ * to get two rules: measured, those two were the only ones of 534 that
+ * matched anything there. */
+.project-line {
+  display: block;
+  overflow: hidden;
+  /* Same descender room as the whole-heading frame, and taken back the same
+     way, so a two-line heading is exactly as tall as the two lines it had
+     before it was split. */
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
+
+.project-line__inner {
+  display: block;
+  transform: translateY(110%);
+  transition: transform var(--dur-reveal) var(--ease-out);
+  /* --line is the line's position in the heading, set by split-lines.js. The
+     delay is worked out here so the pace lives with every other duration on
+     this site rather than inside a script. */
+  transition-delay: calc(var(--line, 0) * var(--dur-line-step));
+}
+
 [data-lines].is-visible .project-line__inner { transform: none; }
 
 /* Scroll reveal: [data-reveal] starts hidden; .is-visible transitions it in.
@@ -2624,14 +2971,25 @@ a, button, [role="button"], summary, input, textarea, select {
   .footer__link:hover,
   .footer__link:focus-visible { transform: none; }
 
-  /* No wipe between pages. page-transition.js bows out entirely under this
-     setting, so the veil must clear itself instantly rather than sit there. */
-  /* No entrance fade — but the cover still has to do its job, otherwise
-     someone who asked for less motion is the only visitor who watches the
-     text change language. Held opaque, then gone, with nothing animating. */
-  .page-veil { animation: none; opacity: 0; }
-  .page-veil.is-held { opacity: 1; }
-  .page-veil.is-clearing { opacity: 0; transition: none; }
+  /* THE CIRCLE NEVER TRAVELS, and neither does the welcome. The cover still
+     has to do its job — someone who asked for less motion should not end up
+     the only visitor who watches the text change language — so it stays a
+     flat black that fades, and the word simply goes rather than wiping.
+     page-transition.js bows out entirely under this setting, so is-leaving
+     only ever arrives here from the CSS side. */
+  .page-veil::before,
+  .page-veil.is-held::before,
+  .page-veil.is-clearing::before,
+  .page-veil.is-leaving::before {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+  .page-veil { opacity: 0; }
+  .page-veil.is-held { opacity: 1; transition: none; }
+  .page-veil.is-clearing { opacity: 0;
+    transition: opacity var(--dur-slow) var(--ease-out); }
+  .page-veil.is-leaving { opacity: 1; transition: opacity var(--veil-leave) var(--ease-out); }
 }
 
 
@@ -2641,6 +2999,13 @@ a, button, [role="button"], summary, input, textarea, select {
 /* Below this width horizontal-scroll.js un-pins the section (same 768px
    breakpoint), so the cards must stack instead of sitting on a rail. */
 @media (max-width: 48rem) {           /* ≤ 768px */
+
+  /* THE GREETING COMES BACK IN. Three times the gutter is right on a wide
+     screen and far too much on a phone: "I AM Rogério Edgar" has to fit
+     beside it, and from 108px into a 375px screen it would have had 267px
+     for a line that needs about 235. Half the desktop inset leaves it room
+     without putting the word back against the edge. */
+  :root { --intro-inset: calc(var(--page-margin) * 2.25); }
 
   /* --- Vertical rhythm ---------------------------------------------------
    * On desktop every panel is a full screen because each one holds a single
@@ -3184,8 +3549,9 @@ a, button, [role="button"], summary, input, textarea, select {
 
   /* --- AND IT ARRIVES A LINE AT A TIME -----------------------------------
    * split-lines.js has wrapped each visual line in a .project-line mask with a
-   * .project-line__inner inside it, and pages.css already holds that pair's
-   * resting state: the inner sits at translateY(110%), below its own mask,
+   * .project-line__inner inside it, and this stylesheet holds that pair's
+   * resting state further up: the inner sits at translateY(110%), below its
+   * own mask,
    * with a transition and a per-line delay off --line. Every value that
    * matters is therefore already stated once, next to the other headings that
    * use it.

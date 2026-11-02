@@ -24,14 +24,14 @@ import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUnifo
 import {
   createScleraMaterial,
   vertexShader, fragmentShader, createEyeUniforms,
-} from "./iris-shader.js?v=292";
+} from "./iris-shader.js?v=319";
 import {
   buildStudioEnvironment, buildLightRig, createPupilMaterial,
-} from "./eye-lighting.js?v=292";
-import { startTimeOfDay } from "./eye-time.js?v=292";
-import { currentHour } from "./time-override.js?v=292";
-import { initEyeDust } from "./eye-dust.js?v=292";
-import { runEffects } from "./eye-effects.js?v=292";
+} from "./eye-lighting.js?v=319";
+import { startTimeOfDay } from "./eye-time.js?v=319";
+import { currentHour } from "./time-override.js?v=319";
+import { initEyeDust } from "./eye-dust.js?v=319";
+import { runEffects } from "./eye-effects.js?v=319";
 
 export function initEye({ canvas, pointer, config }) {
 
@@ -47,6 +47,16 @@ export function initEye({ canvas, pointer, config }) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
   camera.position.set(0, 0, 4.6);
+
+  /* Where the camera belongs once anything that moved it has finished. The
+     intro pulls it back and lets it come in; everything else leaves it here. */
+  const restZ = camera.position.z;
+
+  /* The approach, held as three numbers and advanced by the frame loop below.
+     span === 0 means nobody asked for one. */
+  let dollyBack = 0;      // how far behind restZ it starts, in scene units
+  let dollySpan = 0;      // how long it takes, in seconds
+  let dollyDone = 0;      // how much of that has elapsed
 
   /* --- Environment + lights ---------------------------------------------
    * Both live in eye-lighting.js: one place that owns the studio, driven
@@ -196,8 +206,45 @@ export function initEye({ canvas, pointer, config }) {
   let last = performance.now();
   let running = true;
 
+  /* --- WHAT A FRAME HAS TO BE WORTH ---------------------------------------
+   * Two ceilings, in milliseconds between frames. Two under the true interval
+   * each, so a display running at exactly one of these rates is never caught a
+   * microsecond short and halved.
+   *
+   * WHAT COUNTS AS BEING ASKED FOR something: the pointer moving, the page
+   * scrolling or resizing, and the opening approach — a gesture, which must
+   * never be throttled. Anything else and the loop settles to the idle rate
+   * until one of them happens.
+   *
+   * The pointer is read rather than listened to: pointer.js already keeps
+   * these two numbers up to date from its own listeners, so this is two
+   * property reads a frame and no layout. The other two are rare enough to be
+   * worth an event each. */
+  const fullMin = 1000 / config.perf.maxFps - 2;
+  const idleMin = 1000 / config.perf.idleFps - 2;
+  let stirred = performance.now();
+  let seenX = 0, seenY = 0;
+
+  const stir = () => { stirred = performance.now(); };
+  window.addEventListener("scroll", stir, { passive: true });
+  window.addEventListener("resize", stir);
+
   function frame(now) {
     if (!running) return;
+    /* Asked for FIRST, so the loop survives the early return below. sync()
+       starts it; from here on this is the only thing that keeps it going. */
+    requestAnimationFrame(frame);
+
+    if (pointer.clientX !== seenX || pointer.clientY !== seenY) {
+      seenX = pointer.clientX;
+      seenY = pointer.clientY;
+      stirred = now;
+    }
+
+    // Too soon. `last` is left alone, so the wait carries over to the next one.
+    const busy = dollySpan > 0 || now - stirred < config.perf.idleAfter;
+    if (now - last < (busy ? fullMin : idleMin)) return;
+
     ctx.dt = Math.min((now - last) / 1000, 0.05);
     ctx.time += ctx.dt;
     last = now;
@@ -229,8 +276,26 @@ export function initEye({ canvas, pointer, config }) {
        parallaxes from zero. */
     dust?.update(ctx, renderer.getPixelRatio());
 
+    /* THE APPROACH. Smoothstep and not an ease-out, and that is the fix for
+       the eye arriving out of nothing: a cubic ease-out covered seven eighths
+       of the distance in the first half of the move, so by the time the eye
+       was lit enough to see it had already stopped. Smoothstep is flat at
+       both ends and steepest in the middle — it sets off slowly, builds, and
+       settles, which is what coming in from the back looks like. It is the
+       same shape as --ease-inout, which the fade alongside it uses.
+       Finishing sets span to 0, so this costs one comparison a frame for the
+       rest of the visit. */
+    if (dollySpan > 0) {
+      dollyDone = Math.min(dollyDone + ctx.dt, dollySpan);
+      const t = dollyDone / dollySpan;
+      camera.position.z = restZ + dollyBack * (1 - t * t * (3 - 2 * t));
+      if (dollyDone >= dollySpan) {
+        camera.position.z = restZ;      // exactly, not nearly
+        dollySpan = 0;
+      }
+    }
+
     renderer.render(scene, camera);
-    requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
@@ -267,5 +332,18 @@ export function initEye({ canvas, pointer, config }) {
        work that out for itself: it would have to know about section classes it
        has no other reason to have heard of. */
     setRunning(on) { wanted = !!on; sync(); },
+
+    /* Called once by hero-intro.js, when the title has finished arriving.
+       `back` is in scene units: the eye sits 4.6 away, so 3 is a long way
+       off and reads as distance rather than as a nudge. Ignored if the
+       approach has already run — this is a first-impression gesture, not
+       something the page can ask for twice. */
+    approach({ back = 3, seconds = 3 } = {}) {
+      if (dollySpan > 0 || dollyDone > 0) return;
+      dollyBack = back;
+      dollySpan = seconds;
+      dollyDone = 0;
+      camera.position.z = restZ + back;
+    },
   };
 }

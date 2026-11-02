@@ -77,6 +77,18 @@
   --text-section:   clamp(2.5rem, 8vw, 6.5rem);      /* section titles    */
   --text-card:      clamp(1.5rem, 2.6vw, 2.25rem);   /* card headings     */
 
+  /* The greeting at the door. Small on purpose — it is a word being said,
+     not a headline, and the headline is what it turns into. */
+  --text-greeting:  clamp(1.75rem, 3.2vw, 3rem);
+
+  /* How far in from the edge it stands. Derived from the page's own gutter
+     rather than set on its own, so it keeps its proportion at every width —
+     but one and a half times it, because --page-margin is the measure for a
+     column of content and a single word with a black screen behind it needs
+     more room than that to look placed rather than pushed up against the
+     side. */
+  --intro-inset:    calc(var(--page-margin) * 4.5);
+
   /* Weights */
   --weight-regular: 400;
   --weight-medium:  500;
@@ -114,6 +126,13 @@
    * 4. LAYOUT                                                           *
    * ------------------------------------------------------------------ */
   --page-margin: clamp(1.5rem, 4vw, 3rem);  /* outer gutter — 24px … 48px */
+
+  /* THE SCROLLBAR'S WIDTH, AND THEREFORE A LAYOUT MEASURE. It is the width of
+     the bar, the diameter of the round buttons at its ends, and the amount of
+     page the viewport loses to it — so it is declared once. Narrower than the
+     15px Windows gives it, and wide enough that the buttons are still worth
+     aiming at. */
+  --scrollbar-size: 0.75rem;                /* 12px */
 
   /* THE MEASURE, WRITTEN ONCE.
      `width: min(100% - var(--page-margin) * 2, var(--work-maxw))` was typed out
@@ -249,7 +268,6 @@
   --z-canvas: -1;  /* the WebGL eye (behind content)   */
   --z-chrome:  2;  /* header / footer (always on top)  */
   --z-veil:    9;  /* the black wipe between pages     */
-  --z-loader: 10;  /* the first-paint loading screen   */
   --z-cursor: 11;  /* the ring — above everything, always */
 
   /* ------------------------------------------------------------------ *
@@ -286,11 +304,33 @@
      was. */
   --dur-card-zoom: 1000ms;
 
-  /* How long the black veil takes to cover the page on the way out.
-     page-transition.js waits exactly this long before navigating, so the two
-     must be changed together. The way IN is --dur-slow: arriving should feel
-     unhurried, leaving should not keep anyone waiting. */
-  --veil-leave: 420ms;
+  /* How long the hole takes to close over the page before the browser
+     navigates. page-transition.js reads this value off the veil rather than
+     repeating it, so changing it here moves both halves together. It was
+     420ms while the wipe was a flat fade; a shape travelling the width of the
+     screen needs longer than that to read as a shape at all. */
+  --veil-leave: 560ms;
+
+  /* HOW BIG THE CIRCLE IS. To hide a rectangle it has to be at least as wide
+     as the rectangle's diagonal, and CSS has no square root that is safe to
+     rely on yet, so this uses the sum of the two sides instead. diagonal
+     divided by (width + height) is 0.707 at its lowest, on a square screen,
+     and the highest of any shape anyone actually uses is 0.763, on 21:9.
+     0.78 clears all of them with a few per cent to spare:
+       1920x1080  needs 2203, gets 2340
+       1440x900   needs 1698, gets 1825
+       375x812    needs  893, gets  926
+     And because it is written in vw and vh it is re-measured by the browser
+     on every resize, which is the "scales with the screen" part. */
+  --veil-size: calc((100vw + 100vh) * 0.78);
+
+  /* WHERE IT GOES WHEN IT IS OUT OF THE WAY: up and to the right, far enough
+     that no part of it still touches the screen. Checked the same way, by
+     the distance from the moved centre to the corner it leaves behind last —
+     1104px of clearance against a 913px radius at 1440x900, and the margin
+     only grows on the other sizes above. */
+  --veil-away-x:  115vw;
+  --veil-away-y: -115vh;
 
   /* How long the arrival wipe takes WHEN NOBODY IS DRIVING IT — the no-script
      path. Longer than the exit on purpose: it has to stay black long enough to
@@ -300,11 +340,48 @@
      the moment the dictionary lands, which is usually sooner than this. */
   --veil-enter: 1200ms;
 
-  /* How long the loading screen will wait before giving up and showing the
-     site anyway. loader.js uses the same ceiling; change them together. */
-  --loader-max: 6000ms;
-  /* And how long it takes to get out of the way once it is done. */
-  --loader-out: 450ms;
+  /* --- THE INTRO, BEAT BY BEAT -------------------------------------------
+     The greeting on the home page, once per visit: "Olá" is uncovered by a
+     falling rectangle, covered again by the same one, the title arrives in
+     its own place, and the rest of the scene comes in from far away towards
+     it. hero-intro.js reads every one of these, so the whole sequence is
+     retuned from here and from nowhere else.
+
+     The CSS half adds up to 5350ms before the title has finished:
+       400 + 1200 + 550 + 1200 + 2000.
+     After that the camera comes in over 3s (eye.js), but the page is already
+     scrollable — the sentence is readable, so nobody is held in front of it.
+
+     NO DURATION HERE IS READ BY JAVASCRIPT ANY MORE. hero-intro.js waits for
+     the animations to report that they ended, because the CSS clock and the
+     JS clock drift apart while three.js boots — measured at 840ms, and that
+     drift is what used to put the title on top of the word.
+
+     IT IS SLOW ON PURPOSE AND IT WAS SLOWED REPEATEDLY. Every beat used to
+     be roughly half this, and the answer was always the same: you cannot
+     follow what is happening. A gesture nobody can follow is not a gesture,
+     and a page that takes its time does not read as one that is lagging —
+     it reads as one that meant to.
+
+     WHICH KNOB TO TURN IF IT IS TOO LONG: --intro-approach is the biggest
+     and also the last, which is the one least worth hurrying; --intro-curtain
+     is paid twice, so it is worth 2400ms on its own; --intro-wait and
+     --intro-read are the two pauses and the cheapest to cut. */
+  --intro-wait:     400ms; /* black, and only black, before anything shows */
+  --intro-curtain: 1200ms; /* the rectangle sliding off the word — and back */
+  /* The pause with the word WHOLE. It reads as longer than it is, and that
+     is correct: the word is already legible part way down the rectangle and
+     stays legible part way back up, so the time it can actually be read is
+     this plus a good share of the two 1200ms slides either side. */
+  --intro-read:     550ms; /* "Olá" whole, left alone to be read         */
+  --intro-title:   2000ms; /* the title arriving, in a slow fade          */
+
+  /* How long the scene takes to come in. eye.js moves the camera over the
+     same stretch — it is told 3 seconds in its own units — and this is what
+     fades the nav and the HUD up alongside it, so the two read as one
+     arrival rather than as a fade and a move that happen to overlap. */
+  --intro-approach: 3000ms;
+
   --dur-reveal: 1200ms;   /* hero title entrance          */
 
   /* ONE LINE OF A HEADING BEHIND THE ONE ABOVE IT. Named here rather than

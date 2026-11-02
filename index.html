@@ -31,7 +31,39 @@
        o texto EXATO entre as tags, espacos incluidos. Mudar um caracter no
        importmap sem recalcular o hash faz o browser recusa-lo, e sem
        importmap nao corre JavaScript nenhum no site. Ver vendor/README.md. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-IATkqRMH8LC2/MkVVm5Z0BZ2GjRmMt1Eivlm+m0i9S0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://api-bdc.io https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-IATkqRMH8LC2/MkVVm5Z0BZ2GjRmMt1Eivlm+m0i9S0=' 'sha256-ZVpvjn7tvmgrqQMN01f3ygbO9BPycj5KcS5/Aj8qInw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://api-bdc.io https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+
+  <!-- ====================================================================
+       IS THIS VISIT GREETED?  ·  answered before the first paint
+       Whether the intro runs depends on sessionStorage, which only a script
+       can read, and the answer is needed BEFORE anything is drawn — the one
+       complaint this fixes is the hero showing up ahead of the greeting. A
+       deferred module answers it hundreds of milliseconds too late.
+
+       IT FAILS SAFE: if this never runs, the class is never set and the page
+       behaves exactly as it did before — no greeting, nothing hidden.
+       The timer is its own last resort, for a visit where the modules never
+       arrive to end the intro properly.
+       Changing a character of this script means recalculating the sha256 in
+       the policy above, or the browser refuses it. See vendor/README.md.
+       ==================================================================== -->
+  <script>
+    try {
+      const KEY = "re.loaded";
+      const asked = new URLSearchParams(location.search);
+      const replay = asked.has("intro") || asked.has("welcome");
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!still && (replay || sessionStorage.getItem(KEY) !== "1")) {
+        document.documentElement.classList.add("is-intro", "is-intro-played");
+        setTimeout(() => {
+          document.documentElement.classList.remove("is-intro");
+        }, 16000);
+      }
+      sessionStorage.setItem(KEY, "1");
+    } catch (error) {
+      /* Storage blocked, or no history: no greeting, and the site is fine. */
+    }
+  </script>
 
   <!-- Favicon. Three sizes because browsers ask for different ones and none of
        them negotiate: 16/32 for the tab, 180 for an iOS home screen. The PNGs
@@ -39,9 +71,9 @@
        role and which every other browser would have to download whole just to
        draw sixteen pixels. favicon.ico sits at the site root as well, because
        some clients request /favicon.ico without ever reading the markup. -->
-  <link rel="icon" href="assets/favicon-32.png?v=292" sizes="32x32" type="image/png" />
-  <link rel="icon" href="assets/favicon-16.png?v=292" sizes="16x16" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=292" />
+  <link rel="icon" href="assets/favicon-32.png?v=319" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=319" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=319" />
 
   <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -51,9 +83,8 @@
     rel="stylesheet" />
 
   <!-- Design tokens first, then the stylesheet. -->
-  <link rel="stylesheet" href="css/tokens.css?v=292" />
-  <link rel="stylesheet" href="css/style.css?v=292" />
-  <link rel="stylesheet" href="css/pages.css?v=292" />
+  <link rel="stylesheet" href="css/tokens.css?v=319" />
+  <link rel="stylesheet" href="css/style.css?v=319" />
 
   <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
        This MUST come before any module load or preload (see below). -->
@@ -92,7 +123,7 @@
        downloaded the file TWICE - the opposite of what a preload is for. It
        says so in the console if you look, which is the only reason this was
        caught. -->
-  <link rel="preload" as="image" href="assets/foto-depthmap.webp?v=292"
+  <link rel="preload" as="image" href="assets/foto-depthmap.webp?v=319"
         media="(hover: hover)" fetchpriority="low" crossorigin />
 
   <link rel="modulepreload" href="vendor/three@0.160.0/build/three.module.min.js" crossorigin />
@@ -224,24 +255,10 @@
 
 <body>
 
-  <!-- ====================================================================
-       LOADER  ·  shown once per visit, while the site arrives
-       In the markup rather than built by script, so it is on screen from the
-       first paint — a loading screen that waits for JavaScript has missed the
-       moment it exists for. loader.js only takes it away again.
-       ==================================================================== -->
-  <div class="loader" data-loader aria-hidden="true">
-    <video class="loader__eye" data-loader-eye autoplay muted loop playsinline
-           width="200" height="200">
-      <source src="assets/loading-eye.webm?v=292" type="video/webm" />
-    </video>
-    <p class="loader__dots"><span></span><span></span><span></span></p>
-  </div>
-
-
-  <!-- The black wipe between pages. Its fade-IN is a pure CSS animation so it
-       clears itself even if JS never runs; page-transition.js only drives the
-       fade-OUT on the way to the next page. -->
+  <!-- The black circle: the cover behind the welcome, and the wipe between
+       pages afterwards. Its exit is a pure CSS animation so it clears itself
+       even if JS never runs; main.js and page-transition.js only take over
+       the timing when they are alive. -->
   <div class="page-veil" data-page-veil aria-hidden="true"></div>
 
   <!-- ====================================================================
@@ -303,9 +320,28 @@
   <main class="content">
 
     <!-- Hero: the title slides up & fades as you scroll away from it. -->
-    <section class="panel panel--hero" id="hero">
+    <section class="panel panel--hero" id="hero" data-hero-intro>
+      <!-- THE GREETING, and it is only on the home page because this is the
+           only page the intro belongs to. Absolutely positioned (see
+           .hero-greeting) so it can never touch the title's box, invisible
+           until the <head> script says this visit is greeted, and
+           aria-hidden because it is the site saying hello to somebody the
+           heading underneath is about to introduce properly.
+           Not translated: a Portuguese hello in front of an English site is
+           the point of it. -->
+      <p class="hero-greeting" data-hero-greeting aria-hidden="true">
+        <span class="hero-greeting__word" data-hero-word>Olá<!--
+             THE RECTANGLE IS AN ELEMENT OF ITS OWN and not a ::before, which
+             is Rogério's call and the right one: it is a real thing on the
+             screen, it can be looked at in the inspector, and the browser is
+             free to hand its slide to the compositor instead of redrawing a
+             pseudo-element on the main thread. It carries no text and nothing
+             reads it. -->
+          <span class="hero-greeting__curtain"></span></span>
+      </p>
+
       <h1 class="hero-title" data-hero-title>
-        <span class="hero-title__line" data-i18n="hero.line1">Through the Eyes of</span>
+        <span class="hero-title__line hero-title__lead" data-i18n="hero.line1">Through the Eyes of</span>
         <span class="hero-title__line hero-title__name">Rogério Edgar</span>
       </h1>
 
@@ -397,7 +433,7 @@
                  edge to edge and crops to portrait like a phone expects.
                  display:none on desktop; and on touch photo-depth.js is never
                  started at all, so the phone is spared a WebGL context. -->
-            <img class="reveal__still" src="assets/foto.webp?v=292"
+            <img class="reveal__still" src="assets/foto.webp?v=319"
                  alt="Portrait of Rogério Edgar Correia, in black and white."
                  data-i18n-attr="alt=about.photoAlt" decoding="async" />
             <canvas class="reveal__canvas reveal__canvas--front" data-reveal-front aria-hidden="true"></canvas>
@@ -738,7 +774,7 @@
     <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
   </div>
 
-  <script type="module" src="js/main.js?v=292"></script>
+  <script type="module" src="js/main.js?v=319"></script>
 
 </body>
 

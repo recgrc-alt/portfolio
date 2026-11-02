@@ -20,14 +20,23 @@
    new-tab clicks, downloads, external links, mailto:, and same-page anchors
    all behave exactly as the browser intends. */
 
-import { fadeOutAmbience } from "./ambience.js?v=292";
+import { fadeOutAmbience } from "./ambience.js?v=319";
+import { cssMilliseconds } from "./css-time.js?v=319";
 
-const LEAVE_MS = 420;
+/* HOW LONG THE EXIT TAKES, READ FROM THE STYLESHEET.
+   The circle's arrival is timed by --veil-leave in css/tokens.css, beside
+   every other duration on this site. This used to be a second copy of that
+   number living here, which is exactly how an animation and the clock waiting
+   for it drift apart. The fallback is the value it had before the circle
+   existed, so a missing property can never strand anyone mid-navigation.
+   The reader lives in css-time.js: hero-intro.js needs the same thing. */
+const LEAVE_FALLBACK_MS = 420;
 
 export function initPageTransition(veil) {
   if (!veil) return null;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
 
+  const leaveMs = cssMilliseconds(veil, "--veil-leave", LEAVE_FALLBACK_MS);
   let leaving = false;
 
   // A link this module should animate: same tab, same origin, a real document.
@@ -55,15 +64,20 @@ export function initPageTransition(veil) {
     event.preventDefault();
     leaving = true;
     veil.classList.add("is-leaving");
-    fadeOutAmbience(LEAVE_MS);
+    fadeOutAmbience(leaveMs);
 
-    // The veil's own transition is the clock. A timeout backs it up, because a
-    // transitionend that never fires (a backgrounded tab) must not strand the
+    // The circle landing is the clock. A timeout backs it up, because an
+    // animationend that never fires (a backgrounded tab) must not strand the
     // visitor on a page that refuses to leave.
     let done = false;
     const go = () => { if (!done) { done = true; location.href = link.href; } };
-    veil.addEventListener("transitionend", go, { once: true });
-    setTimeout(go, LEAVE_MS + 120);
+    // By name, and not { once: true }: the event bubbles up from the ::before
+    // that actually moves, and any other animation ending on this element
+    // would otherwise consume the one registration and leave early.
+    veil.addEventListener("animationend", (event) => {
+      if (event.animationName === "veil-cover") go();
+    });
+    setTimeout(go, leaveMs + 120);
   });
 
   // Coming BACK to this page from the browser's cache restores the DOM exactly

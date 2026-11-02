@@ -17,26 +17,26 @@
    Orchestration lives here; logic lives in the modules.
    ========================================================================== */
 
-import { config } from "./config.js?v=292";
-import { startClock } from "./clock.js?v=292";
-import { initI18n, i18nReady } from "./i18n.js?v=292";
-import { holdPage, pageReady, sealPage } from "./page-ready.js?v=292";
-import { createPointer } from "./pointer.js?v=292";
-import { initEye } from "./eye.js?v=292";
-import { initScenePower } from "./scene-power.js?v=292";
-import { initSmoothScroll, holdScrollTarget } from "./smooth-scroll.js?v=292";
-import { initReveal, settleInView, replayEntrances } from "./reveal.js?v=292";
-import { initClickSound } from "./click-sound.js?v=292";
-import { initPrefetch } from "./prefetch.js?v=292";
-import { initAmbience } from "./ambience.js?v=292";
-import { initSoundToggle } from "./sound-toggle.js?v=292";
-import { initCursor } from "./cursor.js?v=292";
-import { initCardAudio } from "./card-audio.js?v=292";
-import { initPageTransition } from "./page-transition.js?v=292";
-import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=292";
-import { initNavMenu } from "./nav-menu.js?v=292";
-import { initCardCarousel } from "./card-carousel.js?v=292";
-import { initLoader } from "./loader.js?v=292";
+import { config } from "./config.js?v=319";
+import { startClock } from "./clock.js?v=319";
+import { initI18n, i18nReady } from "./i18n.js?v=319";
+import { holdPage, pageReady, sealPage } from "./page-ready.js?v=319";
+import { createPointer } from "./pointer.js?v=319";
+import { initEye } from "./eye.js?v=319";
+import { initScenePower } from "./scene-power.js?v=319";
+import { initSmoothScroll, holdScrollTarget } from "./smooth-scroll.js?v=319";
+import { initReveal, settleInView, replayEntrances } from "./reveal.js?v=319";
+import { initClickSound } from "./click-sound.js?v=319";
+import { initPrefetch } from "./prefetch.js?v=319";
+import { initAmbience } from "./ambience.js?v=319";
+import { initSoundToggle } from "./sound-toggle.js?v=319";
+import { initCursor } from "./cursor.js?v=319";
+import { initCardAudio } from "./card-audio.js?v=319";
+import { initPageTransition } from "./page-transition.js?v=319";
+import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=319";
+import { initNavMenu } from "./nav-menu.js?v=319";
+import { initCardCarousel } from "./card-carousel.js?v=319";
+import { initHeroIntro } from "./hero-intro.js?v=319";
 
 /* Bumped whenever the JS changes. If the console does not show this exact
    line, the browser is running a CACHED old bundle — hard-reload or clear the
@@ -46,9 +46,11 @@ const BUILD = "build 276 · soft capture text, and marks for MediaPipe, Gemini, 
 function boot() {
   console.log("%c▲ Rogério Edgar · " + BUILD, "color:#8cbe69;font-weight:bold");
 
-  // First thing: the loading screen is already on screen from the markup, and
-  // this is what eventually takes it away. Once per visit, not per page.
-  initLoader(document.querySelector("[data-loader]"));
+  /* First thing: the greeting is already on the page from the markup, and
+     this is what plays it. Once per visit, home page only — anywhere else
+     the selector finds nothing and this returns null, which every line below
+     treats as "there is no intro". See hero-intro.js. */
+  const intro = initHeroIntro(document.querySelector("[data-hero-intro]"));
 
   /* --- Shared chrome (every page) -------------------------------------- */
 
@@ -64,9 +66,9 @@ function boot() {
      arrival — it just faded out faster than the dictionary arrived.
      Now it waits, and the fade is the page appearing already correct.
 
-     The loader does the same on the first page of a visit (see loader.js);
-     this covers every page after it, which is where the swap was most
-     visible — the wipe opened onto the wrong language. */
+     The greeting does the same on the first page of a visit (see
+     hero-intro.js); this covers every page after it, which is where the
+     swap was most visible — the wipe opened onto the wrong language. */
   const veil = document.querySelector("[data-page-veil]");
   if (veil) {
     veil.classList.add("is-held");
@@ -76,10 +78,25 @@ function boot() {
     // a page with no cards in it yet. pageReady() is capped and never rejects,
     // so this cannot leave the veil shut.
     Promise.all([i18nReady, pageReady()]).finally(() => {
-      // Same reason as in loader.js: the wipe must open onto a page that is
+      // Same reason as in hero-intro.js: the wipe must open onto a page that is
       // already there, not onto one that starts arriving once it has opened.
       settleInView();
       replayEntrances();
+
+      /* THE GREETING DECIDES WHEN THE BLACK LEAVES. `landing` resolves at
+         the START of the title's landing, not the end of it, which is the
+         whole point: the circle and the title are meant to be moving at the
+         same time rather than taking turns.
+         Anywhere there is no intro — every page but the home one, and every
+         page after the first of a visit — `landing` is undefined and this
+         settles on the spot, which is the behaviour the site always had.
+         .finally rather than .then: hero-intro.js never rejects, but a
+         release that depended on success could strand the page behind the
+         circle. */
+      /* The veil is the black that covers a navigation between pages. During
+         the intro the stylesheet hides it outright — the screen is already
+         black because everything on it is switched off — so there is nothing
+         to wait for and it clears unseen. */
       veil.classList.remove("is-held");
       veil.classList.add("is-clearing");
     });
@@ -106,14 +123,14 @@ function boot() {
     hudExtrasWired = true;
 
     // Neither asks for anything on arrival — see the modules.
-    import("./distance.js?v=292").then((m) =>
+    import("./distance.js?v=319").then((m) =>
       m.initDistance(document.querySelector("[data-distance]"))
     );
 
     // Pressing the local time opens the hour scrubber, which re-lights the eye
     // live. Loaded on demand: it is an extra, and a page where nobody presses
     // it should not pay to download it.
-    import("./hour-picker.js?v=292").then((m) =>
+    import("./hour-picker.js?v=319").then((m) =>
       m.initHourPicker(document.querySelector(".meta--time"))
     );
   }
@@ -153,10 +170,16 @@ function boot() {
   const lenis = initSmoothScroll();
   window.__lenis = lenis;   // exposed for debugging / driving in tests
 
+  /* Nobody scrolls away from the greeting. It has to be here rather than
+     inside hero-intro.js because Lenis does not exist until this line, and
+     Lenis owns the scroll — the stylesheet already locks overflow off its
+     .lenis-stopped class. A no-op when there is no intro. */
+  intro?.holdScroll(lenis);
+
   /* The other half of "Drag / Scroll to explore". Loaded on demand and it
      returns null on a touch screen, where the browser already does this
      better than any script could. See drag-scroll.js. */
-  import("./drag-scroll.js?v=292").then((m) => m.initDragScroll(lenis));
+  import("./drag-scroll.js?v=319").then((m) => m.initDragScroll(lenis));
 
   const pointer = createPointer();
   const canvas = document.getElementById("eye-canvas");
@@ -183,6 +206,11 @@ function boot() {
         }
       : config;
     eye = initEye({ canvas, pointer, config: eyeConfig });
+
+    /* The intro asks it to come in once the title has arrived. Handed over
+       here because the eye does not exist until this line, and a no-op when
+       there is no intro. */
+    intro?.useEye(eye);
   }
 
   /* --- NOT RENDERING WHAT NOBODY IS LOOKING AT ---------------------------
@@ -196,7 +224,9 @@ function boot() {
    * The eye exposes a switch; this decides when to throw it. Handed the same
    * Lenis instance the rest of the page rides, so no second scroll listener is
    * created for one gesture. */
-  if (eye) initScenePower(eye, lenis);
+  /* Held, because the work deck has ground this cannot measure and has to
+     hand it over. See scene-power.js, cover(). */
+  const power = eye ? initScenePower(eye, lenis) : null;
   initReveal();   // [data-reveal] elements exist on several pages
 
   /* --- Sound and navigation, all shared chrome ------------------------- *
@@ -256,15 +286,16 @@ function boot() {
   // WORK — the gallery, built from data/projects.json.
   if (document.querySelector("[data-work-gallery]")) {
     // The cards ARE this page. Nothing should uncover before they exist.
-    holdPage(import("./work-gallery.js?v=292").then(async (m) => {
+    holdPage(import("./work-gallery.js?v=319").then(async (m) => {
       await m.initWorkGallery(document.querySelector("[data-work-gallery]"));
 
-      /* Only now. Two of the three things this sets up — the anchors from the
-         hero index and the echo on each category heading — need the sections
-         and headings to exist, and they are built from JSON a moment ago. Run
-         earlier it would find nothing and silently do nothing. */
-      const page = await import("./work-page.js?v=292");
-      page.initWorkPage({ lenis });
+      /* Only now. What this sets up — the anchors from the hero index, the
+         index marking which category is on screen, the panels themselves —
+         needs the sections and headings to exist, and they are built from
+         JSON a moment ago. Run earlier it would find nothing and silently do
+         nothing. */
+      const page = await import("./work-page.js?v=319");
+      page.initWorkPage({ lenis, power });
     }));
 
     /* The list at the foot of the page. NOT inside the hold above: it sits
@@ -272,18 +303,18 @@ function boot() {
        uncovers, and making the loading screen wait for it would be paying
        for something off screen. It builds from the same JSON, which by then
        is already in the cache. */
-    import("./work-list.js?v=292").then((m) => {
+    import("./work-list.js?v=319").then((m) => {
       m.initWorkList(document.querySelector("[data-work-list]"), { lenis });
     });
   }
 
   // PROJECT — one template filled from the ?id= parameter.
   if (document.querySelector("[data-project-page]")) {
-    holdPage(import("./project-page.js?v=292").then(async (m) => {
+    holdPage(import("./project-page.js?v=319").then(async (m) => {
       await m.initProjectPage(document.querySelector("[data-project-page]"));
       // The hero video is injected by the module, so its feed observer can
       // only be wired after that has run.
-      const { initCamFeeds } = await import("./cam-feeds.js?v=292");
+      const { initCamFeeds } = await import("./cam-feeds.js?v=319");
       initCamFeeds(document.querySelector("[data-project-page]"));
 
       /* --- The depth chapters, once their canvases exist --------------------
@@ -298,7 +329,7 @@ function boot() {
 
   // CONTACT — the copy button and the form.
   if (document.querySelector("[data-contact]")) {
-    import("./contact.js?v=292").then((m) =>
+    import("./contact.js?v=319").then((m) =>
       m.initContact(document.querySelector("[data-contact]"))
     );
   }
@@ -330,8 +361,8 @@ function boot() {
  * parallax that stops, not the content. */
 async function initDepthChapters(canvases, { pointer, lenis }) {
   const [{ initDepthMedia }, { trackScrollProgress }] = await Promise.all([
-    import("./depth-media.js?v=292"),
-    import("./scroll-progress.js?v=292"),
+    import("./depth-media.js?v=319"),
+    import("./scroll-progress.js?v=319"),
   ]);
 
   const semMovimento = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -389,12 +420,12 @@ async function initHome({ pointer, lenis }) {
     { initHorizontalScroll },
     { bindProgressToProperty, trackScrollProgress },
   ] = await Promise.all([
-    import("./scroll-fx.js?v=292"),
-    import("./reveal-photo.js?v=292"),
-    import("./photo-depth.js?v=292"),
-    import("./marquee.js?v=292"),
-    import("./horizontal-scroll.js?v=292"),
-    import("./scroll-progress.js?v=292"),
+    import("./scroll-fx.js?v=319"),
+    import("./reveal-photo.js?v=319"),
+    import("./photo-depth.js?v=319"),
+    import("./marquee.js?v=319"),
+    import("./horizontal-scroll.js?v=319"),
+    import("./scroll-progress.js?v=319"),
   ]);
 
   initHeroScrollFx(lenis);
@@ -496,7 +527,7 @@ async function initHome({ pointer, lenis }) {
    * when that happens. */
   const frase = document.querySelector("[data-lines]");
   if (frase) {
-    const { keepSplit } = await import("./split-lines.js?v=292");
+    const { keepSplit } = await import("./split-lines.js?v=319");
     /* On the HEADING, not on the span: the h2 is what a screen reader
        announces, and once the span is split its textContent runs the lines
        together - "Interactive webbuilt with code". Taken while it is still a
