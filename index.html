@@ -31,7 +31,7 @@
        o texto EXATO entre as tags, espacos incluidos. Mudar um caracter no
        importmap sem recalcular o hash faz o browser recusa-lo, e sem
        importmap nao corre JavaScript nenhum no site. Ver vendor/README.md. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-IATkqRMH8LC2/MkVVm5Z0BZ2GjRmMt1Eivlm+m0i9S0=' 'sha256-ZVpvjn7tvmgrqQMN01f3ygbO9BPycj5KcS5/Aj8qInw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://api-bdc.io https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-IATkqRMH8LC2/MkVVm5Z0BZ2GjRmMt1Eivlm+m0i9S0=' 'sha256-6njkyZqNNw5SMfsDTtR/WsidwHcMr+I1DT/ZDKAqpco='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://api-bdc.net https://api-bdc.io https://formspree.io; frame-src https://modular-city.onrender.com; form-action https://formspree.io; base-uri 'self'; object-src 'none'" />
 
   <!-- ====================================================================
        IS THIS VISIT GREETED?  ·  answered before the first paint
@@ -53,7 +53,13 @@
       const asked = new URLSearchParams(location.search);
       const replay = asked.has("intro") || asked.has("welcome");
       const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!still && (replay || sessionStorage.getItem(KEY) !== "1")) {
+      /* NOT ON A PHONE. The greeting waits for the eye's model before it moves,
+         and on a mobile connection that is seconds of black with the scroll
+         held — which reads as a broken site, because for that long it is one.
+         The deck on the work page retires at the same width for the same kind
+         of reason. 48rem is the site's own breakpoint. */
+      const narrow = matchMedia("(max-width: 48rem)").matches;
+      if (!still && !narrow && (replay || sessionStorage.getItem(KEY) !== "1")) {
         document.documentElement.classList.add("is-intro", "is-intro-played");
         setTimeout(() => {
           document.documentElement.classList.remove("is-intro");
