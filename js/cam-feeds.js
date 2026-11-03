@@ -33,6 +33,9 @@ export function onScreen(el) {
   return box.bottom > 0 && box.top < window.innerHeight;
 }
 
+/* The breakpoint and the pointer question, from the one place that owns them. */
+import { isTouch } from "./viewport.js?v=321";
+
 export function initCamFeeds(section, options = {}) {
   if (!section) return null;
   /* Both markers, one observer. [data-play-once] behaves differently once it
@@ -48,6 +51,18 @@ export function initCamFeeds(section, options = {}) {
   // 30% keeps the lead time proportional at any size. (rootMargin accepts only
   // px and %, so this is as close to the site's rem convention as it gets.)
   const rootMargin = options.rootMargin ?? "30%";
+
+  /* HOW MANY MAY DECODE AT ONCE, and this is the phone's whole problem.
+     An iPhone refuses past a handful of simultaneous decoders, which is why
+     this site has always felt fine on one. Android accepts every one it is
+     given and then chokes trying to honour them: on the work page, where the
+     deck is retired and all four categories lie in the same scroll, eleven of
+     the fifteen feeds were decoding at the same time.
+
+     So a phone is told what an iPhone decides for itself. Unlimited on a
+     desktop, because nothing there asked for a limit and the camera wall
+     wants its six. */
+  const maxPlaying = options.maxPlaying ?? (isTouch() ? 3 : Infinity);
 
   function play(video) {
     /* NOT IF IT CANNOT BE SEEN, and geometry alone does not answer that. The
@@ -86,14 +101,51 @@ export function initCamFeeds(section, options = {}) {
     if (video.dataset.playOnce !== undefined) video.currentTime = 0;
   }
 
+  /* The ones on screen, nearest the middle first. Nearest and not first in
+     the document, because what the reader is looking at is the middle of the
+     screen — a feed entering from below should take the slot from one that is
+     half way out of the top, not wait behind it. */
+  const wanted = new Set();
+
+  function share() {
+    if (wanted.size <= maxPlaying) { wanted.forEach(play); return; }
+
+    const centre = window.innerHeight / 2;
+    [...wanted]
+      .map((video) => {
+        const box = video.getBoundingClientRect();
+        return { video, away: Math.abs(box.top + box.height / 2 - centre) };
+      })
+      .sort((a, b) => a.away - b.away)
+      .forEach(({ video }, i) => (i < maxPlaying ? play(video) : pause(video)));
+  }
+
   const watcher = new IntersectionObserver((entries) => {
     for (const entry of entries) {
-      if (entry.isIntersecting) play(entry.target);
-      else leave(entry.target);
+      if (entry.isIntersecting) wanted.add(entry.target);
+      else { wanted.delete(entry.target); leave(entry.target); }
     }
+    share();
   }, { rootMargin });
 
   feeds.forEach((video) => watcher.observe(video));
+
+  /* AND RE-SHARED ON THE SCROLL, where there is anything to share. The set
+     above only changes when a feed crosses the band's edge, and those edges
+     are a card apart — between two of them the reader has moved half a screen
+     and the nearest-first order has gone stale, which would show as a feed
+     standing still in the middle of the screen while one on its way out
+     plays. Once a frame at most, and never registered at all on a desktop,
+     where nothing is being rationed. */
+  const stop = new AbortController();
+  if (maxPlaying !== Infinity) {
+    let queued = false;
+    window.addEventListener("scroll", () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; share(); });
+    }, { passive: true, signal: stop.signal });
+  }
 
   document.addEventListener("visibilitychange", () => {
     /* pause, not leave: a tab coming back should carry on where it was, and a
@@ -106,7 +158,7 @@ export function initCamFeeds(section, options = {}) {
 
   return {
     pauseAll: () => feeds.forEach(pause),
-    destroy: () => watcher.disconnect(),
+    destroy: () => { watcher.disconnect(); stop.abort(); },
     count: feeds.length,
   };
 }

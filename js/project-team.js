@@ -29,8 +29,8 @@
    nothing, and the section it belongs to falls back to a single column.
    ========================================================================== */
 
-import { t } from "./i18n.js?v=320";
-import { toolMark } from "./tool-icons.js?v=320";
+import { t } from "./i18n.js?v=321";
+import { toolMark } from "./tool-icons.js?v=321";
 
 /* The site's small-caps meta label. Borrowed BY NAME from the header rather
    than reinvented, because "the same style as Category and Year" is the

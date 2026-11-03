@@ -34,9 +34,9 @@
    The set of things that tick is a single registry below — add a selector to
    give a new control the same voice. */
 
-import { canPlay, onChange } from "./audio-state.js?v=320";
-import { isTouch } from "./viewport.js?v=320";
-import { getAudioContext, resumeAudio } from "./audio-context.js?v=320";
+import { canPlay, onChange } from "./audio-state.js?v=321";
+import { isTouch } from "./viewport.js?v=321";
+import { getAudioContext, resumeAudio } from "./audio-context.js?v=321";
 
 const TARGETS = [
   ".nav__link",

@@ -23,10 +23,10 @@
    screen. cam-feeds.js starts them from an IntersectionObserver instead.
    ========================================================================== */
 
-import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=320";
-import { initCamFeeds } from "./cam-feeds.js?v=320";
-import { fillMedia } from "./media.js?v=320";
-import { t } from "./i18n.js?v=320";
+import { loadProjects, resolveField, groupByCategory } from "./projects.js?v=321";
+import { initCamFeeds } from "./cam-feeds.js?v=321";
+import { fillMedia } from "./media.js?v=321";
+import { t } from "./i18n.js?v=321";
 
 export async function initWorkGallery(root) {
   if (!root) return null;

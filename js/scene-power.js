@@ -40,7 +40,7 @@
    without anybody remembering to edit this line. */
 /* The breakpoint, from the one place that owns it. A resize re-measures
    anyway, so crossing it is picked up without a second listener. */
-import { isCompact } from "./viewport.js?v=320";
+import { isCompact } from "./viewport.js?v=321";
 
 const GROUND = ".seals, .about, .work";
 

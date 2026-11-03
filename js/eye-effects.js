@@ -59,6 +59,39 @@ export const effects = {
     },
   },
 
+  /* --- Looking around, with nothing to look at -----------------------------
+   * The drift above is 2.9 degrees over ten seconds. It is technically moving
+   * and it reads as frozen, which is what a phone used to get: `follow` off
+   * because there is no cursor, and a wander too small to notice.
+   *
+   * So this one does what an eye with nothing to track actually does — it
+   * settles on somewhere, holds, and moves on. The target is random inside the
+   * SAME reach the cursor has (config.eye.followStrength, so the two can never
+   * disagree about how far this eye turns), and narrower vertically than
+   * horizontally, because that is how eyes move.
+   *
+   * IT ONLY SETS A TARGET. eye.js eases toward lookTarget at followEase every
+   * frame, so a new target is a turn and never a jump — nothing here has to
+   * know about smoothing. And it ADDS, like every effect but watchFocus, so
+   * the micro-drift above keeps running underneath it and the eye is never
+   * perfectly still even between moves.
+   *
+   * State on the effect object, as watchFocus already does. */
+  wander: {
+    update(ctx) {
+      if (ctx.time >= (this.until ?? 0)) {
+        const reach = ctx.config.eye.followStrength;
+        this.ry = (Math.random() * 2 - 1) * reach;
+        this.rx = (Math.random() * 2 - 1) * reach * 0.6;
+        /* Long enough to read as a look rather than a twitch, uneven enough
+           that four of them in a row do not read as a loop. */
+        this.until = ctx.time + 1.4 + Math.random() * 2.4;
+      }
+      ctx.lookTarget.ry += this.ry;
+      ctx.lookTarget.rx += this.rx;
+    },
+  },
+
   /* --- The eye reads over your shoulder ------------------------------------
    * While a form field has focus, the eye stops following the cursor and
    * watches the field instead. On the contact page that is the whole point:

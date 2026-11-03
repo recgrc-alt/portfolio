@@ -182,7 +182,7 @@ export const config = {
      fading itself out on every scroll — see restDrift in eye-effects.js.
      main.js picks between the two lists; both live here so the behaviour is
      still declared in one place rather than decided in code. */
-  touchEffects: ["restDrift"],
+  touchEffects: ["restDrift", "wander"],
 
   /* --- Location (for the footer distance readout, wired later) ----------
    * Home base = Penafiel, PT. Distance-to-visitor is a future feature.     */
