@@ -33,7 +33,7 @@
    touch layout. So there is nothing here that could make scrolling heavier.
    ========================================================================== */
 
-import { setAmbienceLevel } from "./ambience.js?v=326";
+import { setAmbienceLevel } from "./ambience.js?v=328";
 
 const clamp01 = (n) => (n < 0 ? 0 : n > 1 ? 1 : n);
 

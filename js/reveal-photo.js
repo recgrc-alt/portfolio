@@ -103,9 +103,9 @@
        an element.
    ========================================================================== */
 
-import { isTouch } from "./viewport.js?v=326";
-import { createRevealField } from "./reveal-field.js?v=326";
-import { createPointer } from "./pointer.js?v=326";
+import { isTouch } from "./viewport.js?v=328";
+import { createRevealField } from "./reveal-field.js?v=328";
+import { createPointer } from "./pointer.js?v=328";
 
 /* Tunables — all the feel of the effect lives here. The shape of the body
    itself lives in reveal-field.js. */

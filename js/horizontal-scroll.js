@@ -26,7 +26,7 @@
    About choreography and the sinking eye rather than reimplemented here.
    ========================================================================== */
 
-import { trackScrollProgress } from "./scroll-progress.js?v=326";
+import { trackScrollProgress } from "./scroll-progress.js?v=328";
 
 export function initHorizontalScroll(section, options = {}) {
   if (!section) return null;
@@ -66,6 +66,11 @@ export function initHorizontalScroll(section, options = {}) {
     lenis: options.lenis,
     onUpdate: (progress) => {
       section.style.setProperty("--h-progress", progress.toFixed(4));
+      /* Forwarded so a caller can choreograph on the same number without
+         measuring the section a second time. Kept to a passthrough on
+         purpose: what any given section DOES with its progress is that
+         section's business, not this module's. */
+      options.onUpdate?.(progress);
     },
   });
 

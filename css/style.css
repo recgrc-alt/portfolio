@@ -1515,8 +1515,15 @@ a, button, [role="button"], summary, input, textarea, select {
   --p-title-in:      clamp(0, calc((var(--p) - 0.338) / 0.084), 1);
 
   /* The title then holds over the photo for a long stretch — that window is
-     the whole point of the difference blend, so the photo recedes late. */
-  --p-fade:  clamp(0, calc((var(--p) - 0.540) / 0.101), 1); /* photo recedes */
+     the whole point of the difference blend, so the photo recedes late.
+
+     THE START OF IT IS A TOKEN because main.js reads it. The cards share this
+     curve, so this number is also the moment they stop being scenery and
+     become things you can press — and JS has to know it to let the pointer
+     through. Reading it from here means the two can never drift apart; see
+     .about__track below, and the toggle in main.js. */
+  --cards-from: 0.540;
+  --p-fade:  clamp(0, calc((var(--p) - var(--cards-from)) / 0.101), 1);
 
   /* AND THE RAIL WAITS FOR THEM. The cards have finished arriving at 64.1%;
      the travel starts at 72%. Those eight points are about 230px of scroll
@@ -1566,7 +1573,20 @@ a, button, [role="button"], summary, input, textarea, select {
   opacity: var(--p-fade);              /* arrive as the photo recedes */
   transform: translate3d(
     calc(var(--p-slide) * var(--h-distance, 0px) * -1), 0, 0);
+
+  /* AND IT IS TRANSPARENT TO THE POINTER UNTIL IT IS ACTUALLY THERE.
+     opacity: 0 hides a thing from the eye and from nobody else — it still
+     takes clicks, and it still answers the browser's "what is under the
+     cursor" question. This track lies across the middle of the portrait for
+     the whole hover phase, invisible, and it used to swallow both: it broke
+     the cursor reveal (see reveal-photo.js, now immune) and it would hand a
+     download to anyone who clicked empty space over the photograph.
+     main.js adds .is-live once --cards-from is passed, which is the same
+     number this element's own opacity starts from. */
+  pointer-events: none;
 }
+
+.about__track.is-live { pointer-events: auto; }
 
 .card {
   width: var(--card-width);
@@ -1595,6 +1615,58 @@ a, button, [role="button"], summary, input, textarea, select {
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--color-ink);
+}
+
+/* --- The one card you can press ------------------------------------------
+ * Deliberately the SAME language as .skills__cta, the other "quiet way out"
+ * on this page: no fill and no border, a word resting below full ink with a
+ * rule under it that draws itself out from the centre on hover, plus the
+ * nav's echo. Scaled down because it lives inside a card rather than closing
+ * a whole section. A filled button here would be the only one on the site. */
+.card__cta {
+  position: relative;
+  display: inline-block;
+  margin-top: var(--space-24);
+  padding-bottom: var(--space-8);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  --echo-opacity: 0;
+  --echo-shift: 0;
+  transition: color var(--nav-hover-dur) var(--ease-out);
+}
+
+.card__cta::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 2rem;
+  height: 1px;                       /* hairline — the allowed px */
+  background-color: currentColor;
+  transition: width var(--nav-hover-dur) var(--ease-out);
+}
+
+.card__cta:hover,
+.card__cta:focus-visible {
+  color: var(--color-ink);
+  --echo-opacity: 1;
+  --echo-shift: var(--nav-hover-shift);
+}
+
+.card__cta:hover::before,
+.card__cta:focus-visible::before { width: 100%; }
+
+/* What the press actually costs, because a download should say so before it
+   starts rather than after. Sits under the link, quiet. */
+.card__meta {
+  margin: var(--space-8) 0 0;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-ink-dim);
 }
 
 /* Pinned to the bottom edge, out of the grid flow so it can't add a row. */
@@ -3424,7 +3496,15 @@ a, button, [role="button"], summary, input, textarea, select {
     --m-statement-out: clamp(0, calc((var(--p) - 0.06) / 0.16), 1);
     --m-title-in:      clamp(0, calc((var(--p) - 0.24) / 0.14), 1);
     --m-title-up:      clamp(0, calc((var(--p) - 0.44) / 0.16), 1);
-    --m-cards-in:      clamp(0, calc((var(--p) - 0.52) / 0.16), 1);
+
+    /* The phone brings the cards in slightly earlier than the rail does.
+       SAME TOKEN NAME as the desktop one on purpose: it is the moment the
+       deck stops being scenery and becomes something you can tap, and main.js
+       reads whichever value is in force so the gate follows the breakpoint
+       instead of guessing. Re-read on resize, because rotating a phone can
+       cross it. */
+    --cards-from: 0.52;
+    --m-cards-in:      clamp(0, calc((var(--p) - var(--cards-from)) / 0.16), 1);
   }
 
   /* --- The backdrop: photo, and the sentence over it ------------------- */
@@ -3640,6 +3720,12 @@ a, button, [role="button"], summary, input, textarea, select {
     opacity: var(--m-cards-in);
     transform: translate3d(0, calc((1 - var(--m-cards-in)) * 4svh), 0);
 
+    /* The gate from the desktop rule still applies, and has to: the deck sits
+       in the flow inside the pinned stage, so before it fades in it is an
+       invisible strip of the screen that would answer a tap with a download.
+       It is the THRESHOLD that differs, and that is handled by --cards-from
+       above rather than by exempting the phone. */
+
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
@@ -3655,6 +3741,19 @@ a, button, [role="button"], summary, input, textarea, select {
     width: 100%;
     scroll-snap-align: start;
   }
+
+  /* A THUMB IS NOT A CURSOR. At desktop sizes this link is 29px tall, which
+     a mouse hits exactly and a thumb hits about four times in five — and the
+     one thing it does is irreversible-ish enough to be annoying when missed.
+     The padding grows the reachable area past 44px without moving anything
+     you can see: the margin above gives back what the padding adds, and the
+     rule is pinned to where it already sat rather than to the new edge. */
+  .card__cta {
+    margin-top: var(--space-8);
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-16);
+  }
+  .card__cta::before { bottom: var(--space-8); }
 
   .quick-dots {
     grid-row: 3;

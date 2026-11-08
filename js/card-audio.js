@@ -18,9 +18,9 @@
    Works on any [data-work-video] in the given root, which is both the gallery
    cards and the project hero — they already share that marker. */
 
-import { canPlay, onChange } from "./audio-state.js?v=326";
-import { beginAudibleVideo, endAudibleVideo } from "./audio-ducking.js?v=326";
-import { isTouch } from "./viewport.js?v=326";
+import { canPlay, onChange } from "./audio-state.js?v=328";
+import { beginAudibleVideo, endAudibleVideo } from "./audio-ducking.js?v=328";
+import { isTouch } from "./viewport.js?v=328";
 
 /* Does this clip carry sound? true / false / null (not knowable yet).
  *

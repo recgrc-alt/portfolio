@@ -27,8 +27,8 @@
    array instead of `frames` and the placeholders are simply not built.
    ========================================================================== */
 
-import { t } from "./i18n.js?v=326";
-import { createSlideshow } from "./slideshow.js?v=326";
+import { t } from "./i18n.js?v=328";
+import { createSlideshow } from "./slideshow.js?v=328";
 
 /* One placeholder frame.
 
