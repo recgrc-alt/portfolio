@@ -39,9 +39,9 @@
        role and which every other browser would have to download whole just to
        draw sixteen pixels. favicon.ico sits at the site root as well, because
        some clients request /favicon.ico without ever reading the markup. -->
-  <link rel="icon" href="assets/favicon-32.png?v=321" sizes="32x32" type="image/png" />
-  <link rel="icon" href="assets/favicon-16.png?v=321" sizes="16x16" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=321" />
+  <link rel="icon" href="assets/favicon-32.png?v=326" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=326" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=326" />
 
   <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -51,9 +51,9 @@
     rel="stylesheet" />
 
   <!-- Tokens first, then the shared stylesheet, then the page layouts. -->
-  <link rel="stylesheet" href="css/tokens.css?v=321" />
-  <link rel="stylesheet" href="css/style.css?v=321" />
-  <link rel="stylesheet" href="css/pages.css?v=321" />
+  <link rel="stylesheet" href="css/tokens.css?v=326" />
+  <link rel="stylesheet" href="css/style.css?v=326" />
+  <link rel="stylesheet" href="css/pages.css?v=326" />
 
   <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
        This MUST come before any module load or preload (see below). -->
@@ -164,9 +164,36 @@
              hover shows the OTHER, previewing what a click will do. -->
         <button class="sound-btn" type="button" data-sound-toggle aria-pressed="false"
                 aria-label="Sound" data-i18n-attr="aria-label=sound.label">
+          <!-- A WAVEFORM, NOT A SPEAKER, and the muted state is the same
+               waveform gone flat. A level meter at rest IS a flat line, so
+               the off state needs no strike through it: the icon says what it
+               means in its own language. Both glyphs are groups rather than
+               single paths, which the display:none swap in style.css handles
+               exactly as it did two paths. Colour comes from currentColor, so
+               the states the button already defines still own it. -->
           <svg class="sound-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path class="sound-btn__glyph sound-btn__glyph--on" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-            <path class="sound-btn__glyph sound-btn__glyph--off" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+            <g class="sound-btn__glyph sound-btn__glyph--on">
+              <rect x="0.6"  y="9"    width="2.4" height="6"  rx="1.2"/>
+              <rect x="4"    y="6"    width="2.4" height="12" rx="1.2"/>
+              <rect x="7.4"  y="8"    width="2.4" height="8"  rx="1.2"/>
+              <rect x="10.8" y="4.5"  width="2.4" height="15" rx="1.2"/>
+              <rect x="14.2" y="2"    width="2.4" height="20" rx="1.2"/>
+              <rect x="17.6" y="6.5"  width="2.4" height="11" rx="1.2"/>
+              <rect x="21"   y="8.5"  width="2.4" height="7"  rx="1.2"/>
+            </g>
+            <!-- Muted keeps the same seven bars and the same silhouette, just
+                 low. A flat row of stubs stopped reading as a meter at all,
+                 and this way the mark is always the waveform — the state is
+                 its amplitude, which is what amplitude means. -->
+            <g class="sound-btn__glyph sound-btn__glyph--off">
+              <rect x="0.6"  y="10.5" width="2.4" height="3"   rx="1.2"/>
+              <rect x="4"    y="9.8"  width="2.4" height="4.4" rx="1.2"/>
+              <rect x="7.4"  y="10.3" width="2.4" height="3.4" rx="1.2"/>
+              <rect x="10.8" y="9.4"  width="2.4" height="5.2" rx="1.2"/>
+              <rect x="14.2" y="8.8"  width="2.4" height="6.4" rx="1.2"/>
+              <rect x="17.6" y="9.9"  width="2.4" height="4.2" rx="1.2"/>
+              <rect x="21"   y="10.4" width="2.4" height="3.2" rx="1.2"/>
+            </g>
           </svg>
         </button>
       </div>
@@ -423,7 +450,7 @@
     <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
   </div>
 
-  <script type="module" src="js/main.js?v=321"></script>
+  <script type="module" src="js/main.js?v=326"></script>
 
 </body>
 

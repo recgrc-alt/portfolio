@@ -99,8 +99,8 @@ const fragmentShader = /* glsl */ `
 export function initPhotoDepth(canvas, options = {}) {
   if (!canvas) return null;
   const {
-    photoUrl = "assets/foto.webp?v=321",
-    depthUrl = "assets/foto-depthmap.webp?v=321",
+    photoUrl = "assets/foto.webp?v=326",
+    depthUrl = "assets/foto-depthmap.webp?v=326",
     pointer,
     /* --- WHERE THE DISPLACEMENT COMES FROM ------------------------------
      * By default, the cursor. `input` replaces it with anything that can

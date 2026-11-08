@@ -38,10 +38,10 @@
    one element that reads it. Only transform and opacity are animated.
    ========================================================================== */
 
-import { isCompact, onCompactChange } from "./viewport.js?v=321";
+import { isCompact, onCompactChange } from "./viewport.js?v=326";
 /* One answer to "is this on screen", shared with the file that owns the
    feeds, so the deck and the observer can never disagree about it. */
-import { onScreen } from "./cam-feeds.js?v=321";
+import { onScreen } from "./cam-feeds.js?v=326";
 
 export function initWorkPage({ lenis, power } = {}) {
   const deck = document.querySelector("[data-work-deck]");

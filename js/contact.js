@@ -32,10 +32,10 @@
 
 /* The placeholder that ships in the markup. Anything containing this is not a
    real endpoint yet. */
-import { t } from "./i18n.js?v=321";
-import { initSelects } from "./select.js?v=321";
-import { screen } from "./word-guard.js?v=321";
-import { check as verificarEmail } from "./email-check.js?v=321";
+import { t } from "./i18n.js?v=326";
+import { initSelects } from "./select.js?v=326";
+import { screen } from "./word-guard.js?v=326";
+import { check as verificarEmail } from "./email-check.js?v=326";
 
 const UNSET = "YOUR_FORM_ID";
 

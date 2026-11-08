@@ -530,8 +530,13 @@ a, button, [role="button"], summary, input, textarea, select {
 .sound-btn {
   display: grid;
   place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  /* Bigger than the 1.5rem it was, and the reason is weight rather than size.
+     The waveform is seven thin bars where the old speaker was one solid
+     shape, so at the same box it read lighter than the 14px type beside it
+     and simply looked small. The box grows and the bars with it, until the
+     mark carries the same weight as the wordmark across the bar. */
+  width: 2rem;
+  height: 2rem;
   color: var(--color-ink-dim);
   transition: color var(--nav-hover-dur) var(--ease-out);
 }
@@ -548,12 +553,12 @@ a, button, [role="button"], summary, input, textarea, select {
 
 .sound-btn__glyph { fill: currentColor; }
 
-/* Sound ON: speaker at rest, struck-through on hover (what a click will do). */
+/* Sound ON: the waveform at rest, flattened on hover (what a click will do). */
 .sound-btn[aria-pressed="false"] .sound-btn__glyph--off,
 .sound-btn[aria-pressed="false"]:hover .sound-btn__glyph--on,
 .sound-btn[aria-pressed="false"]:focus-visible .sound-btn__glyph--on { display: none; }
 
-/* Sound OFF: struck-through at rest, plain speaker on hover. */
+/* Sound OFF: flat at rest, the waveform back on hover. */
 .sound-btn[aria-pressed="true"] .sound-btn__glyph--on,
 .sound-btn[aria-pressed="true"]:hover .sound-btn__glyph--off,
 .sound-btn[aria-pressed="true"]:focus-visible .sound-btn__glyph--off { display: none; }
@@ -566,7 +571,8 @@ a, button, [role="button"], summary, input, textarea, select {
    A phone leaves :hover stuck on whatever you last tapped. Combined with the
    two rules above, both glyphs then match a display:none — the state hides one
    and the stuck hover hides the other — and the button renders EMPTY, in both
-   states. Verified before fixing.
+   states. Verified before fixing. (Still true of the waveform: the glyphs are
+   groups now rather than paths, and display:none hides a group just as well.)
    Here the preview is dropped entirely: the icon simply shows the current
    state, and tapping inverts it. Which is what a phone expects anyway. */
 @media (hover: none) {
@@ -1677,7 +1683,24 @@ a, button, [role="button"], summary, input, textarea, select {
 }
 
 .reveal__canvas--back  { z-index: 0; }   /* behind the cutout */
-.reveal__canvas--front { z-index: 2; }   /* revealed on top of it */
+
+/* The front layer is held STILL, and that reverses the two rules above for
+   this one element. It no longer carries only letters: inside the liquid
+   body, off Rogério's outline, it also paints the white ground that his
+   cutout draws itself against. That ground is registered to the photograph,
+   so if the layer breathed and slid with the type it would unstick from his
+   shoulder by a couple of pixels several times a second.
+
+   The letters still breathe and still slide. reveal-photo.js measures how far
+   the back copy has moved and offsets the sentence by that much inside the
+   shader, which keeps the two copies in register — the rule this whole block
+   exists to protect — without moving the ground with them. */
+.reveal__canvas--front {
+  z-index: 2;                            /* revealed on top of the cutout */
+  transform: none;
+  animation: none;
+  will-change: auto;
+}
 
 /* Uses the individual `translate` property ON PURPOSE, leaving `transform`
    free for the sweep slide above — the two then compose instead of overwriting

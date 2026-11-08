@@ -17,26 +17,26 @@
    Orchestration lives here; logic lives in the modules.
    ========================================================================== */
 
-import { config } from "./config.js?v=321";
-import { startClock } from "./clock.js?v=321";
-import { initI18n, i18nReady } from "./i18n.js?v=321";
-import { holdPage, pageReady, sealPage } from "./page-ready.js?v=321";
-import { createPointer } from "./pointer.js?v=321";
-import { initEye } from "./eye.js?v=321";
-import { initScenePower } from "./scene-power.js?v=321";
-import { initSmoothScroll, holdScrollTarget } from "./smooth-scroll.js?v=321";
-import { initReveal, settleInView, replayEntrances } from "./reveal.js?v=321";
-import { initClickSound } from "./click-sound.js?v=321";
-import { initPrefetch } from "./prefetch.js?v=321";
-import { initAmbience } from "./ambience.js?v=321";
-import { initSoundToggle } from "./sound-toggle.js?v=321";
-import { initCursor } from "./cursor.js?v=321";
-import { initCardAudio } from "./card-audio.js?v=321";
-import { initPageTransition } from "./page-transition.js?v=321";
-import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=321";
-import { initNavMenu } from "./nav-menu.js?v=321";
-import { initCardCarousel } from "./card-carousel.js?v=321";
-import { initHeroIntro } from "./hero-intro.js?v=321";
+import { config } from "./config.js?v=326";
+import { startClock } from "./clock.js?v=326";
+import { initI18n, i18nReady } from "./i18n.js?v=326";
+import { holdPage, pageReady, sealPage } from "./page-ready.js?v=326";
+import { createPointer } from "./pointer.js?v=326";
+import { initEye } from "./eye.js?v=326";
+import { initScenePower } from "./scene-power.js?v=326";
+import { initSmoothScroll, holdScrollTarget } from "./smooth-scroll.js?v=326";
+import { initReveal, settleInView, replayEntrances } from "./reveal.js?v=326";
+import { initClickSound } from "./click-sound.js?v=326";
+import { initPrefetch } from "./prefetch.js?v=326";
+import { initAmbience } from "./ambience.js?v=326";
+import { initSoundToggle } from "./sound-toggle.js?v=326";
+import { initCursor } from "./cursor.js?v=326";
+import { initCardAudio } from "./card-audio.js?v=326";
+import { initPageTransition } from "./page-transition.js?v=326";
+import { isTouch, isCompact, onCompactChange } from "./viewport.js?v=326";
+import { initNavMenu } from "./nav-menu.js?v=326";
+import { initCardCarousel } from "./card-carousel.js?v=326";
+import { initHeroIntro } from "./hero-intro.js?v=326";
 
 /* Bumped whenever the JS changes. If the console does not show this exact
    line, the browser is running a CACHED old bundle — hard-reload or clear the
@@ -123,14 +123,14 @@ function boot() {
     hudExtrasWired = true;
 
     // Neither asks for anything on arrival — see the modules.
-    import("./distance.js?v=321").then((m) =>
+    import("./distance.js?v=326").then((m) =>
       m.initDistance(document.querySelector("[data-distance]"))
     );
 
     // Pressing the local time opens the hour scrubber, which re-lights the eye
     // live. Loaded on demand: it is an extra, and a page where nobody presses
     // it should not pay to download it.
-    import("./hour-picker.js?v=321").then((m) =>
+    import("./hour-picker.js?v=326").then((m) =>
       m.initHourPicker(document.querySelector(".meta--time"))
     );
   }
@@ -179,7 +179,7 @@ function boot() {
   /* The other half of "Drag / Scroll to explore". Loaded on demand and it
      returns null on a touch screen, where the browser already does this
      better than any script could. See drag-scroll.js. */
-  import("./drag-scroll.js?v=321").then((m) => m.initDragScroll(lenis));
+  import("./drag-scroll.js?v=326").then((m) => m.initDragScroll(lenis));
 
   const pointer = createPointer();
   const canvas = document.getElementById("eye-canvas");
@@ -202,6 +202,12 @@ function boot() {
       ? {
           ...config,
           activeEffects: config.touchEffects,
+          /* The dust is read from config.eye.dust, so the phone's version has
+             to be merged in THERE and not alongside it. See touchDust. */
+          eye: {
+            ...config.eye,
+            dust: { ...config.eye.dust, ...config.eye.touchDust },
+          },
           perf: { ...config.perf, maxPixelRatio: config.perf.touchPixelRatio },
         }
       : config;
@@ -286,7 +292,7 @@ function boot() {
   // WORK — the gallery, built from data/projects.json.
   if (document.querySelector("[data-work-gallery]")) {
     // The cards ARE this page. Nothing should uncover before they exist.
-    holdPage(import("./work-gallery.js?v=321").then(async (m) => {
+    holdPage(import("./work-gallery.js?v=326").then(async (m) => {
       await m.initWorkGallery(document.querySelector("[data-work-gallery]"));
 
       /* Only now. What this sets up — the anchors from the hero index, the
@@ -294,7 +300,7 @@ function boot() {
          needs the sections and headings to exist, and they are built from
          JSON a moment ago. Run earlier it would find nothing and silently do
          nothing. */
-      const page = await import("./work-page.js?v=321");
+      const page = await import("./work-page.js?v=326");
       page.initWorkPage({ lenis, power });
     }));
 
@@ -303,18 +309,18 @@ function boot() {
        uncovers, and making the loading screen wait for it would be paying
        for something off screen. It builds from the same JSON, which by then
        is already in the cache. */
-    import("./work-list.js?v=321").then((m) => {
+    import("./work-list.js?v=326").then((m) => {
       m.initWorkList(document.querySelector("[data-work-list]"), { lenis });
     });
   }
 
   // PROJECT — one template filled from the ?id= parameter.
   if (document.querySelector("[data-project-page]")) {
-    holdPage(import("./project-page.js?v=321").then(async (m) => {
+    holdPage(import("./project-page.js?v=326").then(async (m) => {
       await m.initProjectPage(document.querySelector("[data-project-page]"));
       // The hero video is injected by the module, so its feed observer can
       // only be wired after that has run.
-      const { initCamFeeds } = await import("./cam-feeds.js?v=321");
+      const { initCamFeeds } = await import("./cam-feeds.js?v=326");
       initCamFeeds(document.querySelector("[data-project-page]"));
 
       /* --- The depth chapters, once their canvases exist --------------------
@@ -329,7 +335,7 @@ function boot() {
 
   // CONTACT — the copy button and the form.
   if (document.querySelector("[data-contact]")) {
-    import("./contact.js?v=321").then((m) =>
+    import("./contact.js?v=326").then((m) =>
       m.initContact(document.querySelector("[data-contact]"))
     );
   }
@@ -361,8 +367,8 @@ function boot() {
  * parallax that stops, not the content. */
 async function initDepthChapters(canvases, { pointer, lenis }) {
   const [{ initDepthMedia }, { trackScrollProgress }] = await Promise.all([
-    import("./depth-media.js?v=321"),
-    import("./scroll-progress.js?v=321"),
+    import("./depth-media.js?v=326"),
+    import("./scroll-progress.js?v=326"),
   ]);
 
   const semMovimento = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -420,20 +426,28 @@ async function initHome({ pointer, lenis }) {
     { initHorizontalScroll },
     { bindProgressToProperty, trackScrollProgress },
   ] = await Promise.all([
-    import("./scroll-fx.js?v=321"),
-    import("./reveal-photo.js?v=321"),
-    import("./photo-depth.js?v=321"),
-    import("./marquee.js?v=321"),
-    import("./horizontal-scroll.js?v=321"),
-    import("./scroll-progress.js?v=321"),
+    import("./scroll-fx.js?v=326"),
+    import("./reveal-photo.js?v=326"),
+    import("./photo-depth.js?v=326"),
+    import("./marquee.js?v=326"),
+    import("./horizontal-scroll.js?v=326"),
+    import("./scroll-progress.js?v=326"),
   ]);
 
   initHeroScrollFx(lenis);
 
-  // About: the hover-revealed statement and the depth-mapped photo behind it.
-  // initPhotoReveal returns immediately on touch — there, the statement is
-  // plain HTML over the photo instead of a cursor wipe.
-  initPhotoReveal(document.querySelector("[data-photo-reveal]"));
+  /* About: the hover-revealed statement and the depth-mapped photo behind it.
+     initPhotoReveal returns immediately on touch — there, the statement is
+     plain HTML over the photo instead of a cursor wipe.
+
+     IT IS HANDED THE SAME POINTER THE PHOTOGRAPH ITSELF USES, a few lines
+     below. That is not tidiness: the reveal used to listen on its own stage
+     and was told the visitor had left every time the cursor crossed one of
+     the invisible cards lying over the portrait, while the parallax — reading
+     this very object — carried on as if nothing had happened. Two readings of
+     one cursor on one photograph is what that looked like. See the header of
+     reveal-photo.js. */
+  initPhotoReveal(document.querySelector("[data-photo-reveal]"), { pointer });
 
   // The depth photo is a DESKTOP effect and is skipped entirely on touch. Its
   // parallax is driven by the pointer, which on a phone only moves when you
@@ -527,7 +541,7 @@ async function initHome({ pointer, lenis }) {
    * when that happens. */
   const frase = document.querySelector("[data-lines]");
   if (frase) {
-    const { keepSplit } = await import("./split-lines.js?v=321");
+    const { keepSplit } = await import("./split-lines.js?v=326");
     /* On the HEADING, not on the span: the h2 is what a screen reader
        announces, and once the span is split its textContent runs the lines
        together - "Interactive webbuilt with code". Taken while it is still a

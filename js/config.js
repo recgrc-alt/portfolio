@@ -153,6 +153,31 @@ export const config = {
       parallax: 0.9,   // how far the field slides against the pointer
       warmth: 0.65,    // 0 borrows the sky colour, 1 the sun colour
     },
+
+    /* WHAT THE PHONE GETS INSTEAD, merged over the block above by main.js —
+       the same arrangement as touchEffects and touchPixelRatio, so the
+       behaviour is still declared here rather than decided in code.
+
+       THE COUNT WAS NEVER THE COST. 320 motes are one draw call, one buffer,
+       no texture, and their drift runs on the GPU: the CPU writes three
+       uniforms a frame and touches no vertex data ever. What costs is their
+       AREA. A far mote opens up to maxSize, and 110px at a phone's 1.5 pixel
+       ratio is 165px of soft, blended disc — hundreds of them, overlapping,
+       on top of a full-screen shader that has already painted every pixel
+       once. That is fill rate, and fill rate is what a phone GPU is worst at.
+       It is also why the eye stuttered while turning: not the turning, but
+       the frame it was waiting for.
+
+       So the ceiling comes down first and hardest, the spread with it so
+       fewer motes ever reach the ceiling, and the count last. The field still
+       does what it is for — the depth reads, the motes simply stop being
+       enormous. */
+    touchDust: {
+      count:   96,     // from 320
+      size:     6,     // from 9   · the near, sharp ones
+      spread:   3.5,   // from 7   · how fast a mote opens with depth
+      maxSize: 26,     // from 110 · the ceiling, and the whole point
+    },
   },
 
   /* --- Photo depth parallax --------------------------------------------
