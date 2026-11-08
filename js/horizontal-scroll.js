@@ -26,7 +26,7 @@
    About choreography and the sinking eye rather than reimplemented here.
    ========================================================================== */
 
-import { trackScrollProgress } from "./scroll-progress.js?v=328";
+import { trackScrollProgress } from "./scroll-progress.js?v=329";
 
 export function initHorizontalScroll(section, options = {}) {
   if (!section) return null;

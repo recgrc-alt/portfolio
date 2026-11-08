@@ -24,14 +24,14 @@ import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUnifo
 import {
   createScleraMaterial,
   vertexShader, fragmentShader, createEyeUniforms,
-} from "./iris-shader.js?v=328";
+} from "./iris-shader.js?v=329";
 import {
   buildStudioEnvironment, buildLightRig, createPupilMaterial,
-} from "./eye-lighting.js?v=328";
-import { startTimeOfDay } from "./eye-time.js?v=328";
-import { currentHour } from "./time-override.js?v=328";
-import { initEyeDust } from "./eye-dust.js?v=328";
-import { runEffects } from "./eye-effects.js?v=328";
+} from "./eye-lighting.js?v=329";
+import { startTimeOfDay } from "./eye-time.js?v=329";
+import { currentHour } from "./time-override.js?v=329";
+import { initEyeDust } from "./eye-dust.js?v=329";
+import { runEffects } from "./eye-effects.js?v=329";
 
 export function initEye({ canvas, pointer, config }) {
 

@@ -42,12 +42,12 @@
    that do NOT seal are what make the ones that do mean something.
    ========================================================================== */
 
-import { slot } from "./project-slot.js?v=328";
-import { heading } from "./project-heading.js?v=328";
-import { buildCarousel } from "./project-carousel.js?v=328";
-import { actionButton } from "./project-actions.js?v=328";
-import { buildStage } from "./project-stage-section.js?v=328";
-import { t } from "./i18n.js?v=328";
+import { slot } from "./project-slot.js?v=329";
+import { heading } from "./project-heading.js?v=329";
+import { buildCarousel } from "./project-carousel.js?v=329";
+import { actionButton } from "./project-actions.js?v=329";
+import { buildStage } from "./project-stage-section.js?v=329";
+import { t } from "./i18n.js?v=329";
 
 /* The shapes a chapter may take. Anything else in the data falls back to
    `split`, which is the one that works with any content. */
@@ -851,7 +851,7 @@ function buildScene(chapter) {
   const stage = document.createElement("div");
   stage.className = "project-scene__body";
 
-  import("./project-scene.js?v=328").then((m) => {
+  import("./project-scene.js?v=329").then((m) => {
     if (!m.sceneWorthOffering()) {
       stage.append(slot({
         kind: "model",
@@ -878,7 +878,7 @@ function viewerInto(models) {
   const box = document.createElement("div");
   box.className = "modelbox";
 
-  import("./project-models.js?v=328").then((m) => {
+  import("./project-models.js?v=329").then((m) => {
     if (!m.modelsWorthOffering()) {
       // On a phone this is a megabyte over mobile data for a thing that wants
       // a mouse. The slot says so instead of pretending.

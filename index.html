@@ -77,9 +77,9 @@
        role and which every other browser would have to download whole just to
        draw sixteen pixels. favicon.ico sits at the site root as well, because
        some clients request /favicon.ico without ever reading the markup. -->
-  <link rel="icon" href="assets/favicon-32.png?v=328" sizes="32x32" type="image/png" />
-  <link rel="icon" href="assets/favicon-16.png?v=328" sizes="16x16" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=328" />
+  <link rel="icon" href="assets/favicon-32.png?v=329" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-16.png?v=329" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=329" />
 
   <!-- Fonts: Space Grotesk (display) + Inter (body + italic name). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -89,8 +89,8 @@
     rel="stylesheet" />
 
   <!-- Design tokens first, then the stylesheet. -->
-  <link rel="stylesheet" href="css/tokens.css?v=328" />
-  <link rel="stylesheet" href="css/style.css?v=328" />
+  <link rel="stylesheet" href="css/tokens.css?v=329" />
+  <link rel="stylesheet" href="css/style.css?v=329" />
 
   <!-- Three.js + Lenis (smooth scroll) via import map — no build step.
        This MUST come before any module load or preload (see below). -->
@@ -129,7 +129,7 @@
        downloaded the file TWICE - the opposite of what a preload is for. It
        says so in the console if you look, which is the only reason this was
        caught. -->
-  <link rel="preload" as="image" href="assets/foto-depthmap.webp?v=328"
+  <link rel="preload" as="image" href="assets/foto-depthmap.webp?v=329"
         media="(hover: hover)" fetchpriority="low" crossorigin />
 
   <link rel="modulepreload" href="vendor/three@0.160.0/build/three.module.min.js" crossorigin />
@@ -474,7 +474,7 @@
                  this page, for one photograph. Matching the modes makes them
                  one request. Same-origin, so there is no header to arrange:
                  a same-origin response is never CORS-tainted. -->
-            <img class="reveal__still" src="assets/foto.webp?v=328"
+            <img class="reveal__still" src="assets/foto.webp?v=329"
                  alt="Portrait of Rogério Edgar Correia, in black and white."
                  data-i18n-attr="alt=about.photoAlt" decoding="async"
                  crossorigin="anonymous" />
@@ -528,7 +528,7 @@
             <h3 class="card__title" data-i18n="about.card5.title">Curriculum Vitae</h3>
             <p class="card__body" data-i18n="about.card5.body">The paper version — education, roles, and the tools I actually
               work in. One page.</p>
-            <a class="card__cta text-echo" href="assets/docs/rogerio-edgar-correia-cv.pdf?v=328"
+            <a class="card__cta text-echo" href="assets/docs/rogerio-edgar-correia-cv.pdf?v=329"
                download="Rogerio Edgar Correia - CV.pdf"
                data-text="Download my CV"
                data-i18n="about.card5.cta" data-i18n-attr="data-text=about.card5.cta">Download my CV</a>
@@ -839,7 +839,7 @@
     <p class="meta meta--place"><span data-distance>Penafiel / Porto, PT</span></p>
   </div>
 
-  <script type="module" src="js/main.js?v=328"></script>
+  <script type="module" src="js/main.js?v=329"></script>
 
 </body>
 
