@@ -20,8 +20,8 @@
    new-tab clicks, downloads, external links, mailto:, and same-page anchors
    all behave exactly as the browser intends. */
 
-import { fadeOutAmbience } from "./ambience.js?v=329";
-import { cssMilliseconds } from "./css-time.js?v=329";
+import { fadeOutAmbience } from "./ambience.js?v=330";
+import { cssMilliseconds } from "./css-time.js?v=330";
 
 /* HOW LONG THE EXIT TAKES, READ FROM THE STYLESHEET.
    The circle's arrival is timed by --veil-leave in css/tokens.css, beside

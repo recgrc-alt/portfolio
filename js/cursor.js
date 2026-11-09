@@ -43,8 +43,8 @@
    `languagechange` with everything else.
    ========================================================================== */
 
-import { isTouch } from "./viewport.js?v=329";
-import { t } from "./i18n.js?v=329";
+import { isTouch } from "./viewport.js?v=330";
+import { t } from "./i18n.js?v=330";
 
 /* Things that make the ring swell. Deliberately the same family the press
    tick answers to, plus the plain controls: what looks pressable, sounds

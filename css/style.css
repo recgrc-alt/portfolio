@@ -1549,7 +1549,10 @@ a, button, [role="button"], summary, input, textarea, select {
   text-align: center;
   font-family: var(--font-display);
   font-weight: var(--weight-bold);
-  font-size: var(--text-section);
+  /* NOT --text-section, and the token says why: that one is pure 8vw, and
+     this heading has to share a one-viewport-tall stage with the card rail
+     underneath it. */
+  font-size: var(--about-title-size);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   color: var(--color-ink);
@@ -1559,11 +1562,14 @@ a, button, [role="button"], summary, input, textarea, select {
   pointer-events: none;
 }
 
-/* Phase 3 cards — pinned to the lower band so they clear the centred title. */
+/* Phase 3 cards — hung from a line below the centred title, NOT pinned to the
+   floor. See --about-cards-top: measured from the floor, the row's top edge
+   was whatever was left after the tallest card, so card content decided how
+   close the rail came to the heading. */
 .about__track {
   position: absolute;
   left: 0;
-  bottom: var(--about-cards-bottom);
+  top: var(--about-cards-top);
   display: flex;
   align-items: flex-start;
   gap: clamp(var(--space-32), 6vw, var(--space-96));

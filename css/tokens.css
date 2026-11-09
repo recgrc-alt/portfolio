@@ -154,7 +154,24 @@
      from a laptop to a television. */
   --card-width:          clamp(16rem, 34vw, 26rem);
   --about-title-offset:  -9%;   /* lifts the title from centre to eye level */
-  --about-cards-bottom:  28%;   /* card rail's distance from the stage floor */
+
+  /* THE CARD RAIL HANGS FROM THE TOP, not from the floor, and that is the one
+     thing keeping it off the title. Anchored by its bottom edge, the rail's
+     top was "floor minus however tall the tallest card happens to be" — so
+     adding two lines to one card walked the whole row upward into the
+     heading. It did exactly that when the CV card arrived. Measured from the
+     top, a card can grow all it likes and grows DOWNWARD, into the empty
+     half of the stage where nothing is. */
+  --about-cards-top:     51%;   /* card rail's distance from the stage ceiling */
+
+  /* AND THE HEADING IS CAPPED BY HEIGHT AS WELL AS WIDTH. --text-section is
+     8vw, which is the right behaviour for a title that owns its own screen
+     and the wrong one here: this title shares a fixed-height stage with the
+     rail below it, so on a short window it kept growing on the width axis
+     while the room for it shrank on the height axis. A 1366x768 laptop —
+     which is most laptops — ended up with the heading sitting on top of the
+     cards. min() lets whichever axis is scarcer decide. */
+  --about-title-size:    clamp(2.5rem, min(8vw, 11svh), 6.5rem);
   --about-cards-inset:   clamp(3rem, 11vw, 14rem);  /* side margin for the rail */
   --about-photo-growth:  0.20;  /* 82vh → ~100vh, matching the old framing   */
 
